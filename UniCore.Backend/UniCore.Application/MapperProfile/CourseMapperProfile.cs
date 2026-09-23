@@ -1,7 +1,7 @@
 using Mapster;
 using UniCore.Application.DTO.Entity;
 using UniCore.Application.Entity;
-using UniCore.Application.Feature.v1.Admin.StudentsManagement.GetAllCourses;
+using UniCore.Application.Feature.v1.Admin.CoursesManagement.GetAllCourses;
 
 namespace UniCore.Application.MapperProfile
 {
