@@ -51,6 +51,8 @@ namespace UniCore.API.Extensions
                 {
                     [new OpenApiSecuritySchemeReference("Bearer", document)] = []
                 });
+
+                options.CustomSchemaIds(type => type.FullName!.Replace("+", "."));
             });
         }
     }
