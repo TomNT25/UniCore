@@ -1,7 +1,6 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using StackExchange.Redis;
 using UniCore.API.Controllers;
 using UniCore.Application.Contract.Service.v1;
 using UniCore.Application.DTO;
@@ -20,6 +19,7 @@ using UniCore.Helper.Localization;
 namespace UniCore.API.Controllers.v1
 {
     [ApiVersion("1.0")]
+    [Authorize(Roles = "Admin")]
     [Route("api/v{version:apiVersion}/roles")]
     public class RoleController : BaseController
     {

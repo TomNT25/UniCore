@@ -6,24 +6,24 @@ using UniCore.Application.Contract.RequestHandlerHub;
 
 namespace UniCore.Application.Feature.v1.ClassRoom.GetClassCourseInfos
 {
-    public class GetClassCourseInfosHandler : IRequestHandler<GetClassCourseInfosRequestDTO, IEnumerable<GetClassCourseInfosResponseDTO>>
+    public class GetClassCourseInfosHandler : IRequestHandler<GetClassCourseInfosRequestDTO, GetClassCourseInfosResponseDTO>
     {
-        private readonly ISchoolClassRepository _schoolClassRepo;
-        private readonly ICourseRepository _courseRepository;
         private readonly IValidator<GetClassCourseInfosRequestDTO> _validator;
+        private readonly ICourseStudentRepository _courseStudentRepository;
+        private readonly ICourseRepository _courseRepository;
 
         public GetClassCourseInfosHandler(
-            ISchoolClassRepository schoolClassRepo,
-            ICourseRepository courseRepository,
-            IValidator<GetClassCourseInfosRequestDTO> validator
+            IValidator<GetClassCourseInfosRequestDTO> validator,
+            ICourseStudentRepository courseStudentRepository,
+            ICourseRepository courseRepository
             )
         {
             _validator = validator;
+            _courseStudentRepository = courseStudentRepository;
             _courseRepository = courseRepository;
-            _schoolClassRepo = schoolClassRepo;
         }
 
-        public async Task<IEnumerable<GetClassCourseInfosResponseDTO>> HandleAsync(GetClassCourseInfosRequestDTO request, CancellationToken ct = default)
+        public async Task<GetClassCourseInfosResponseDTO> HandleAsync(GetClassCourseInfosRequestDTO request, CancellationToken ct = default)
         {
             ValidationResult results = await _validator.ValidateAsync(request, ct);
 
@@ -35,15 +35,18 @@ namespace UniCore.Application.Feature.v1.ClassRoom.GetClassCourseInfos
 
             //var classInfos = await _schoolClassRepo.GetInfoByIdAsync(request.ClassID, ct);
 
-            var classInfos = await _courseRepository.GetCourseInfosByIds(request.CourseIds, ct);
+            var courseIds = await _courseStudentRepository.GetCourseIdsByStuIdAsync(request.UserID, ct);
 
-            if (classInfos is null)
+            if (courseIds is null)
             {
-                throw new NullReferenceException(nameof(classInfos));
+                throw new NullReferenceException(nameof(courseIds));
             }
 
-            return classInfos.Adapt<IEnumerable<GetClassCourseInfosResponseDTO>>();
+            var classInfos = await _courseRepository.GetCourseInfosByIdsAsync(courseIds, ct);
 
+            var classInfoList = classInfos.Adapt<IEnumerable<GetClassCourseInfosDTO>>();
+
+            return new GetClassCourseInfosResponseDTO { ClassCourseInfos = classInfoList };
         }
 
     }

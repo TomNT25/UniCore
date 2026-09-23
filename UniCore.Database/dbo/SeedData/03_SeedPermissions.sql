@@ -30,4 +30,22 @@ BEGIN
     VALUES ('perm-anc-read', 'PRM-00005', 'Announcement.Read', 'View system announcements', 'Communication', 1, 0);
 END;
 
+IF NOT EXISTS (SELECT 1 FROM [dbo].[permissions] WHERE [name] = 'Announcement.Write')
+BEGIN
+    INSERT INTO [dbo].[permissions] ([id], [code], [name], [description], [resource], [is_active], [is_deleted])
+    VALUES ('perm-anc-write', 'PRM-00006', 'Announcement.Write', 'Create and edit draft announcements', 'Communication', 1, 0);
+END;
+
+IF NOT EXISTS (SELECT 1 FROM [dbo].[permissions] WHERE [name] = 'Announcement.Publish')
+BEGIN
+    INSERT INTO [dbo].[permissions] ([id], [code], [name], [description], [resource], [is_active], [is_deleted])
+    VALUES ('perm-anc-publish', 'PRM-00007', 'Announcement.Publish', 'Publish or cancel announcements', 'Communication', 1, 0);
+END;
+
+IF NOT EXISTS (SELECT 1 FROM [dbo].[permissions] WHERE [name] = 'Announcement.Report')
+BEGIN
+    INSERT INTO [dbo].[permissions] ([id], [code], [name], [description], [resource], [is_active], [is_deleted])
+    VALUES ('perm-anc-report', 'PRM-00008', 'Announcement.Report', 'View announcement delivery reports', 'Communication', 1, 0);
+END;
+
 GO

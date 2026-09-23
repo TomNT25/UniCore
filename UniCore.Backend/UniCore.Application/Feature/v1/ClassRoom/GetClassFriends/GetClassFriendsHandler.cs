@@ -6,16 +6,16 @@ using UniCore.Application.Contract.RequestHandlerHub;
 
 namespace UniCore.Application.Feature.v1.ClassRoom.GetClassFriends
 {
-    public class GetClassFriendsHandler : IRequestHandler<GetAllStudentsRequestDTO, IEnumerable<GetAllStudentsResponseDTO>>
+    public class GetClassFriendsHandler : IRequestHandler<GetClassFriendsRequestDTO, GetClassFriendsResponseDTO>
     {
         private readonly IStudentClassRepository _studentClassRepo;
         private readonly IUserProfileRepository _profileRepository;
-        private readonly IValidator<GetAllStudentsRequestDTO> _validator;
+        private readonly IValidator<GetClassFriendsRequestDTO> _validator;
 
         public GetClassFriendsHandler(
             IStudentClassRepository studentClassRepo,
             IUserProfileRepository profileRepository,
-            IValidator<GetAllStudentsRequestDTO> validator
+            IValidator<GetClassFriendsRequestDTO> validator
             )
         {
             _studentClassRepo = studentClassRepo;
@@ -23,7 +23,7 @@ namespace UniCore.Application.Feature.v1.ClassRoom.GetClassFriends
             _profileRepository = profileRepository;
         }
 
-        public async Task<IEnumerable<GetAllStudentsResponseDTO>> HandleAsync(GetAllStudentsRequestDTO request, CancellationToken ct)
+        public async Task<GetClassFriendsResponseDTO> HandleAsync(GetClassFriendsRequestDTO request, CancellationToken ct)
         {
             ValidationResult results = await _validator.ValidateAsync(request, ct);
 
@@ -46,8 +46,8 @@ namespace UniCore.Application.Feature.v1.ClassRoom.GetClassFriends
                 throw new NullReferenceException(nameof(userInfos));
             }
 
-            return userInfos.Adapt<IEnumerable<GetAllStudentsResponseDTO>>();
-
+            var classmateLists = userInfos.Adapt<IEnumerable<GetClassFriendsDTO>>();
+            return new GetClassFriendsResponseDTO() { ClassmatesList = classmateLists };
         }
 
     }

@@ -2,8 +2,8 @@
 
 namespace UniCore.Application.Feature.v1.ClassRoom.GetClassCourseInfos
 {
-    public class GetClassCourseInfosRequestDTO : IRequest<IEnumerable<GetClassCourseInfosResponseDTO>>
+    public class GetClassCourseInfosRequestDTO : IRequest<GetClassCourseInfosResponseDTO>
     {
-        public IEnumerable<string> CourseIds { get; set; }
+        public string UserID { get; set; }
     }
 }

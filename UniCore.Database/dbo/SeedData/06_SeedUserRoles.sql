@@ -2,7 +2,7 @@
 
 DECLARE @AdminUserId VARCHAR(50) = '018f4b5a-2b3c-7d4e-8f5a-6b7c8d9e0f1a';
 
-INSERT INTO dbo.user_permissions (user_id, permission_id, assigned_at, is_active)
+INSERT INTO dbo.user_role (user_id, permission_id, assigned_at, is_active)
 SELECT
     @AdminUserId,
     p.id,

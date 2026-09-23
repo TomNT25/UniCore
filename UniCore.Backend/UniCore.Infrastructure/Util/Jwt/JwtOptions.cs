@@ -19,6 +19,7 @@ namespace UniCore.Infrastructure.Util.Jwt
         public static readonly string Scope = AuthConstants.Claims.Scope;
         public static readonly string Issuer = "iss";
         public static readonly string Audience = "aud";
+        public static readonly string Subject = "sub";
         public static readonly string CustomerId = AuthConstants.Claims.CustomerId;
         public static readonly string ClientId = AuthConstants.Claims.ClientId;
         public static readonly string UserName = ClaimTypes.Upn;

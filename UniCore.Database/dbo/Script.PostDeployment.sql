@@ -21,7 +21,13 @@ PRINT 'Executing Post-Deployment Seed Scripts...';
 :r .\SeedData\11_SeedSchedules.sql
 :r .\SeedData\12_SeedWhitelistedEmails.sql
 :r .\SeedData\13_SeedAnnouncements.sql
+:r .\SeedData\14_SeedAnnouncementStudents.sql
+:r .\SeedData\17_RedesignAnnouncementLifecycle.sql
 :r .\SeedData\14_SeedAppLogs.sql
+:r .\SeedData\18_CreateUserFaceProfiles.sql
+:r .\SeedData\19_CreateFaceAuthLogs.sql
+:r .\SeedData\20_AlterAnnouncementScopeValueLength.sql
+:r .\SeedData\21_AddAnnouncementStudentIsSent.sql
 
 PRINT 'Post-Deployment Seed Data complete.';
 GO

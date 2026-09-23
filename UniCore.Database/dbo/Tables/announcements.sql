@@ -26,9 +26,9 @@ CREATE TABLE [dbo].[announcements] (
 );
 GO
 
-CREATE NONCLUSTERED INDEX [IX_announcements_status_publish_date]
-    ON [dbo].[announcements] ([status] ASC, [publish_date] ASC);
-GO
+-- CREATE NONCLUSTERED INDEX [IX_announcements_status_publish_date]
+   -- ON [dbo].[announcements] ([status] ASC, [publish_date] ASC);
+--GO
 
 CREATE NONCLUSTERED INDEX [IX_announcements_scope]
     ON [dbo].[announcements] ([scope_type] ASC, [scope_value] ASC);

@@ -47,7 +47,7 @@ namespace UniCore.Infrastructure.Database.ModelCreating
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by").HasMaxLength(50);
                 entity.Property(e => e.UpdatedBy).HasColumnName("updated_by").HasMaxLength(50);
-
+                
                 entity.HasIndex(e => e.UserId).IsUnique().HasDatabaseName("UQ_user_profiles_user_id");
                 entity.HasIndex(e => e.PhoneNumber).HasDatabaseName("IX_user_profiles_phone_number").HasFilter("[phone_number] IS NOT NULL");
                 entity.HasIndex(e => e.FullName).HasDatabaseName("IX_user_profiles_full_name").HasFilter("[full_name] IS NOT NULL");

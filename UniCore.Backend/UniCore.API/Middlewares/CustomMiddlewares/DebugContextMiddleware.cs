@@ -34,7 +34,7 @@ namespace UniCore.API.Middlewares.CustomMiddlewares
                         {
                             new Claim(ClaimType.UserName, "admin@UniCore.com"),
                             new Claim(ClaimType.Email, "admin@UniCore.com"),
-                            new Claim(ClaimType.UserObjectId, "018f4b5a-2b3c-7d4e-8f5a-6b7c8d9e0f1a"),
+                            new Claim(ClaimType.UserObjectId, "01A0C2D3-12AD-7947-8D56-6AADE040CC88"),
                             new Claim(ClaimType.DisplayName, "System Administrator"),
                             new Claim(ClaimType.Role, "Admin"),
                             new Claim(ClaimType.CustomerId, ClaimType.CustomerId),

@@ -4,6 +4,7 @@ namespace UniCore.Application.Contract.Repository.Enitity.v1
 {
     public interface IUserMfaBackupCodeRepository : IRepository<UserMfaBackupCode>
     {
-        Task<List<UserMfaBackupCode>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default);
+        
+          Task<List<UserMfaBackupCode>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default);
     }
 }

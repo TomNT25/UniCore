@@ -2,8 +2,6 @@
 {
     public class GetClassCourseInfosResponseDTO
     {
-        public string CourseName { get; set; } = "";
-        public string CourseDescriptions { get; set; } = "";
-        public string CourseLecturers { get; set; } = "";
+        public IEnumerable<GetClassCourseInfosDTO> ClassCourseInfos { get; set; } = [];
     }
 }

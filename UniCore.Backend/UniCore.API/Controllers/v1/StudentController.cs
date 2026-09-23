@@ -7,10 +7,13 @@ using UniCore.Application.Contract.Service.v1;
 using UniCore.Application.DTO;
 using UniCore.Application.Entity;
 using UniCore.Application.Feature.v1.Auth.Me;
+using UniCore.Application.Feature.v1.Classes.GetClasses;
 using UniCore.Application.Feature.v1.ClassRoom.GetClassCourseInfos;
 using UniCore.Application.Feature.v1.ClassRoom.GetClassFriends;
 using UniCore.Application.Feature.v1.ClassRoom.GetClassInfos;
 using UniCore.Application.Feature.v1.ClassRoom.GetCoursesStudents;
+using UniCore.Application.Feature.v1.Courses.GetAllCourses;
+using UniCore.Application.Feature.v1.Role.GetAllRole;
 using UniCore.Application.Feature.v1.User.GetUserInfo;
 using UniCore.Application.Service.v1;
 using UniCore.Helper.Constant;
@@ -31,7 +34,7 @@ namespace UniCore.API.Controllers.v1
         }
 
         /// <summary>
-        /// Get Student's Profile
+        /// Get Student's Profile, using UserId
         /// </summary>
         [Authorize]
         [HttpGet("profile")]
@@ -66,10 +69,10 @@ namespace UniCore.API.Controllers.v1
 
 
         /// <summary>
-        /// Get Class's Info
+        /// Get Class's Info, using UserId
         /// </summary>
         [Authorize]
-        [HttpGet("class")]
+        [HttpGet("my-class")]
         [ProducesResponseType(typeof(BaseAPIResponse<GetClassInfoResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -111,21 +114,21 @@ namespace UniCore.API.Controllers.v1
         }
 
         /// <summary>
-        /// Get same classmates info
+        /// Get same classmates info, using UserId
         /// </summary>
         [Authorize]
-        [HttpGet("class/classmates")]
-        [ProducesResponseType(typeof(BaseAPIResponse<IEnumerable<GetAllStudentsResponseDTO>>), StatusCodes.Status200OK)]
+        [HttpGet("my-class/classmates")]
+        [ProducesResponseType(typeof(BaseAPIResponse<GetClassFriendsResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BaseAPIResponse<IEnumerable<GetAllStudentsResponseDTO>>>> GetClassmates(
+        public async Task<ActionResult<BaseAPIResponse<GetClassFriendsResponseDTO>>> GetClassmates(
             [FromQuery] string? classId,
             CancellationToken ct = default)
         {
             if (string.IsNullOrEmpty(classId))
             {
                 var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
-                return BadRequestResponse<IEnumerable<GetAllStudentsResponseDTO>>(errMessage);
+                return BadRequestResponse<GetClassFriendsResponseDTO>(errMessage);
             }
 
             var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
@@ -136,105 +139,132 @@ namespace UniCore.API.Controllers.v1
             if (string.IsNullOrEmpty(userId))
             {
                 var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
-                return UnauthorizedResponse<IEnumerable<GetAllStudentsResponseDTO>>(errMessage);
+                return UnauthorizedResponse<GetClassFriendsResponseDTO>(errMessage);
             }
 
-            var input = new GetAllStudentsRequestDTO { ClassID = classId, UserID = userId };
+            var input = new GetClassFriendsRequestDTO { ClassID = classId, UserID = userId };
 
             var result = await _studentService.GetClassmateListAsync(input, ct);
             if (result == null)
             {
                 var notFoundMessage = _localizer.GetString(MessageConstants.Auth.UserNotFound);
-                return NotFoundResponse<IEnumerable<GetAllStudentsResponseDTO>>(notFoundMessage);
+                return NotFoundResponse<GetClassFriendsResponseDTO>(notFoundMessage);
             }
 
             var successMessage = _localizer.GetString(MessageConstants.Auth.GetMeSuccess);
-            return OkResponse<IEnumerable<GetAllStudentsResponseDTO>>(result, successMessage);
+            return OkResponse<GetClassFriendsResponseDTO>(result, successMessage);
 
         }
 
 
         /// <summary>
-        /// Get course's info
+        /// Get Student course's personal info, using UserId
         /// </summary>
-        //[Authorize]
-        //[HttpGet("course")]
-        //[ProducesResponseType(typeof(BaseAPIResponse<IEnumerable<GetCoursesStudentsResponseDTO>>), StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //public async Task<ActionResult<BaseAPIResponse<IEnumerable<GetCoursesStudentsResponseDTO>>>> GetStudentCoursesInfo(
-        //    [FromQuery] string? courseId,
-        //    CancellationToken ct = default)
-        //{
-        //    if (string.IsNullOrEmpty(courseId))
-        //    {
-        //        var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
-        //        return BadRequestResponse<IEnumerable<GetCoursesStudentsResponseDTO>>(errMessage);
-        //    }
+        [HttpGet("my-courses")]
+        [ProducesResponseType(typeof(BaseAPIResponse<GetCoursesStudentsResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<BaseAPIResponse<GetCoursesStudentsResponseDTO>>> GetStudentCourses(
+            CancellationToken ct = default)
+        {
 
-        //    var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
-        //     ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-        //     ?? User.FindFirst(ClaimTypes.Email)?.Value
-        //     ?? string.Empty;
+            var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
+             ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+             ?? User.FindFirst(ClaimTypes.Email)?.Value
+             ?? string.Empty;
 
-        //    if (string.IsNullOrEmpty(userId))
-        //    {
-        //        var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
-        //        return UnauthorizedResponse<IEnumerable<GetCoursesStudentsResponseDTO>>(errMessage);
-        //    }
+            if (string.IsNullOrEmpty(userId))
+            {
+                var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
+                return UnauthorizedResponse<GetCoursesStudentsResponseDTO>(errMessage);
+            }
 
-        //    var input = new GetCoursesStudentsRequestDTO { UserID = userId, CourseIDs = new List<string> { courseId } };
+            var input = new GetCoursesStudentsRequestDTO { UserID = userId };
 
-        //    var results = await _studentService.GetStudentCoursesAsync(input, ct);
-        //    if (results == null)
-        //    {
-        //        var notFoundMessage = _localizer.GetString(MessageConstants.Auth.UserNotFound);
-        //        return NotFoundResponse<IEnumerable<GetCoursesStudentsResponseDTO>>(notFoundMessage);
-        //    }
+            var results = await _studentService.GetStudentCoursesAsync(input, ct);
+            if (results is null)
+            {
+                var notFoundMessage = _localizer.GetString(MessageConstants.Auth.UserNotFound);
+                return NotFoundResponse<GetCoursesStudentsResponseDTO>(notFoundMessage);
+            }
 
-        //    var successMessage = _localizer.GetString(MessageConstants.Auth.GetMeSuccess);
-        //    return OkResponse<IEnumerable<GetCoursesStudentsResponseDTO>>(results, successMessage);
+            var successMessage = _localizer.GetString("Success");
+            return OkResponse<GetCoursesStudentsResponseDTO>(results, successMessage);
 
-        //}
+        }
 
-        //[Authorize]
-        //[HttpGet("class/courses")]
-        //[ProducesResponseType(typeof(BaseAPIResponse<IEnumerable<GetClassCourseInfosResponseDTO>>), StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //public async Task<ActionResult<BaseAPIResponse<IEnumerable<GetClassCourseInfosResponseDTO>>>> GetCoursesInfo(
-        //    [FromQuery] string? classId,
-        //    CancellationToken ct = default)
-        //{
-        //    if (string.IsNullOrEmpty(classId))
-        //    {
-        //        var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
-        //        return BadRequestResponse<IEnumerable<GetClassCourseInfosResponseDTO>>(errMessage);
-        //    }
 
-        //    var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
-        //     ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-        //     ?? User.FindFirst(ClaimTypes.Email)?.Value
-        //     ?? string.Empty;
+        /// <summary>
+        /// Get Student course's public info, using UserId
+        /// </summary>
+        [Authorize]
+        [HttpGet("my-class/courses")]
+        [ProducesResponseType(typeof(BaseAPIResponse<GetClassCourseInfosResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<BaseAPIResponse<GetClassCourseInfosResponseDTO>>> GetCoursesInfo(
+            [FromQuery] string? classId,
+            CancellationToken ct = default)
+        {
+            if (string.IsNullOrEmpty(classId))
+            {
+                var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
+                return BadRequestResponse<GetClassCourseInfosResponseDTO>(errMessage);
+            }
 
-        //    if (string.IsNullOrEmpty(userId))
-        //    {
-        //        var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
-        //        return UnauthorizedResponse<IEnumerable<GetClassCourseInfosResponseDTO>>(errMessage);
-        //    }
+            var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
+             ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+             ?? User.FindFirst(ClaimTypes.Email)?.Value
+             ?? string.Empty;
 
-        //    var input = new GetClassCourseInfosRequestDTO { CourseIds = ["a","b"] };
+            if (string.IsNullOrEmpty(userId))
+            {
+                var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
+                return UnauthorizedResponse<GetClassCourseInfosResponseDTO>(errMessage);
+            }
 
-        //    var results = await _studentService.GetCourseInfosAsync(input, ct);
-        //    if (results == null)
-        //    {
-        //        var notFoundMessage = _localizer.GetString(MessageConstants.Auth.UserNotFound);
-        //        return NotFoundResponse<IEnumerable<GetClassCourseInfosResponseDTO>>(notFoundMessage);
-        //    }
+            var input = new GetClassCourseInfosRequestDTO { UserID = userId };
 
-        //    var successMessage = _localizer.GetString(MessageConstants.Auth.GetMeSuccess);
-        //    return OkResponse<IEnumerable<GetClassCourseInfosResponseDTO>>(results, successMessage);
+            var results = await _studentService.GetCourseInfosAsync(input, ct);
+            if (results == null)
+            {
+                var notFoundMessage = _localizer.GetString(MessageConstants.Auth.UserNotFound);
+                return NotFoundResponse<GetClassCourseInfosResponseDTO>(notFoundMessage);
+            }
 
-        //}
+            var successMessage = _localizer.GetString(MessageConstants.Auth.GetMeSuccess);
+            return OkResponse<GetClassCourseInfosResponseDTO>(results, successMessage);
+
+
+        }
+
+        /// <summary>
+        /// Get all Public Courses
+        /// </summary>
+        [Authorize]
+        [HttpGet("courses")]
+        [ProducesResponseType(typeof(BaseAPIResponse<GetAllCoursesResponseDTO>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<BaseAPIResponse<GetAllCoursesResponseDTO>>> GetAllCourses([FromQuery] GetAllCoursesRequestDTO request)
+        {
+            var result = await _studentService.GetCoursesByName(request);
+            var message = _localizer.GetString(MessageConstants.Role.GetAllSuccess);
+            return OkResponse<GetAllCoursesResponseDTO>(result, message);
+        }
+
+        /// <summary>
+        /// Get all Public Classes
+        /// </summary>
+        [Authorize]
+        [HttpGet("classes")]
+        [ProducesResponseType(typeof(BaseAPIResponse<GetClassesResponseDTO>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<BaseAPIResponse<GetClassesResponseDTO>>> GetAllClassesByName([FromQuery] GetClassesRequestDTO request)
+        {
+            var result = await _studentService.GetClassesByName(request);
+            var message = _localizer.GetString(MessageConstants.Role.GetAllSuccess);
+            return OkResponse<GetClassesResponseDTO>(result, message);
+        }
+
+
+
     }
 }

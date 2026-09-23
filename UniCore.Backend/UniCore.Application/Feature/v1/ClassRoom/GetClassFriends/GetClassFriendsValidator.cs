@@ -2,9 +2,9 @@
 
 namespace UniCore.Application.Feature.v1.ClassRoom.GetClassFriends
 {
-    public class GetAllStudentsValidator : AbstractValidator<GetAllStudentsRequestDTO>
+    public class GetClassFriendsValidator : AbstractValidator<GetClassFriendsRequestDTO>
     {
-        public GetAllStudentsValidator()
+        public GetClassFriendsValidator()
         {
             RuleFor(x => x.UserID)
                 .NotEmpty()

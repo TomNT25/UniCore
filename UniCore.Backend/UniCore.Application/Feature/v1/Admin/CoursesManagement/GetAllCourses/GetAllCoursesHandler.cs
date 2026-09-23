@@ -1,9 +1,10 @@
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
 using System.Linq.Expressions;
 using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Contract.RequestHandlerHub;
-using UniCore.Application.Entity;
+using UniCore.Application.Feature.v1.Admin.CoursesManagement.GetAllCourses;
+
 
 namespace UniCore.Application.Feature.v1.Admin.CoursesManagement.GetAllCourses
 {
@@ -23,14 +24,15 @@ namespace UniCore.Application.Feature.v1.Admin.CoursesManagement.GetAllCourses
         public async Task<GetAllCoursesResponseDTO> HandleAsync(GetAllCoursesRequestDTO request, CancellationToken cancellationToken)
         {
             ValidationResult results = await _validator.ValidateAsync(request, cancellationToken);
+
             if (!results.IsValid)
             {
                 throw new ValidationException(results.Errors);
             }
 
-            Expression<Func<Course, bool>>? filter = string.IsNullOrWhiteSpace(request.SearchTerm)
-                ? (c => !c.IsDeleted)
-                : c => !c.IsDeleted && ((c.Name != null && c.Name.Contains(request.SearchTerm)) || (c.Code != null && c.Code.Contains(request.SearchTerm)));
+            Expression<Func<UniCore.Application.Entity.Course, bool>>? filter = string.IsNullOrWhiteSpace(request.SearchTerm)
+                ? null
+                : r => (r.Name != null && r.Name.Contains(request.SearchTerm)) || (r.Code != null && r.Code.Contains(request.SearchTerm));
 
             var pagedResult = await _courseRepository.GetPageNumberPaginationAsync<GetAllCoursesDTO>(
                 request,

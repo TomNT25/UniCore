@@ -6,7 +6,7 @@ using UniCore.Application.Contract.RequestHandlerHub;
 
 namespace UniCore.Application.Feature.v1.ClassRoom.GetCoursesStudents
 {
-    public class GetCoursesStudentsHandler : IRequestHandler<GetCoursesStudentsRequestDTO, IEnumerable<GetCoursesStudentsResponseDTO>>
+    public class GetCoursesStudentsHandler : IRequestHandler<GetCoursesStudentsRequestDTO, GetCoursesStudentsResponseDTO>
     {
         private readonly ICourseStudentRepository _courseStudent;
         private readonly IValidator<GetCoursesStudentsRequestDTO> _validator;
@@ -21,7 +21,7 @@ namespace UniCore.Application.Feature.v1.ClassRoom.GetCoursesStudents
             _courseStudent = courseStudent;
         }
 
-        public async Task<IEnumerable<GetCoursesStudentsResponseDTO>> HandleAsync(GetCoursesStudentsRequestDTO request, CancellationToken ct = default)
+        public async Task<GetCoursesStudentsResponseDTO> HandleAsync(GetCoursesStudentsRequestDTO request, CancellationToken ct = default)
         {
             ValidationResult results = await _validator.ValidateAsync(request, ct);
 
@@ -30,14 +30,18 @@ namespace UniCore.Application.Feature.v1.ClassRoom.GetCoursesStudents
                 throw new ValidationException(results.Errors);
             }
 
-            var courseStudentInfo = await _courseStudent.GetByStuIdCourseIdsAsync(request.UserID, request.CourseIDs, ct);
+            var courseStudentInfo = await _courseStudent.GetByStuIdCourseIdsAsync(request.UserID, request.CourseIDs,ct);
 
             if (courseStudentInfo is null)
             {
                 throw new NullReferenceException(nameof(courseStudentInfo));
             }
 
-            return courseStudentInfo.Adapt<IEnumerable<GetCoursesStudentsResponseDTO>>();
+            var result = courseStudentInfo.Adapt<IEnumerable<GetCoursesStudentDTO>>();
+            return new GetCoursesStudentsResponseDTO()
+            {
+                courseStudentList = result
+            };
 
         }
 

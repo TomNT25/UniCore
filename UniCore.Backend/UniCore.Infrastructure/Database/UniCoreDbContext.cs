@@ -36,6 +36,9 @@ namespace UniCore.Infrastructure.Database
         public DbSet<AnnouncementStudent> AnnouncementStudents { get; set; }
         public DbSet<AnnouncementEmailLog> AnnouncementEmailLogs { get; set; }
 
+        public DbSet<UserFaceProfile> UserFaceProfiles { get; set; }
+        public DbSet<FaceAuthLog> FaceAuthLogs { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             UserModelCreating.CreateModel(modelBuilder);
@@ -59,10 +62,11 @@ namespace UniCore.Infrastructure.Database
             CourseStudentModelCreating.CreateModel(modelBuilder);
             ScheduleModelCreating.CreateModel(modelBuilder);
             WhitelistedEmailModelCreating.CreateModel(modelBuilder);
-
             AnnouncementModelCreating.CreateModel(modelBuilder);
             AnnouncementStudentModelCreating.CreateModel(modelBuilder);
             AnnouncementEmailLogModelCreating.CreateModel(modelBuilder);
+            UserFaceProfileModelCreating.CreateModel(modelBuilder);
+            FaceAuthLogModelCreating.CreateModel(modelBuilder);
 
             base.OnModelCreating(modelBuilder);
         }

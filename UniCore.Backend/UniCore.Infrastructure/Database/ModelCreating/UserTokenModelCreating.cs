@@ -49,7 +49,7 @@ namespace UniCore.Infrastructure.Database.ModelCreating
 
                 entity.HasIndex(e => e.ExpiresAt)
                     .HasDatabaseName("IX_user_tokens_expires_at");
-
+                    
                 entity.HasOne(e => e.User)
                     .WithMany(u => u.UserTokens)
                     .HasForeignKey(e => e.UserId)

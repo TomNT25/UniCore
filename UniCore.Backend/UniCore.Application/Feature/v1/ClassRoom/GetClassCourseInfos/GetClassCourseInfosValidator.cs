@@ -6,7 +6,7 @@ namespace UniCore.Application.Feature.v1.ClassRoom.GetClassCourseInfos
     {
         public GetClassCourseInfosValidator()
         {
-            RuleFor(x => x.CourseIds)
+            RuleFor(x => x.UserID)
                 .NotEmpty()
                 .WithMessage("Please specify a User ID");
             

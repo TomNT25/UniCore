@@ -17,7 +17,7 @@ using UniCore.Helper.Localization;
 namespace UniCore.API.Controllers.v1
 {
     [ApiVersion("1.0")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [Route("api/v{version:apiVersion}/permissions")]
     public class PermissionController : BaseController
     {

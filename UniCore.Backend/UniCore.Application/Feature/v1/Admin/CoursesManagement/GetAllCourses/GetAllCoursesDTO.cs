@@ -1,4 +1,4 @@
-namespace UniCore.Application.Feature.v1.Admin.CoursesManagement.GetAllCourses
+﻿namespace UniCore.Application.Feature.v1.Admin.CoursesManagement.GetAllCourses
 {
     public class GetAllCoursesDTO
     {

@@ -98,6 +98,8 @@
     <Build Include="dbo\Triggers\trg_whitelisted_emails_auto_code.sql" />
     <Build Include="dbo\Triggers\trg_roles_auto_code.sql" />
     <Build Include="dbo\Triggers\trg_permissions_auto_code.sql" />
+    <Build Include="dbo\Tables\user_face_profiles.sql" />
+    <Build Include="dbo\Tables\face_auth_logs.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dbo\SeedData\01_SeedRoles.sql" />
@@ -113,6 +115,14 @@
     <None Include="dbo\SeedData\12_SeedWhitelistedEmails.sql" />
     <None Include="dbo\SeedData\13_SeedAnnouncements.sql" />
     <None Include="dbo\SeedData\14_SeedAppLogs.sql" />
+    <None Include="dbo\SeedData\14_SeedAnnouncementStudents.sql" />
+    <None Include="dbo\SeedData\15_AnnouncementPhase1_Manual.sql" />
+    <None Include="dbo\SeedData\16_MigrateAnnouncementScopes.sql" />
+    <None Include="dbo\SeedData\17_RedesignAnnouncementLifecycle.sql" />
+    <None Include="dbo\SeedData\18_CreateUserFaceProfiles.sql" />
+    <None Include="dbo\SeedData\19_CreateFaceAuthLogs.sql" />
+    <None Include="dbo\SeedData\20_AlterAnnouncementScopeValueLength.sql" />
+    <None Include="dbo\SeedData\21_AddAnnouncementStudentIsSent.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="dbo\Script.PostDeployment.sql" />

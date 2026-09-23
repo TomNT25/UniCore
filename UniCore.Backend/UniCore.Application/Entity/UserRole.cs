@@ -13,4 +13,3 @@ public class UserRole
     public virtual User User { get; set; } = null!;
     public virtual Role Role { get; set; } = null!;
 }
-

@@ -36,7 +36,7 @@ namespace UniCore.Infrastructure.Util
             var claims = new List<Claim>
             {
                 new Claim(ClaimType.UserName, user.Username),
-                // new Claim(ClaimType.Subject, user.Code),
+                new Claim(ClaimType.Subject, user.Code),
                 new Claim(ClaimType.CustomerId, ClaimType.CustomerId),
                 new Claim(ClaimType.Office365TenantId, ClaimType.Office365TenantId),
                 new Claim(ClaimType.Organization, ClaimType.Organization),

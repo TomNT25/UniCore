@@ -8,12 +8,13 @@ public class Announcement
     public string? Description { get; set; }
     public string Content { get; set; } = string.Empty;
     public string Type { get; set; } = "NORMAL";
-    public string Status { get; set; } = "DRAFT";
-    public string ScopeType { get; set; } = "ALL";
+    /// <summary>Cached value; API status is always computed from PublishDate/ExpiredDate.</summary>
+    public string Status { get; set; } = "UPCOMING";
+    public string ScopeType { get; set; } = "PUBLIC";
     public string? ScopeValue { get; set; }
-    public bool RequireAcknowledgement { get; set; } = false;
-    public DateTime? PublishDate { get; set; }
-    public DateTime? ExpiredDate { get; set; }
+    public bool RequireAcknowledgement { get; set; }
+    public DateTime PublishDate { get; set; }
+    public DateTime ExpiredDate { get; set; }
     public int? RecipientCount { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
