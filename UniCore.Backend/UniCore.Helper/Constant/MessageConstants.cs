@@ -87,6 +87,22 @@ namespace UniCore.Helper.Constant
             public const string ProfileNotFound = "Admin.ProfileNotFound";
             public const string EmailAlreadyExists = "Admin.EmailAlreadyExists";
             public const string UsernameAlreadyExists = "Admin.UsernameAlreadyExists";
+            public const string GetAllStudentsSuccess = "Admin.GetAllStudentsSuccess";
+            public const string GetAllCoursesSuccess = "Admin.GetAllCoursesSuccess";
+            public const string GetCourseByIdSuccess = "Admin.GetCourseByIdSuccess";
+            public const string CreateCourseSuccess = "Admin.CreateCourseSuccess";
+            public const string UpdateCourseSuccess = "Admin.UpdateCourseSuccess";
+            public const string DeleteCourseSuccess = "Admin.DeleteCourseSuccess";
+            public const string UpdateCourseStatusSuccess = "Admin.UpdateCourseStatusSuccess";
+            public const string CourseNotFound = "Admin.CourseNotFound";
+            public const string CourseCodeAlreadyExists = "Admin.CourseCodeAlreadyExists";
+            public const string DepartmentNotFound = "Admin.DepartmentNotFound";
+            public const string GetAllAuditLogsSuccess = "Admin.GetAllAuditLogsSuccess";
+            public const string GetAuditLogByIdSuccess = "Admin.GetAuditLogByIdSuccess";
+            public const string CreateAuditLogSuccess = "Admin.CreateAuditLogSuccess";
+            public const string UpdateAuditLogSuccess = "Admin.UpdateAuditLogSuccess";
+            public const string DeleteAuditLogSuccess = "Admin.DeleteAuditLogSuccess";
+            public const string AuditLogNotFound = "Admin.AuditLogNotFound";
         }
 
         public static class System

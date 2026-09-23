@@ -24,5 +24,19 @@ namespace UniCore.Infrastructure.Repository.V1
 
             return results;
         }
+
+        public async Task<Course?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet
+                .Include(c => c.Department)
+                .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, cancellationToken);
+        }
+
+        public async Task<Course?> GetByCodeAsync(string code, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet
+                .Include(c => c.Department)
+                .FirstOrDefaultAsync(c => c.Code == code && !c.IsDeleted, cancellationToken);
+        }
     }
 }

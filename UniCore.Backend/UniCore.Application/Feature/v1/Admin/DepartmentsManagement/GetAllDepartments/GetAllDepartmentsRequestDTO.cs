@@ -1,7 +1,7 @@
-﻿using UniCore.Application.Contract.RequestHandlerHub;
+using UniCore.Application.Contract.RequestHandlerHub;
 using UniCore.Application.DTO;
 
-namespace UniCore.Application.Feature.v1.Admin.StudentsManagement.GetAllDepartments
+namespace UniCore.Application.Feature.v1.Admin.DepartmentsManagement.GetAllDepartments
 {
     public class GetAllDepartmentsRequestDTO : PageNumberPaginationRequest, IRequest<GetAllDepartmentsResponseDTO>
     {

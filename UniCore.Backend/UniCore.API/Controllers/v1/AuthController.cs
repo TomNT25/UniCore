@@ -54,8 +54,8 @@ namespace Project_Structure_UniCore.Controllers.v1
                 new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = false,
-                    SameSite = SameSiteMode.Lax,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
                     Expires = DateTimeOffset.UtcNow.AddDays(result.RefreshTokenExpire),
                     Path = "/api/v1/auth",
                     IsEssential = true
@@ -73,19 +73,19 @@ namespace Project_Structure_UniCore.Controllers.v1
         [ProducesResponseType(typeof(BaseAPIResponse<RefreshTokenResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<BaseAPIResponse<RefreshTokenResponseDTO>>> RefreshToken()
+        public async Task<ActionResult<BaseAPIResponse<RefreshTokenResponseDTO>>> RefreshToken([FromBody] RefreshTokenRequestDTO request)
         {
-            var refreshToken = Request.Cookies["UniCore_RefreshToken"];
+            // var refreshToken = Request.Cookies["UniCore_RefreshToken"];
 
-            if (string.IsNullOrEmpty(refreshToken))
-            {
-                return UnauthorizedResponse<RefreshTokenResponseDTO>("Refresh token is missing.");
-            }
+            // if (string.IsNullOrEmpty(refreshToken))
+            // {
+            //     return UnauthorizedResponse<RefreshTokenResponseDTO>("Refresh token is missing.");
+            // }
 
-            var request = new RefreshTokenRequestDTO
-            {
-                RefreshToken = refreshToken
-            };
+            // var request = new RefreshTokenRequestDTO
+            // {
+            //     RefreshToken = refreshToken
+            // };
             var result = await _authService.RefreshTokenAsync(request);
             var message = _localizer.GetString(MessageConstants.Auth.RefreshTokenSuccess);
             return OkResponse<RefreshTokenResponseDTO>(result, message);
@@ -115,15 +115,15 @@ namespace Project_Structure_UniCore.Controllers.v1
         {
             var req = request ?? new LogoutRequestDTO();
             var result = await _authService.LogoutAsync(req);
-            Response.Cookies.Delete(
-                "UniCore_RefreshToken",
-                new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    Path = "/api/v1/auth",
-                }
-            );
+            // Response.Cookies.Delete(
+            //     "UniCore_RefreshToken",
+            //     new CookieOptions
+            //     {
+            //         HttpOnly = true,
+            //         Secure = true,
+            //         Path = "/api/v1/auth",
+            //     }
+            // );
             var message = _localizer.GetString(MessageConstants.Auth.LogoutSuccess);
             return OkResponse<LogoutResponseDTO>(result, message);
         }

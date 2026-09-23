@@ -1,4 +1,5 @@
 using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Entity;
 using UniCore.Infrastructure.Database;
@@ -10,6 +11,11 @@ namespace UniCore.Infrastructure.Repository.V1
     {
         public AppLogRepository(UniCoreDbContext dbContext, IMapper mapper) : base(dbContext, mapper)
         {
+        }
+
+        public async Task<AppLog?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet.FirstOrDefaultAsync(l => l.Id == id, cancellationToken);
         }
     }
 }

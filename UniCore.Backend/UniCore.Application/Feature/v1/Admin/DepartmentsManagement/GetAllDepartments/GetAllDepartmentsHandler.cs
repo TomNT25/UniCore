@@ -1,11 +1,11 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using System.Linq.Expressions;
 using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Contract.RequestHandlerHub;
+using UniCore.Application.Entity;
 
-
-namespace UniCore.Application.Feature.v1.Admin.StudentsManagement.GetAllDepartments
+namespace UniCore.Application.Feature.v1.Admin.DepartmentsManagement.GetAllDepartments
 {
     public class GetAllDepartmentsHandler : IRequestHandler<GetAllDepartmentsRequestDTO, GetAllDepartmentsResponseDTO>
     {
@@ -23,13 +23,12 @@ namespace UniCore.Application.Feature.v1.Admin.StudentsManagement.GetAllDepartme
         public async Task<GetAllDepartmentsResponseDTO> HandleAsync(GetAllDepartmentsRequestDTO request, CancellationToken cancellationToken)
         {
             ValidationResult results = await _validator.ValidateAsync(request, cancellationToken);
-
             if (!results.IsValid)
             {
                 throw new ValidationException(results.Errors);
             }
 
-            Expression<Func<UniCore.Application.Entity.Department, bool>>? filter = string.IsNullOrWhiteSpace(request.SearchTerm)
+            Expression<Func<Department, bool>>? filter = string.IsNullOrWhiteSpace(request.SearchTerm)
                 ? null
                 : r => (r.Name != null && r.Name.Contains(request.SearchTerm)) || (r.Code != null && r.Code.Contains(request.SearchTerm));
 

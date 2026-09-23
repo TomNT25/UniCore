@@ -91,7 +91,6 @@
     <Build Include="dbo\Functions\fn_GenerateUUIDv7.sql" />
     <Build Include="dbo\Triggers\trg_users_auto_code.sql" />
     <Build Include="dbo\Triggers\trg_departments_auto_code.sql" />
-    <Build Include="dbo\Triggers\trg_courses_auto_code.sql" />
     <Build Include="dbo\Triggers\trg_classes_auto_code.sql" />
     <Build Include="dbo\Triggers\trg_announcements_auto_code.sql" />
     <Build Include="dbo\Triggers\trg_course_students_auto_code.sql" />

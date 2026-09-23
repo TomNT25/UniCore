@@ -1,7 +1,6 @@
-﻿using UniCore.Application.DTO;
+using UniCore.Application.DTO;
 
-
-namespace UniCore.Application.Feature.v1.Admin.StudentsManagement.GetAllDepartments
+namespace UniCore.Application.Feature.v1.Admin.DepartmentsManagement.GetAllDepartments
 {
     public class GetAllDepartmentsResponseDTO : PageNumberPaginationResponse<GetAllDepartmentsDTO>
     {

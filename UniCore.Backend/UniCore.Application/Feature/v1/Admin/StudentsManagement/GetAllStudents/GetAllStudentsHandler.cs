@@ -1,11 +1,10 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using Mapster;
 using System.Linq.Expressions;
 using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Contract.RequestHandlerHub;
 using UniCore.Application.DTO.Entity;
-using UniCore.Application.Feature.v1.Role.GetAllRole;
 
 namespace UniCore.Application.Feature.v1.Admin.StudentsManagement.GetAllStudents
 {
