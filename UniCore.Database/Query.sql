@@ -25,7 +25,7 @@ IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@example.com')
 BEGIN
     INSERT INTO users (
         id, code, username, email, password_hash,
-        provider, role_id, is_active, is_email_verified, created_at, updated_at
+        provider, is_active, is_email_verified, created_at, updated_at
     )
     VALUES (
         @AdminUserId,
@@ -37,11 +37,24 @@ BEGIN
         '$2y$10$dmqs2ksXAlQHrq.hIK7nQ.5DEiUAKYW3oBFDHvOgejCLQEAJX2VJ2',
 
         'system',
-        @AdminRoleId,
         1,
         1,
         GETDATE(),
         GETDATE()
+    );
+END
+
+-- 3.1 Insert Admin User Role
+IF NOT EXISTS (SELECT 1 FROM user_roles WHERE user_id = @AdminUserId AND role_id = @AdminRoleId)
+BEGIN
+    INSERT INTO user_roles (
+        user_id, role_id, assigned_at, is_active
+    )
+    VALUES (
+        @AdminUserId,
+        @AdminRoleId,
+        GETDATE(),
+        1
     );
 END
 

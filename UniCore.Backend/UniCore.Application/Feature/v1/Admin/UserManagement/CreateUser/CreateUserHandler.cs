@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using MapsterMapper;
 using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Contract.RequestHandlerHub;
+using UniCore.Application.Contract.UnitOfWork;
 using UniCore.Application.Contract.Util;
 using UniCore.Application.DTO.Entity;
 using UniCore.Application.Entity;
@@ -16,7 +17,9 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserProfileRepository _userProfileRepository;
+        private readonly IUserRoleRepository _userRoleRepository;
         private readonly IRoleRepository _roleRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasherService _passwordHasherService;
         private readonly IMapper _mapper;
         private readonly IValidator<CreateUserRequestDTO> _validator;
@@ -25,7 +28,9 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser
         public CreateUserHandler(
             IUserRepository userRepository, 
             IUserProfileRepository userProfileRepository,
+            IUserRoleRepository userRoleRepository,
             IRoleRepository roleRepository,
+            IUnitOfWork unitOfWork,
             IPasswordHasherService passwordHasherService,
             IMapper mapper,
             IValidator<CreateUserRequestDTO> validator,
@@ -33,7 +38,9 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser
         {
             _userRepository = userRepository;
             _userProfileRepository = userProfileRepository;
+            _userRoleRepository = userRoleRepository;
             _roleRepository = roleRepository;
+            _unitOfWork = unitOfWork;
             _passwordHasherService = passwordHasherService;
             _mapper = mapper;
             _validator = validator;
@@ -82,8 +89,6 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _userRepository.AddAsync(userEntity, cancellationToken);
-
             var fullName = string.Join(" ", new[] { request.FirstName, request.LastName }.Where(s => !string.IsNullOrWhiteSpace(s)));
             var profileEntity = new UserProfile
             {
@@ -97,10 +102,34 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _userProfileRepository.AddAsync(profileEntity, cancellationToken);
+            var userRole = new UserRole
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = userId,
+                RoleId = request.RoleId,
+                AssignedAt = DateTime.UtcNow,
+                IsActive = true,
+                Role = role
+            };
+
+            using (var tx = await _unitOfWork.BeginTransactionAsync(cancellationToken))
+            {
+                try
+                {
+                    await _userRepository.AddAsync(userEntity, cancellationToken);
+                    await _userProfileRepository.AddAsync(profileEntity, cancellationToken);
+                    await _userRoleRepository.AddAsync(userRole, cancellationToken);
+                    await tx.CommitAsync(cancellationToken);
+                }
+                catch
+                {
+                    await tx.RollbackAsync(cancellationToken);
+                    throw;
+                }
+            }
 
             userEntity.UserProfile = profileEntity;
-            // userEntity.Role = role;
+            userEntity.UserRoles = new List<UserRole> { userRole };
 
             return new CreateUserResponseDTO
             {

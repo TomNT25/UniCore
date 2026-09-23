@@ -32,8 +32,9 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.GetAllUsers
                 (string.IsNullOrWhiteSpace(request.SearchTerm) ||
                     u.Username.Contains(request.SearchTerm) ||
                     u.Email.Contains(request.SearchTerm) ||
-                    (u.Code != null && u.Code.Contains(request.SearchTerm))) &&
-                (string.IsNullOrWhiteSpace(request.RoleId)) &&
+                    (u.Code != null && u.Code.Contains(request.SearchTerm)) ||
+                    (u.UserProfile != null && u.UserProfile.FullName != null && u.UserProfile.FullName.Contains(request.SearchTerm))) &&
+                (string.IsNullOrWhiteSpace(request.RoleId) || u.UserRoles.Any(ur => ur.RoleId == request.RoleId)) &&
                 (!request.IsActive.HasValue || u.IsActive == request.IsActive.Value) &&
                 (!request.IsEmailVerified.HasValue || u.IsEmailVerified == request.IsEmailVerified.Value);
 

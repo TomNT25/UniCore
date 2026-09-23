@@ -29,7 +29,15 @@ namespace UniCore.Application.MapperProfile
                         Description = up.Permission.Description,
                         Resource = up.Permission.Resource,
                     }).ToList()
-                    : new List<PermissionDTO>());
+                    : new List<PermissionDTO>())
+                .Map(dest => dest.FirstName, src => src.UserProfile != null ? src.UserProfile.FirstName : null)
+                .Map(dest => dest.LastName, src => src.UserProfile != null ? src.UserProfile.LastName : null)
+                .Map(dest => dest.PhoneNumber, src => src.UserProfile != null ? src.UserProfile.PhoneNumber : null)
+                .Map(dest => dest.AvatarUrl, src => src.UserProfile != null ? src.UserProfile.AvatarUrl : null)
+                .Map(dest => dest.AvatarMediaFileId, src => src.UserProfile != null ? src.UserProfile.AvatarMediaFileId : null)
+                .Map(dest => dest.Gender, src => src.UserProfile != null ? src.UserProfile.Gender : null)
+                .Map(dest => dest.BirthDate, src => src.UserProfile != null ? src.UserProfile.BirthDate : null)
+                .Map(dest => dest.Address, src => src.UserProfile != null ? src.UserProfile.Address : null);
 
             config.NewConfig<User, GetMeResponseDTO>()
                 .Inherits<User, UserDTO>();

@@ -16,6 +16,7 @@ namespace UniCore.Infrastructure.Repository.V1
         public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
         {
             return await _dbSet
+                .Include(e => e.UserProfile)
                 .Include(e => e.UserRoles)
                 .ThenInclude(e => e.Role)
                 .Include(e => e.UserPermissions)
@@ -26,6 +27,7 @@ namespace UniCore.Infrastructure.Repository.V1
         public async Task<User?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             return await _dbSet
+                .Include(e => e.UserProfile)
                 .Include(e => e.UserRoles)
                 .ThenInclude(e => e.Role)
                 .Include(e => e.UserPermissions)
@@ -36,6 +38,7 @@ namespace UniCore.Infrastructure.Repository.V1
         public async Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
         {
             return await _dbSet
+                .Include(e => e.UserProfile)
                 .Include(e => e.UserRoles)
                 .ThenInclude(e => e.Role)
                 .Include(e => e.UserPermissions)

@@ -19,7 +19,7 @@ using UniCore.Helper.Localization;
 namespace UniCore.API.Controllers.v1
 {
     [ApiVersion("1.0")]
-    [Authorize]
+    [Authorize(Roles = $"{DatabaseConstants.Roles.AdminName},{DatabaseConstants.Roles.AdminCode}")]
     [Route("api/v{version:apiVersion}/admin")]
     public class AdminController : BaseController
     {
@@ -39,9 +39,9 @@ namespace UniCore.API.Controllers.v1
         /// </summary>
         [HttpGet("dashboard")]
         [ProducesResponseType(typeof(BaseAPIResponse<GetDashboardOverviewResponseDTO>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<BaseAPIResponse<GetDashboardOverviewResponseDTO>>> GetDashboardOverview([FromQuery] GetDashboardOverviewRequestDTO request)
+        public async Task<ActionResult<BaseAPIResponse<GetDashboardOverviewResponseDTO>>> GetDashboardOverview([FromQuery] GetDashboardOverviewRequestDTO request, CancellationToken cancellationToken = default)
         {
-            var result = await _adminService.GetDashboardOverviewAsync(request);
+            var result = await _adminService.GetDashboardOverviewAsync(request, cancellationToken);
             var message = _localizer.GetString(MessageConstants.Admin.GetDashboardSuccess);
             return OkResponse<GetDashboardOverviewResponseDTO>(result, message);
         }
@@ -55,9 +55,9 @@ namespace UniCore.API.Controllers.v1
         /// </summary>
         [HttpGet("users")]
         [ProducesResponseType(typeof(BaseAPIResponse<GetAllUsersResponseDTO>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<BaseAPIResponse<GetAllUsersResponseDTO>>> GetAllUsers([FromQuery] GetAllUsersRequestDTO request)
+        public async Task<ActionResult<BaseAPIResponse<GetAllUsersResponseDTO>>> GetAllUsers([FromQuery] GetAllUsersRequestDTO request, CancellationToken cancellationToken = default)
         {
-            var result = await _adminService.GetAllUsersAsync(request);
+            var result = await _adminService.GetAllUsersAsync(request, cancellationToken);
             var message = _localizer.GetString(MessageConstants.Admin.GetAllUsersSuccess);
             return OkResponse<GetAllUsersResponseDTO>(result, message);
         }
@@ -68,9 +68,9 @@ namespace UniCore.API.Controllers.v1
         [HttpGet("users/{id}")]
         [ProducesResponseType(typeof(BaseAPIResponse<GetUserByIdResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BaseAPIResponse<GetUserByIdResponseDTO>>> GetUserById(string id)
+        public async Task<ActionResult<BaseAPIResponse<GetUserByIdResponseDTO>>> GetUserById(string id, CancellationToken cancellationToken = default)
         {
-            var result = await _adminService.GetUserByIdAsync(id);
+            var result = await _adminService.GetUserByIdAsync(id, cancellationToken);
             if (result.User == null)
             {
                 var notFoundMessage = _localizer.GetString(MessageConstants.Admin.UserNotFound);
@@ -87,9 +87,9 @@ namespace UniCore.API.Controllers.v1
         [HttpPost("users")]
         [ProducesResponseType(typeof(BaseAPIResponse<CreateUserResponseDTO>), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<BaseAPIResponse<CreateUserResponseDTO>>> CreateUser([FromBody] CreateUserRequestDTO request)
+        public async Task<ActionResult<BaseAPIResponse<CreateUserResponseDTO>>> CreateUser([FromBody] CreateUserRequestDTO request, CancellationToken cancellationToken = default)
         {
-            var result = await _adminService.CreateUserAsync(request);
+            var result = await _adminService.CreateUserAsync(request, cancellationToken);
             var message = _localizer.GetString(MessageConstants.Admin.CreateUserSuccess);
             return CreatedResponse<CreateUserResponseDTO>(result, message);
         }
@@ -101,10 +101,10 @@ namespace UniCore.API.Controllers.v1
         [ProducesResponseType(typeof(BaseAPIResponse<UpdateUserResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BaseAPIResponse<UpdateUserResponseDTO>>> UpdateUser(string id, [FromBody] UpdateUserRequestDTO request)
+        public async Task<ActionResult<BaseAPIResponse<UpdateUserResponseDTO>>> UpdateUser(string id, [FromBody] UpdateUserRequestDTO request, CancellationToken cancellationToken = default)
         {
             request.Id = id;
-            var result = await _adminService.UpdateUserAsync(request);
+            var result = await _adminService.UpdateUserAsync(request, cancellationToken);
             var message = _localizer.GetString(MessageConstants.Admin.UpdateUserSuccess);
             return OkResponse<UpdateUserResponseDTO>(result, message);
         }
@@ -115,9 +115,9 @@ namespace UniCore.API.Controllers.v1
         [HttpDelete("users/{id}")]
         [ProducesResponseType(typeof(BaseAPIResponse<DeleteUserResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BaseAPIResponse<DeleteUserResponseDTO>>> DeleteUser(string id)
+        public async Task<ActionResult<BaseAPIResponse<DeleteUserResponseDTO>>> DeleteUser(string id, CancellationToken cancellationToken = default)
         {
-            var result = await _adminService.DeleteUserAsync(id);
+            var result = await _adminService.DeleteUserAsync(id, cancellationToken);
             var message = _localizer.GetString(MessageConstants.Admin.DeleteUserSuccess);
             return OkResponse<DeleteUserResponseDTO>(result, message);
         }
@@ -128,10 +128,10 @@ namespace UniCore.API.Controllers.v1
         [HttpPatch("users/{id}/status")]
         [ProducesResponseType(typeof(BaseAPIResponse<UpdateUserStatusResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BaseAPIResponse<UpdateUserStatusResponseDTO>>> UpdateUserStatus(string id, [FromBody] UpdateUserStatusRequestDTO request)
+        public async Task<ActionResult<BaseAPIResponse<UpdateUserStatusResponseDTO>>> UpdateUserStatus(string id, [FromBody] UpdateUserStatusRequestDTO request, CancellationToken cancellationToken = default)
         {
             request.Id = id;
-            var result = await _adminService.UpdateUserStatusAsync(request);
+            var result = await _adminService.UpdateUserStatusAsync(request, cancellationToken);
             var message = _localizer.GetString(MessageConstants.Admin.UpdateUserStatusSuccess);
             return OkResponse<UpdateUserStatusResponseDTO>(result, message);
         }
@@ -146,9 +146,9 @@ namespace UniCore.API.Controllers.v1
         [HttpGet("users/{userId}/profile")]
         [ProducesResponseType(typeof(BaseAPIResponse<GetUserProfileResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BaseAPIResponse<GetUserProfileResponseDTO>>> GetUserProfile(string userId)
+        public async Task<ActionResult<BaseAPIResponse<GetUserProfileResponseDTO>>> GetUserProfile(string userId, CancellationToken cancellationToken = default)
         {
-            var result = await _adminService.GetUserProfileAsync(userId);
+            var result = await _adminService.GetUserProfileAsync(userId, cancellationToken);
             if (result.Profile == null)
             {
                 var notFoundMessage = _localizer.GetString(MessageConstants.Admin.ProfileNotFound);
@@ -166,10 +166,10 @@ namespace UniCore.API.Controllers.v1
         [ProducesResponseType(typeof(BaseAPIResponse<UpdateUserProfileResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BaseAPIResponse<UpdateUserProfileResponseDTO>>> UpdateUserProfile(string userId, [FromBody] UpdateUserProfileRequestDTO request)
+        public async Task<ActionResult<BaseAPIResponse<UpdateUserProfileResponseDTO>>> UpdateUserProfile(string userId, [FromBody] UpdateUserProfileRequestDTO request, CancellationToken cancellationToken = default)
         {
             request.UserId = userId;
-            var result = await _adminService.UpdateUserProfileAsync(request);
+            var result = await _adminService.UpdateUserProfileAsync(request, cancellationToken);
             var message = _localizer.GetString(MessageConstants.Admin.UpdateUserProfileSuccess);
             return OkResponse<UpdateUserProfileResponseDTO>(result, message);
         }

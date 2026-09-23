@@ -17,6 +17,7 @@ namespace UniCore.Application.Feature.v1.Auth.GoogleAuth.GoogleLogin
     public class GoogleLoginHandler : IRequestHandler<GoogleLoginRequestDTO, LoginResponseDTO>
     {
         private readonly IUserRepository _userRepository;
+        private readonly IUserRoleRepository _userRoleRepository;
         private readonly IUserProfileRepository _userProfileRepository;
         private readonly IUserExternalLoginRepository _userExternalLoginRepository;
         private readonly IRoleRepository _roleRepository;
@@ -31,6 +32,7 @@ namespace UniCore.Application.Feature.v1.Auth.GoogleAuth.GoogleLogin
 
         public GoogleLoginHandler(
             IUserRepository userRepository,
+            IUserRoleRepository userRoleRepository,
             IUserProfileRepository userProfileRepository,
             IUserExternalLoginRepository userExternalLoginRepository,
             IRoleRepository roleRepository,
@@ -44,6 +46,7 @@ namespace UniCore.Application.Feature.v1.Auth.GoogleAuth.GoogleLogin
             IJsonStringLocalizer localizer)
         {
             _userRepository = userRepository;
+            _userRoleRepository = userRoleRepository;
             _userProfileRepository = userProfileRepository;
             _userExternalLoginRepository = userExternalLoginRepository;
             _roleRepository = roleRepository;
@@ -154,8 +157,19 @@ namespace UniCore.Application.Feature.v1.Auth.GoogleAuth.GoogleLogin
                     };
                     await _userExternalLoginRepository.AddAsync(newExternal, cancellationToken);
 
+                    var userRole = new UserRole
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = newUserId,
+                        RoleId = defaultRole.Id,
+                        AssignedAt = DateTime.UtcNow,
+                        IsActive = true,
+                        Role = defaultRole
+                    };
+                    await _userRoleRepository.AddAsync(userRole, cancellationToken);
+
                     userEntity.UserProfile = profile;
-                    // userEntity.Role = defaultRole;
+                    userEntity.UserRoles = new List<UserRole> { userRole };
                 }
             }
 

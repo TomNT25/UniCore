@@ -2,6 +2,7 @@ using FluentValidation;
 using MapsterMapper;
 using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Contract.RequestHandlerHub;
+using UniCore.Application.DTO;
 using UniCore.Application.DTO.Entity;
 
 namespace UniCore.Application.Feature.v1.Admin.Dashboard.GetDashboardOverview
@@ -48,11 +49,16 @@ namespace UniCore.Application.Feature.v1.Admin.Dashboard.GetDashboardOverview
             var totalDepartments = await _departmentRepository.CountAsync(cancellationToken: cancellationToken);
             var totalCourses = await _courseRepository.CountAsync(cancellationToken: cancellationToken);
 
-            var allUsers = await _userRepository.GetAllAsync(cancellationToken);
-            var recentUsers = allUsers
-                .OrderByDescending(u => u.CreatedAt)
-                .Take(5)
-                .ToList();
+            var recentUsersPaged = await _userRepository.GetPageNumberPaginationAsync<UserDTO>(
+                new PageNumberPaginationRequest
+                {
+                    PageNumber = 1,
+                    PageSize = 5,
+                    SortColumn = "CreatedAt",
+                    SortDescending = true
+                },
+                filter: null,
+                cancellationToken: cancellationToken);
 
             return new GetDashboardOverviewResponseDTO
             {
@@ -63,7 +69,7 @@ namespace UniCore.Application.Feature.v1.Admin.Dashboard.GetDashboardOverview
                 TotalRoles = totalRoles,
                 TotalDepartments = totalDepartments,
                 TotalCourses = totalCourses,
-                RecentUsers = _mapper.Map<List<UserDTO>>(recentUsers)
+                RecentUsers = recentUsersPaged.Items.ToList()
             };
         }
     }

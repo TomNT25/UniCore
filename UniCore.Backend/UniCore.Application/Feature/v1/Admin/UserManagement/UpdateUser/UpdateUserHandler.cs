@@ -3,7 +3,9 @@ using FluentValidation.Results;
 using MapsterMapper;
 using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Contract.RequestHandlerHub;
+using UniCore.Application.Contract.UnitOfWork;
 using UniCore.Application.DTO.Entity;
+using UniCore.Application.Entity;
 using UniCore.Helper.Constant;
 using UniCore.Helper.Localization;
 
@@ -12,20 +14,26 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.UpdateUser
     public class UpdateUserHandler : IRequestHandler<UpdateUserRequestDTO, UpdateUserResponseDTO>
     {
         private readonly IUserRepository _userRepository;
+        private readonly IUserRoleRepository _userRoleRepository;
         private readonly IRoleRepository _roleRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<UpdateUserRequestDTO> _validator;
         private readonly IJsonStringLocalizer _localizer;
 
         public UpdateUserHandler(
             IUserRepository userRepository,
+            IUserRoleRepository userRoleRepository,
             IRoleRepository roleRepository,
+            IUnitOfWork unitOfWork,
             IMapper mapper,
             IValidator<UpdateUserRequestDTO> validator,
             IJsonStringLocalizer localizer)
         {
             _userRepository = userRepository;
+            _userRoleRepository = userRoleRepository;
             _roleRepository = roleRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _validator = validator;
             _localizer = localizer;
@@ -73,8 +81,61 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.UpdateUser
             userEntity.IsEmailVerified = request.IsEmailVerified;
             userEntity.UpdatedAt = DateTime.UtcNow;
 
-            await _userRepository.UpdateAsync(userEntity, cancellationToken);
-            // userEntity.Role = role;
+            var existingUserRoles = await _userRoleRepository.GetByUserIdAsync(userEntity.Id, cancellationToken);
+            var rolesToKeepOrUpdate = new List<UserRole>();
+
+            using (var tx = await _unitOfWork.BeginTransactionAsync(cancellationToken))
+            {
+                try
+                {
+                    await _userRepository.UpdateAsync(userEntity, cancellationToken);
+
+                    var hasMatchingRole = existingUserRoles.Any(ur => ur.RoleId == request.RoleId);
+                    if (!hasMatchingRole)
+                    {
+                        foreach (var ur in existingUserRoles)
+                        {
+                            await _userRoleRepository.DeleteAsync(ur, cancellationToken);
+                        }
+
+                        var newRole = new UserRole
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            UserId = userEntity.Id,
+                            RoleId = request.RoleId,
+                            AssignedAt = DateTime.UtcNow,
+                            IsActive = true,
+                            Role = role
+                        };
+                        await _userRoleRepository.AddAsync(newRole, cancellationToken);
+                        rolesToKeepOrUpdate.Add(newRole);
+                    }
+                    else
+                    {
+                        foreach (var ur in existingUserRoles)
+                        {
+                            if (ur.RoleId == request.RoleId)
+                            {
+                                ur.Role = role;
+                                rolesToKeepOrUpdate.Add(ur);
+                            }
+                            else
+                            {
+                                await _userRoleRepository.DeleteAsync(ur, cancellationToken);
+                            }
+                        }
+                    }
+
+                    await tx.CommitAsync(cancellationToken);
+                }
+                catch
+                {
+                    await tx.RollbackAsync(cancellationToken);
+                    throw;
+                }
+            }
+
+            userEntity.UserRoles = rolesToKeepOrUpdate;
 
             return new UpdateUserResponseDTO
             {
