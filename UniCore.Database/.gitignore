@@ -1,0 +1,52 @@
+## Ignore build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build artifacts
+*.dll
+*.exe
+*.app
+*.appx
+*.apk
+*.log
+*.cache
+*.pdb
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+# Uncomment if you have NuGet Package Restore enabled
+# !packages/build/
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Publish output
+publish/

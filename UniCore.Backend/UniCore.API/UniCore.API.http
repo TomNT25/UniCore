@@ -1,0 +1,6 @@
+@Project_Structure_UniCore_HostAddress = http://localhost:5290
+
+GET {{Project_Structure_UniCore_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

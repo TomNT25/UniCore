@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>LearningManagementSystemDatabase</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{85045e02-ce3e-47bc-8e26-816a22faef47}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>LearningManagementSystemDatabase</RootNamespace>
+    <AssemblyName>LearningManagementSystemDatabase</AssemblyName>
+    <ModelCollation>1033, CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="dbo\" />
+    <Folder Include="dbo\Tables\" />
+    <Folder Include="dbo\Views\" />
+    <Folder Include="dbo\Functions\" />
+    <Folder Include="dbo\SeedData\" />
+    <Folder Include="dbo\Triggers\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\Tables\departments.sql" />
+    <Build Include="dbo\Tables\courses.sql" />
+    <Build Include="dbo\Tables\classes.sql" />
+    <Build Include="dbo\Tables\course_students.sql" />
+    <Build Include="dbo\Tables\schedules.sql" />
+    <Build Include="dbo\Tables\whitelisted_emails.sql" />
+    <Build Include="dbo\Tables\announcements.sql" />
+    <Build Include="dbo\Tables\announcement_students.sql" />
+    <Build Include="dbo\Tables\announcement_email_logs.sql" />
+    <Build Include="dbo\Tables\users.sql" />
+    <Build Include="dbo\Tables\user_profiles.sql" />
+    <Build Include="dbo\Tables\user_person_ids.sql" />
+    <Build Include="dbo\Tables\user_mfa_settings.sql" />
+    <Build Include="dbo\Tables\user_mfa_backup_codes.sql" />
+    <Build Include="dbo\Tables\user_external_logins.sql" />
+    <Build Include="dbo\Tables\user_tokens.sql" />
+    <Build Include="dbo\Tables\user_roles.sql" />
+    <Build Include="dbo\Tables\user_auth_logs.sql" />
+    <Build Include="dbo\Tables\app_logs.sql" />
+    <Build Include="dbo\Tables\user_permissions.sql" />
+    <Build Include="dbo\Tables\roles.sql" />
+    <Build Include="dbo\Tables\role_permissions.sql" />
+    <Build Include="dbo\Tables\permissions.sql" />
+    <Build Include="dbo\Views\vw_GenerateGuid.sql" />
+    <Build Include="dbo\Functions\fn_GenerateUUIDv7.sql" />
+    <Build Include="dbo\Triggers\trg_users_auto_code.sql" />
+    <Build Include="dbo\Triggers\trg_departments_auto_code.sql" />
+    <Build Include="dbo\Triggers\trg_courses_auto_code.sql" />
+    <Build Include="dbo\Triggers\trg_classes_auto_code.sql" />
+    <Build Include="dbo\Triggers\trg_announcements_auto_code.sql" />
+    <Build Include="dbo\Triggers\trg_course_students_auto_code.sql" />
+    <Build Include="dbo\Triggers\trg_schedules_auto_code.sql" />
+    <Build Include="dbo\Triggers\trg_whitelisted_emails_auto_code.sql" />
+    <Build Include="dbo\Triggers\trg_roles_auto_code.sql" />
+    <Build Include="dbo\Triggers\trg_permissions_auto_code.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dbo\SeedData\01_SeedRoles.sql" />
+    <None Include="dbo\SeedData\02_SeedPermissions.sql" />
+    <None Include="dbo\SeedData\03_SeedRolePermissions.sql" />
+    <None Include="dbo\SeedData\04_SeedDepartments.sql" />
+    <None Include="dbo\SeedData\05_SeedUsers.sql" />
+    <None Include="dbo\SeedData\06_SeedUserPermissions.sql" />
+    <None Include="dbo\SeedData\07_SeedCourses.sql" />
+    <None Include="dbo\SeedData\08_SeedClasses.sql" />
+    <None Include="dbo\SeedData\10_SeedCourseStudents.sql" />
+    <None Include="dbo\SeedData\11_SeedSchedules.sql" />
+    <None Include="dbo\SeedData\12_SeedWhitelistedEmails.sql" />
+    <None Include="dbo\SeedData\13_SeedAnnouncements.sql" />
+    <None Include="dbo\SeedData\14_SeedAppLogs.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="dbo\Script.PostDeployment.sql" />
+  </ItemGroup>
+</Project>

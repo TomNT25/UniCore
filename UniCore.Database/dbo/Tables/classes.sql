@@ -1,0 +1,27 @@
+CREATE TABLE [dbo].[classes] (
+    [id]            VARCHAR (50)   CONSTRAINT [DF_classes_id] DEFAULT ([dbo].[fn_GenerateUUIDv7]()) NOT NULL,
+    [code]          VARCHAR (50)   NULL,
+    [name]          NVARCHAR (100) NOT NULL,
+    [description]   NVARCHAR (255) NULL,
+    [department_id] VARCHAR (50)   NULL,
+    [is_active]     BIT            DEFAULT ((1)) NOT NULL,
+    [is_deleted]    BIT            DEFAULT ((0)) NOT NULL,
+    [created_at]    DATETIME2 (7)  DEFAULT (getdate()) NOT NULL,
+    [updated_at]    DATETIME2 (7)  DEFAULT (getdate()) NOT NULL,
+    [created_by]    VARCHAR (50)   NULL,
+    [updated_by]    VARCHAR (50)   NULL,
+    PRIMARY KEY CLUSTERED ([id] ASC),
+    CONSTRAINT [UQ_classes_code] UNIQUE ([code]),
+    CONSTRAINT [FK_classes_departments] FOREIGN KEY ([department_id]) REFERENCES [dbo].[departments] ([id]),
+    CONSTRAINT [FK_classes_created_by] FOREIGN KEY ([created_by]) REFERENCES [dbo].[users] ([id]),
+    CONSTRAINT [FK_classes_updated_by] FOREIGN KEY ([updated_by]) REFERENCES [dbo].[users] ([id])
+);
+GO
+
+CREATE NONCLUSTERED INDEX [IX_classes_department_id]
+    ON [dbo].[classes] ([department_id] ASC);
+GO
+
+CREATE NONCLUSTERED INDEX [IX_classes_active_deleted]
+    ON [dbo].[classes] ([is_deleted] ASC, [is_active] ASC);
+GO

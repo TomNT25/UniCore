@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/UniCore.Backend/">
+    <Project Path="UniCore.Backend/UniCore.API/UniCore.API.csproj" />
+    <Project Path="UniCore.Backend/UniCore.Application/UniCore.Application.csproj" />
+    <Project Path="UniCore.Backend/UniCore.Helper/UniCore.Helper.csproj" />
+    <Project Path="UniCore.Backend/UniCore.Infrastructure/UniCore.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/UniCore.Database/">
+    <File Path="UniCore.Database/Query.sql" />
+    <Project Path="UniCore.Database/UniCore.Database.sqlproj" Id="85045e02-ce3e-47bc-8e26-816a22faef47">
+      <Build />
+      <Deploy />
+    </Project>
+  </Folder>
+  <Project Path="UniCore.Worker/UniCore.Worker.csproj" Id="fba564d2-961f-42f5-8b3f-5948eb874227" />
+</Solution>
