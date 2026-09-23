@@ -57,6 +57,8 @@ namespace UniCore.API.Extensions
 
             services.AddRateLimitingService();
 
+            services.AddProblemDetails();
+
             services.AddHttpClient<IGoogleAuthProviderClient, GoogleAuthProviderClient>(client =>
             {
                 var baseUrl = configuration["GoogleAuthProvider:BaseUrl"] ?? "http://localhost:5005";

@@ -14,7 +14,6 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Dynamically inject connection string from appsettings.json to log4net AdoNetAppender
         CustomAdoNetAppender.ConnectionStringOverride = builder.Configuration["Database:ConnectionString"];
 
         builder.Logging.ClearProviders();
