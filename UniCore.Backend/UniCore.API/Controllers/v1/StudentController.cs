@@ -13,6 +13,8 @@ using UniCore.Application.Feature.v1.ClassRoom.GetClassFriends;
 using UniCore.Application.Feature.v1.ClassRoom.GetClassInfos;
 using UniCore.Application.Feature.v1.ClassRoom.GetCoursesStudents;
 using UniCore.Application.Feature.v1.Courses.GetAllCourses;
+using UniCore.Application.Feature.v1.Courses.GetMyCourses;
+using UniCore.Application.Feature.v1.Courses.GetMyCourses.PersonalDetails;
 using UniCore.Application.Feature.v1.Role.GetAllRole;
 using UniCore.Application.Feature.v1.User.GetUserInfo;
 using UniCore.Application.Service.v1;
@@ -265,6 +267,53 @@ namespace UniCore.API.Controllers.v1
         }
 
 
+        [Authorize]
+        [HttpGet("courses/me")]
+        [ProducesResponseType(typeof(BaseAPIResponse<GetMyCoursesResponseDTO>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<BaseAPIResponse<GetMyCoursesResponseDTO>>> GetMyCourses([FromQuery] PageNumberPaginationRequest request)
+        {
+            var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
+             ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+             ?? User.FindFirst(ClaimTypes.Email)?.Value
+             ?? string.Empty;
 
+            if (string.IsNullOrEmpty(userId))
+            {
+                var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
+                return UnauthorizedResponse<GetMyCoursesResponseDTO>(errMessage);
+            }
+
+            var input = new GetMyCoursesRequestDTO { UserID = userId };
+
+
+            var result = await _studentService.GetMyCoursesAsync(input);
+            var message = _localizer.GetString(MessageConstants.Role.GetAllSuccess);
+            return OkResponse<GetMyCoursesResponseDTO>(result, message);
+        }
+        [Authorize]
+        [HttpGet("courses/{courseId}/me")]
+        [ProducesResponseType(typeof(BaseAPIResponse<GetCourseDetailsResponseDTO>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<BaseAPIResponse<GetCourseDetailsResponseDTO>>> GetCourseDetails(
+            string courseId)
+        {
+            var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
+             ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+             ?? User.FindFirst(ClaimTypes.Email)?.Value
+             ?? string.Empty;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
+                return UnauthorizedResponse<GetCourseDetailsResponseDTO>(errMessage);
+            }
+
+            var input = new GetCourseDetailsRequestDTO { UserID = userId, CourseID = courseId };
+
+
+            var result = await _studentService.GetCourseDetailsAsync(input);
+            var message = _localizer.GetString(MessageConstants.Role.GetAllSuccess);
+            return OkResponse<GetCourseDetailsResponseDTO>(result, message);
+        }
     }
 }
+

@@ -54,8 +54,8 @@ namespace Project_Structure_UniCore.Controllers.v1
                 new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.None,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
                     Expires = DateTimeOffset.UtcNow.AddDays(result.RefreshTokenExpire),
                     Path = "/api/v1/auth",
                     IsEssential = true
@@ -115,15 +115,15 @@ namespace Project_Structure_UniCore.Controllers.v1
         {
             var req = request ?? new LogoutRequestDTO();
             var result = await _authService.LogoutAsync(req);
-            // Response.Cookies.Delete(
-            //     "UniCore_RefreshToken",
-            //     new CookieOptions
-            //     {
-            //         HttpOnly = true,
-            //         Secure = true,
-            //         Path = "/api/v1/auth",
-            //     }
-            // );
+            Response.Cookies.Delete(
+                "UniCore_RefreshToken",
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    Path = "/api/v1/auth",
+                }
+            );
             var message = _localizer.GetString(MessageConstants.Auth.LogoutSuccess);
             return OkResponse<LogoutResponseDTO>(result, message);
         }

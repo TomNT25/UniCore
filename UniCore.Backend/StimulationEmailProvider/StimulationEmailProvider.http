@@ -1,0 +1,19 @@
+@sim = http://127.0.0.1:5289
+
+### List inbox
+GET {{sim}}/email/messages?page=1&pageSize=20
+
+### Send test message
+POST {{sim}}/email/send
+Content-Type: application/json
+
+{
+  "to": "student1@unicore.edu.vn",
+  "subject": "[IMPORTANT] Manual test",
+  "body": "<p>Test from StimulationEmailProvider.http</p>",
+  "fromAddress": "noreply@unicore.local",
+  "fromDisplayName": "UniCore Announcements"
+}
+
+### Clear inbox
+DELETE {{sim}}/email/messages

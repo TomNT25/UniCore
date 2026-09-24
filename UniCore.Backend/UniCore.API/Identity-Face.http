@@ -1,0 +1,80 @@
+# Identity (CCCD OCR) + Face auth — REST Client
+# API on team VM; set @host to your API IP (e.g. 172.29.50.31:5290)
+
+@host = http://172.29.50.31:5290
+@api = {{host}}/api/v1
+
+### Login (student)
+# @name login
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "student1",
+  "password": "Password123!"
+}
+
+###
+@token = {{login.response.body.data.accessToken}}
+
+### My CCCD record
+GET {{api}}/identity/cccd
+Authorization: Bearer {{token}}
+
+### Scan CCCD front (max 10 MiB, field: image)
+POST {{api}}/identity/cccd/ocr
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="image"; filename="cccd-front.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/cccd-front.jpg
+------Boundary--
+
+### Face status
+GET {{api}}/auth/face/status
+Authorization: Bearer {{token}}
+
+### Face enroll (face_1 required; up to face_5)
+POST {{api}}/auth/face/enroll
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="face_1"; filename="face.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/face.jpg
+------Boundary--
+
+### Set PIN (6 digits) — after enroll
+POST {{api}}/auth/face/set-pin
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "pin": "123456",
+  "confirmPin": "123456"
+}
+
+### Face login (anonymous) → challenge token
+POST {{api}}/auth/face/login
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="face"; filename="face.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/face.jpg
+------Boundary--
+
+### Verify PIN → JWT
+POST {{api}}/auth/face/verify-pin
+Content-Type: application/json
+
+{
+  "challengeToken": "PASTE_FROM_LOGIN",
+  "pin": "123456"
+}

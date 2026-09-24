@@ -1,4 +1,5 @@
 ﻿using FluentValidation.Validators;
+using System.Data.SqlTypes;
 using UniCore.Application.Contract.Service.v1;
 using UniCore.Application.Feature.v1.Admin.StudentsManagement.GetAllStudents;
 using UniCore.Application.Feature.v1.Classes.GetClasses;
@@ -7,6 +8,8 @@ using UniCore.Application.Feature.v1.ClassRoom.GetClassFriends;
 using UniCore.Application.Feature.v1.ClassRoom.GetClassInfos;
 using UniCore.Application.Feature.v1.ClassRoom.GetCoursesStudents;
 using UniCore.Application.Feature.v1.Courses.GetAllCourses;
+using UniCore.Application.Feature.v1.Courses.GetMyCourses;
+using UniCore.Application.Feature.v1.Courses.GetMyCourses.PersonalDetails;
 using UniCore.Application.Feature.v1.User.GetUserInfo;
 
 
@@ -21,6 +24,8 @@ namespace UniCore.Application.Service.v1
         private readonly GetCoursesStudentsHandler _getCoursesStudentsHandler;
         private readonly GetAllCoursesNameHandler _getAllCoursesNameHandler;
         private readonly GetClassesByNamesHandler _getAllClassesByNamesHandler;
+        private readonly GetMyCoursesHandler _getMyCoursesHandler;
+        private readonly GetCourseDetailsHandler _getCourseDetailsHandler;
     
 
         public StudentService(
@@ -31,6 +36,8 @@ namespace UniCore.Application.Service.v1
             GetCoursesStudentsHandler getCoursesStudentsHandler,
             GetAllCoursesNameHandler getAllCoursesNameHandler,
             GetClassesByNamesHandler getAllClassesByNamesHandler
+            GetMyCoursesHandler getMyCoursesHandler,
+            GetCourseDetailsHandler getCourseDetailsHandler
             )
         {
             _getUserInfoHandler = getUserInfoHandler;
@@ -40,6 +47,8 @@ namespace UniCore.Application.Service.v1
             _getCoursesStudentsHandler = getCoursesStudentsHandler;
             _getAllCoursesNameHandler = getAllCoursesNameHandler;
             _getAllClassesByNamesHandler = getAllClassesByNamesHandler;
+            _getMyCoursesHandler = getMyCoursesHandler;
+            _getCourseDetailsHandler = getCourseDetailsHandler;
         }
 
         public async Task<GetUserInfoResponseDTO> GetUserInfoAsync(GetUserInfoRequestDTO request, CancellationToken cancellationToken = default)
@@ -62,12 +71,17 @@ namespace UniCore.Application.Service.v1
 
         public async Task<GetClassesResponseDTO> GetClassesByName(GetClassesRequestDTO request, CancellationToken cancellationToken = default) 
             => await _getAllClassesByNamesHandler.HandleAsync(request, cancellationToken);
-
         public Task<GetAllStudentsResponseDTO> GetClassmateListAsync(GetAllStudentsRequestDTO request, CancellationToken ct = default)
         {
             throw new NotImplementedException();
         }
 
-    }
+        public async Task<GetMyCoursesResponseDTO> GetMyCoursesAsync(GetMyCoursesRequestDTO request, 
+            CancellationToken cancellationToken = default)
+            => await _getMyCoursesHandler.HandleAsync(request, cancellationToken);
 
+        public async Task<GetCourseDetailsResponseDTO> GetCourseDetailsAsync(GetCourseDetailsRequestDTO request,
+            CancellationToken cancellationToken = default)
+            => await _getCourseDetailsHandler.HandleAsync(request, cancellationToken);
+    }
 }
