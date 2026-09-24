@@ -82,8 +82,6 @@ namespace UniCore.Application.Feature.v1.Auth.RefreshToken
             return new RefreshTokenResponseDTO
             {
                 AccessToken = newAccessToken,
-                RefreshToken = newRefreshToken,
-                ExpiresIn = tokenExpireMinutes
             };
         }
     }

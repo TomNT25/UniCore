@@ -5,6 +5,8 @@ namespace UniCore.Application.Feature.v1.Auth.Login
     public class LoginResponseDTO
     {
         public string AccessToken { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
+        public int RefreshTokenExpire { get; set; }
         public UserLoginResponseDTO User { get; set; } = default!;
     }
 
