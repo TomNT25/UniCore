@@ -69,6 +69,15 @@ namespace UniCore.Infrastructure.Database
             FaceAuthLogModelCreating.CreateModel(modelBuilder);
 
             base.OnModelCreating(modelBuilder);
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes().ToList())
+            {
+                var tableName = entityType.GetTableName();
+                if (!string.IsNullOrEmpty(tableName) && !entityType.IsKeyless)
+                {
+                    modelBuilder.Entity(entityType.ClrType).ToTable(tb => tb.UseSqlOutputClause(false));
+                }
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using UniCore.Application.Contract.External;
 using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Contract.RequestHandlerHub;
+using UniCore.Application.Contract.UnitOfWork;
 using UniCore.Application.Contract.Util;
 using UniCore.Application.DTO.Entity;
 using UniCore.Application.Entity;
@@ -11,6 +12,7 @@ using UniCore.Application.Feature.v1.Auth.Login;
 using UniCore.Helper.Constant;
 using UniCore.Helper.Localization;
 using UserEntity = UniCore.Application.Entity.User;
+using RoleEntity = UniCore.Application.Entity.Role;
 
 namespace UniCore.Application.Feature.v1.Auth.GoogleAuth.GoogleLogin
 {
@@ -29,6 +31,7 @@ namespace UniCore.Application.Feature.v1.Auth.GoogleAuth.GoogleLogin
         private readonly IConfiguration _configuration;
         private readonly IValidator<GoogleLoginRequestDTO> _validator;
         private readonly IJsonStringLocalizer _localizer;
+        private readonly IUnitOfWork _unitOfWork;
 
         public GoogleLoginHandler(
             IUserRepository userRepository,
@@ -43,7 +46,8 @@ namespace UniCore.Application.Feature.v1.Auth.GoogleAuth.GoogleLogin
             IMapper mapper,
             IConfiguration configuration,
             IValidator<GoogleLoginRequestDTO> validator,
-            IJsonStringLocalizer localizer)
+            IJsonStringLocalizer localizer,
+            IUnitOfWork unitOfWork)
         {
             _userRepository = userRepository;
             _userRoleRepository = userRoleRepository;
@@ -58,6 +62,7 @@ namespace UniCore.Application.Feature.v1.Auth.GoogleAuth.GoogleLogin
             _configuration = configuration;
             _validator = validator;
             _localizer = localizer;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<LoginResponseDTO> HandleAsync(GoogleLoginRequestDTO request, CancellationToken cancellationToken)
@@ -87,15 +92,68 @@ namespace UniCore.Application.Feature.v1.Auth.GoogleAuth.GoogleLogin
             if (userEntity == null)
             {
                 userEntity = await _userRepository.GetByEmailAsync(googleUserInfo.Email, cancellationToken);
-                if (userEntity != null)
+            }
+
+            if (userEntity != null && !userEntity.IsActive)
+            {
+                var errMessage = _localizer.GetString(MessageConstants.System.UnauthorizedAccess);
+                throw new UnauthorizedAccessException(errMessage);
+            }
+
+            RoleEntity? defaultRole = null;
+            if (userEntity == null)
+            {
+                defaultRole = await _roleRepository.GetDefaultRoleAsync(cancellationToken);
+                if (defaultRole == null)
                 {
-                    // Link external Google login to existing user account
-                    if (externalLogin == null)
+                    var roleMsg = _localizer.GetString(MessageConstants.Auth.DefaultRoleNotFound);
+                    throw new InvalidOperationException(roleMsg);
+                }
+            }
+
+            var tokenExpireMinutes = int.Parse(_configuration[AuthConstants.JwtConfig.TokenExpireMinutesPath] ?? AuthConstants.JwtConfig.DefaultTokenExpireMinutes.ToString());
+            var refreshTokenExpireDays = int.Parse(_configuration[AuthConstants.JwtConfig.RefreshTokenExpireDaysPath] ?? AuthConstants.JwtConfig.DefaultRefreshTokenExpireDays.ToString());
+
+            string accessToken;
+            string refreshToken;
+            UserDTO userDto;
+
+            using (var tx = await _unitOfWork.BeginTransactionAsync(cancellationToken))
+            {
+                try
+                {
+                    if (userEntity == null)
                     {
+                        var newUserId = Guid.NewGuid().ToString();
+                        userEntity = new UserEntity
+                        {
+                            Id = newUserId,
+                            Username = googleUserInfo.Email,
+                            Email = googleUserInfo.Email,
+                            PasswordHash = _passwordHasherService.HashPassword(Guid.NewGuid().ToString()),
+                            Provider = "google",
+                            IsActive = true,
+                            IsEmailVerified = true,
+                            EmailVerifiedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        await _userRepository.AddAsync(userEntity, cancellationToken);
+
+                        var profile = new UserProfile
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            UserId = newUserId,
+                            FullName = googleUserInfo.Name,
+                            AvatarUrl = googleUserInfo.Picture,
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        await _userProfileRepository.AddAsync(profile, cancellationToken);
+
                         var newExternal = new UserExternalLogin
                         {
                             Id = Guid.NewGuid().ToString(),
-                            UserId = userEntity.Id,
+                            UserId = newUserId,
                             Provider = "google",
                             ProviderUserId = googleUserInfo.Sub,
                             ProviderEmail = googleUserInfo.Email,
@@ -105,96 +163,76 @@ namespace UniCore.Application.Feature.v1.Auth.GoogleAuth.GoogleLogin
                             CreatedAt = DateTime.UtcNow
                         };
                         await _userExternalLoginRepository.AddAsync(newExternal, cancellationToken);
+
+                        var userRole = new UserRole
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            UserId = newUserId,
+                            RoleId = defaultRole!.Id,
+                            AssignedAt = DateTime.UtcNow,
+                            IsActive = true,
+                            Role = defaultRole
+                        };
+                        await _userRoleRepository.AddAsync(userRole, cancellationToken);
+
+                        userEntity.UserProfile = profile;
+                        userEntity.UserRoles = new List<UserRole> { userRole };
                     }
+                    else
+                    {
+                        // Link external Google login to existing user account if not already linked
+                        if (externalLogin == null)
+                        {
+                            var newExternal = new UserExternalLogin
+                            {
+                                Id = Guid.NewGuid().ToString(),
+                                UserId = userEntity.Id,
+                                Provider = "google",
+                                ProviderUserId = googleUserInfo.Sub,
+                                ProviderEmail = googleUserInfo.Email,
+                                ProviderDisplayName = googleUserInfo.Name,
+                                AvatarUrl = googleUserInfo.Picture,
+                                IsActive = true,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            await _userExternalLoginRepository.AddAsync(newExternal, cancellationToken);
+                        }
+                    }
+
+                    userDto = _mapper.Map<UserDTO>(userEntity);
+                    if (string.IsNullOrWhiteSpace(userDto.Code))
+                    {
+                        userDto.Code = !string.IsNullOrWhiteSpace(userEntity.Code) ? userEntity.Code : userEntity.Id;
+                    }
+
+                    accessToken = _jwtService.GenerateAccessToken(userDto);
+                    refreshToken = _jwtService.GenerateRefreshToken();
+
+                    var userToken = new UserToken
+                    {
+                        UserId = userDto.Id,
+                        RefreshToken = refreshToken,
+                        IssuedAt = DateTime.UtcNow,
+                        ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
+                        IsActive = true
+                    };
+                    await _userTokenRepository.AddAsync(userToken, cancellationToken);
+
+                    await tx.CommitAsync(cancellationToken);
                 }
-                else
+                catch
                 {
-                    // Create brand new User with Google provider
-                    var defaultRole = await _roleRepository.GetDefaultRoleAsync(cancellationToken);
-                    if (defaultRole == null)
-                    {
-                        var roleMsg = _localizer.GetString(MessageConstants.Auth.DefaultRoleNotFound);
-                        throw new InvalidOperationException(roleMsg);
-                    }
-
-                    var newUserId = Guid.NewGuid().ToString();
-                    userEntity = new UserEntity
-                    {
-                        Id = newUserId,
-                        Username = googleUserInfo.Email,
-                        Email = googleUserInfo.Email,
-                        PasswordHash = _passwordHasherService.HashPassword(Guid.NewGuid().ToString()),
-                        Provider = "google",
-                        IsActive = true,
-                        IsEmailVerified = true,
-                        EmailVerifiedAt = DateTime.UtcNow,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    await _userRepository.AddAsync(userEntity, cancellationToken);
-
-                    var profile = new UserProfile
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        UserId = newUserId,
-                        FullName = googleUserInfo.Name,
-                        AvatarUrl = googleUserInfo.Picture,
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    await _userProfileRepository.AddAsync(profile, cancellationToken);
-
-                    var newExternal = new UserExternalLogin
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        UserId = newUserId,
-                        Provider = "google",
-                        ProviderUserId = googleUserInfo.Sub,
-                        ProviderEmail = googleUserInfo.Email,
-                        ProviderDisplayName = googleUserInfo.Name,
-                        AvatarUrl = googleUserInfo.Picture,
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    await _userExternalLoginRepository.AddAsync(newExternal, cancellationToken);
-
-                    var userRole = new UserRole
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        UserId = newUserId,
-                        RoleId = defaultRole.Id,
-                        AssignedAt = DateTime.UtcNow,
-                        IsActive = true,
-                        Role = defaultRole
-                    };
-                    await _userRoleRepository.AddAsync(userRole, cancellationToken);
-
-                    userEntity.UserProfile = profile;
-                    userEntity.UserRoles = new List<UserRole> { userRole };
+                    await tx.RollbackAsync(cancellationToken);
+                    throw;
                 }
             }
-
-            var userDto = _mapper.Map<UserDTO>(userEntity);
-            var accessToken = _jwtService.GenerateAccessToken(userDto);
-            var refreshToken = _jwtService.GenerateRefreshToken();
-
-            var tokenExpireMinutes = int.Parse(_configuration[AuthConstants.JwtConfig.TokenExpireMinutesPath] ?? AuthConstants.JwtConfig.DefaultTokenExpireMinutes.ToString());
-            var refreshTokenExpireDays = int.Parse(_configuration[AuthConstants.JwtConfig.RefreshTokenExpireDaysPath] ?? AuthConstants.JwtConfig.DefaultRefreshTokenExpireDays.ToString());
-
-            var userToken = new UserToken
-            {
-                UserId = userDto.Id,
-                RefreshToken = refreshToken,
-                IssuedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
-                IsActive = true
-            };
-            await _userTokenRepository.AddAsync(userToken, cancellationToken);
-            await _userTokenRepository.SaveChangesAsync(cancellationToken);
 
             return new LoginResponseDTO
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
+                RefreshTokenExpire = refreshTokenExpireDays,
+                User = _mapper.Map<UserLoginResponseDTO>(userDto)
             };
         }
     }

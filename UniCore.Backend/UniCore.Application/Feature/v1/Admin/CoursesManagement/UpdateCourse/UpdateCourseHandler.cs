@@ -77,7 +77,7 @@ namespace UniCore.Application.Feature.v1.Admin.CoursesManagement.UpdateCourse
 
             return new UpdateCourseResponseDTO
             {
-                Course = _mapper.Map<CourseDTO>(updated ?? courseEntity)
+                Course = _mapper.Map<UpdateCourseResultDTO>(updated ?? courseEntity)
             };
         }
     }

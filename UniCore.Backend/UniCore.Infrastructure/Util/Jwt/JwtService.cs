@@ -33,25 +33,47 @@ namespace UniCore.Infrastructure.Util
         {
             var credentials = new SigningCredentials(_securityKey, SecurityAlgorithms.HmacSha256);
 
+            var username = !string.IsNullOrWhiteSpace(user.Username)
+                ? user.Username
+                : (!string.IsNullOrWhiteSpace(user.Email) ? user.Email : string.Empty);
+
+            var subject = !string.IsNullOrWhiteSpace(user.Code)
+                ? user.Code
+                : (!string.IsNullOrWhiteSpace(user.Id) ? user.Id : (!string.IsNullOrWhiteSpace(user.Username) ? user.Username : Guid.NewGuid().ToString()));
+
+            var userId = !string.IsNullOrWhiteSpace(user.Id) ? user.Id : string.Empty;
+
+            var displayName = !string.IsNullOrWhiteSpace(user.Username)
+                ? user.Username
+                : (!string.IsNullOrWhiteSpace(user.Email) ? user.Email : ClaimType.DisplayName);
+
             var claims = new List<Claim>
             {
-                new Claim(ClaimType.UserName, user.Username),
-                new Claim(ClaimType.Subject, user.Code),
+                new Claim(ClaimType.UserName, username),
+                new Claim(ClaimType.Subject, subject),
                 new Claim(ClaimType.CustomerId, ClaimType.CustomerId),
                 new Claim(ClaimType.Office365TenantId, ClaimType.Office365TenantId),
                 new Claim(ClaimType.Organization, ClaimType.Organization),
-                new Claim(ClaimType.UserObjectId, user.Id),
+                new Claim(ClaimType.UserObjectId, userId),
                 new Claim(ClaimType.Language, ClaimType.Language),
-                new Claim(ClaimType.DisplayName, ClaimType.DisplayName),
+                new Claim(ClaimType.DisplayName, displayName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
             };
+
+            if (!string.IsNullOrWhiteSpace(user.Email))
+            {
+                claims.Add(new Claim(ClaimType.Email, user.Email));
+            }
 
             if (user.Roles != null && user.Roles.Any())
             {
                 foreach (var role in user.Roles)
                 {
-                    claims.Add(new Claim(ClaimType.Role, role.Name));
+                    if (!string.IsNullOrWhiteSpace(role?.Name))
+                    {
+                        claims.Add(new Claim(ClaimType.Role, role.Name));
+                    }
                 }
             }
 

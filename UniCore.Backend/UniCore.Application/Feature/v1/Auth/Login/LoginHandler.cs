@@ -44,7 +44,7 @@ namespace UniCore.Application.Feature.v1.Auth.Login
 
             var getUserByUserNameResult = _mapper.Map<UserDTO>(userEntity);
 
-            var passwordMatch = _passwordHasherService.VerifyHashedPassword(getUserByUserNameResult.PasswordHash, request.Password);
+            var passwordMatch = _passwordHasherService.VerifyHashedPassword(userEntity.PasswordHash, request.Password);
             if (!passwordMatch)
             {
                 throw new UnauthorizedAccessException(MessageConstants.Auth.InvalidCredentials);

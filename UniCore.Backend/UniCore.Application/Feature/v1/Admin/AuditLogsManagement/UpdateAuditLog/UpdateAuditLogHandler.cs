@@ -55,7 +55,7 @@ namespace UniCore.Application.Feature.v1.Admin.AuditLogsManagement.UpdateAuditLo
 
             return new UpdateAuditLogResponseDTO
             {
-                Log = _mapper.Map<AppLogDTO>(logEntity)
+                Log = _mapper.Map<AuditLogSummaryDTO>(logEntity)
             };
         }
     }

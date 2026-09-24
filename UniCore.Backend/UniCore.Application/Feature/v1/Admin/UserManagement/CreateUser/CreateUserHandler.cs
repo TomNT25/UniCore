@@ -76,13 +76,17 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser
                 throw new ValidationException(new[] { new ValidationFailure("RoleId", msg) });
             }
 
+            var password = !string.IsNullOrWhiteSpace(request.Password) ? request.Password : "123456";
+            var studentCode = !string.IsNullOrWhiteSpace(request.StudentCode) ? request.StudentCode : request.Username;
+
             var userId = Guid.NewGuid().ToString();
             var userEntity = new UserEntity
             {
                 Id = userId,
                 Username = request.Username,
                 Email = request.Email,
-                PasswordHash = _passwordHasherService.HashPassword(request.Password),
+                StudentCode = studentCode,
+                PasswordHash = _passwordHasherService.HashPassword(password),
                 IsActive = request.IsActive,
                 IsEmailVerified = true,
                 EmailVerifiedAt = DateTime.UtcNow,
@@ -133,7 +137,22 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser
 
             return new CreateUserResponseDTO
             {
-                User = _mapper.Map<UserDTO>(userEntity)
+                User = new CreateUserResultDTO
+                {
+                    Id = userEntity.Id,
+                    Code = userEntity.Code,
+                    StudentCode = userEntity.StudentCode,
+                    Username = userEntity.Username,
+                    Email = userEntity.Email,
+                    FirstName = profileEntity.FirstName,
+                    LastName = profileEntity.LastName,
+                    FullName = profileEntity.FullName,
+                    PhoneNumber = profileEntity.PhoneNumber,
+                    RoleId = role.Id,
+                    RoleName = role.Name,
+                    IsActive = userEntity.IsActive,
+                    CreatedAt = userEntity.CreatedAt
+                }
             };
         }
     }

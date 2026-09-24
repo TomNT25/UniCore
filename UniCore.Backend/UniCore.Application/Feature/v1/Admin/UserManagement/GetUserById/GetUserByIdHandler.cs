@@ -33,7 +33,7 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.GetUserById
             var userEntity = await _userRepository.GetByIdAsync(request.Id, cancellationToken);
             return new GetUserByIdResponseDTO
             {
-                User = userEntity != null ? _mapper.Map<UserDTO>(userEntity) : null
+                User = userEntity != null ? _mapper.Map<UserDetailDTO>(userEntity) : null
             };
         }
     }

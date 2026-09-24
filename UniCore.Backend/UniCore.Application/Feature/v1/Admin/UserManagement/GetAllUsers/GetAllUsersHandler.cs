@@ -38,7 +38,7 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.GetAllUsers
                 (!request.IsActive.HasValue || u.IsActive == request.IsActive.Value) &&
                 (!request.IsEmailVerified.HasValue || u.IsEmailVerified == request.IsEmailVerified.Value);
 
-            var pagedResult = await _userRepository.GetPageNumberPaginationAsync<UserDTO>(
+            var pagedResult = await _userRepository.GetPageNumberPaginationAsync<UserListItemDTO>(
                 request,
                 filter,
                 cancellationToken);

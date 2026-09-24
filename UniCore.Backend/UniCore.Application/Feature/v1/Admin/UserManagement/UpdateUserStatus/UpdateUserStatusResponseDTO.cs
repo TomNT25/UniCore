@@ -4,6 +4,6 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.UpdateUserStatus
 {
     public class UpdateUserStatusResponseDTO
     {
-        public UserDTO User { get; set; } = null!;
+        public UpdateUserStatusResultDTO User { get; set; } = null!;
     }
 }

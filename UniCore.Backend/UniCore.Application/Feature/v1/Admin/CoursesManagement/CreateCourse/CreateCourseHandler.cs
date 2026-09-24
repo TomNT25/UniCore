@@ -77,7 +77,7 @@ namespace UniCore.Application.Feature.v1.Admin.CoursesManagement.CreateCourse
 
             return new CreateCourseResponseDTO
             {
-                Course = _mapper.Map<CourseDTO>(created ?? courseEntity)
+                Course = _mapper.Map<CreateCourseResultDTO>(created ?? courseEntity)
             };
         }
     }

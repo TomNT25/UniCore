@@ -16,10 +16,18 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser
                 .EmailAddress().WithMessage("A valid email is required.")
                 .MaximumLength(100).WithMessage("Email cannot exceed 100 characters.");
 
-            RuleFor(x => x.Password)
-                .NotEmpty().WithMessage("Password is required.")
-                .MinimumLength(6).WithMessage("Password must be at least 6 characters.")
-                .MaximumLength(100).WithMessage("Password cannot exceed 100 characters.");
+            When(x => !string.IsNullOrWhiteSpace(x.Password), () =>
+            {
+                RuleFor(x => x.Password)
+                    .MinimumLength(6).WithMessage("Password must be at least 6 characters.")
+                    .MaximumLength(100).WithMessage("Password cannot exceed 100 characters.");
+            });
+
+            When(x => !string.IsNullOrWhiteSpace(x.StudentCode), () =>
+            {
+                RuleFor(x => x.StudentCode)
+                    .MaximumLength(50).WithMessage("Student code cannot exceed 50 characters.");
+            });
 
             RuleFor(x => x.RoleId)
                 .NotEmpty().WithMessage("Role ID is required.")

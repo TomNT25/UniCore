@@ -73,19 +73,19 @@ namespace Project_Structure_UniCore.Controllers.v1
         [ProducesResponseType(typeof(BaseAPIResponse<RefreshTokenResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<BaseAPIResponse<RefreshTokenResponseDTO>>> RefreshToken([FromBody] RefreshTokenRequestDTO request)
+        public async Task<ActionResult<BaseAPIResponse<RefreshTokenResponseDTO>>> RefreshToken()
         {
-            // var refreshToken = Request.Cookies["UniCore_RefreshToken"];
+            var refreshToken = Request.Cookies["UniCore_RefreshToken"];
 
-            // if (string.IsNullOrEmpty(refreshToken))
-            // {
-            //     return UnauthorizedResponse<RefreshTokenResponseDTO>("Refresh token is missing.");
-            // }
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                return UnauthorizedResponse<RefreshTokenResponseDTO>("Refresh token is missing.");
+            }
 
-            // var request = new RefreshTokenRequestDTO
-            // {
-            //     RefreshToken = refreshToken
-            // };
+            var request = new RefreshTokenRequestDTO
+            {
+                RefreshToken = refreshToken
+            };
             var result = await _authService.RefreshTokenAsync(request);
             var message = _localizer.GetString(MessageConstants.Auth.RefreshTokenSuccess);
             return OkResponse<RefreshTokenResponseDTO>(result, message);
@@ -315,19 +315,6 @@ namespace Project_Structure_UniCore.Controllers.v1
         // ==========================================
         // GOOGLE OAUTH 2.0 SIMULATION & LOGIN
         // ==========================================
-
-        /// <summary>
-        /// Simulated Google Auth Provider: Generate a mock Google ID Token
-        /// </summary>
-        [HttpPost("google-provider/simulate-token")]
-        [ProducesResponseType(typeof(BaseAPIResponse<SimulateGoogleTokenResponseDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<BaseAPIResponse<SimulateGoogleTokenResponseDTO>>> SimulateGoogleToken([FromBody] SimulateGoogleTokenRequestDTO request)
-        {
-            var result = await _authService.SimulateGoogleTokenAsync(request);
-            var message = _localizer.GetString(MessageConstants.Auth.SimulateGoogleTokenSuccess);
-            return OkResponse<SimulateGoogleTokenResponseDTO>(result, message);
-        }
 
         /// <summary>
         /// Login to UniCore using a Google ID Token (OAuth 2.0 Simulation)

@@ -11,6 +11,6 @@ namespace UniCore.Application.Feature.v1.Admin.Dashboard.GetDashboardOverview
         public int TotalRoles { get; set; }
         public int TotalDepartments { get; set; }
         public int TotalCourses { get; set; }
-        public List<UserDTO> RecentUsers { get; set; } = new List<UserDTO>();
+        public List<DashboardRecentUserDTO> RecentUsers { get; set; } = new List<DashboardRecentUserDTO>();
     }
 }

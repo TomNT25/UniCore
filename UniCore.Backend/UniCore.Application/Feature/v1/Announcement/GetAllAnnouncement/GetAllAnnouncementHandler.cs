@@ -32,16 +32,13 @@ namespace UniCore.Application.Feature.v1.Announcement.GetAllAnnouncement
 
             return new GetAllAnnouncementResponseDTO
             {
-                Data = data,
-                Meta = new AnnouncementPaginationMetaDTO
-                {
-                    Page = pagedResult.PageNumber,
-                    PageSize = pagedResult.PageSize,
-                    TotalItems = pagedResult.TotalRecords,
-                    TotalPages = pagedResult.TotalPages,
-                    HasNextPage = pagedResult.HasNextPage,
-                    HasPreviousPage = pagedResult.HasPreviousPage
-                }
+                Items = data,
+                PageNumber = pagedResult.PageNumber,
+                PageSize = pagedResult.PageSize,
+                TotalRecords = pagedResult.TotalRecords,
+                TotalPages = pagedResult.TotalPages,
+                HasNextPage = pagedResult.HasNextPage,
+                HasPreviousPage = pagedResult.HasPreviousPage
             };
         }
 

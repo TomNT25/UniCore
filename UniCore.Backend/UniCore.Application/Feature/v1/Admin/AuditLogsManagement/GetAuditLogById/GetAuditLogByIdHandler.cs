@@ -33,7 +33,7 @@ namespace UniCore.Application.Feature.v1.Admin.AuditLogsManagement.GetAuditLogBy
             var logEntity = await _appLogRepository.GetByIdAsync(request.Id, cancellationToken);
             return new GetAuditLogByIdResponseDTO
             {
-                Log = logEntity != null ? _mapper.Map<AppLogDTO>(logEntity) : null
+                Log = logEntity != null ? _mapper.Map<AuditLogDetailDTO>(logEntity) : null
             };
         }
     }

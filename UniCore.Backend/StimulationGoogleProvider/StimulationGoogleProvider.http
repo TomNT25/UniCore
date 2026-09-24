@@ -1,6 +1,25 @@
 @StimulationGoogleProvider_HostAddress = http://localhost:5288
 
-GET {{StimulationGoogleProvider_HostAddress}}/weatherforecast/
+### 1. View Swagger UI
+GET {{StimulationGoogleProvider_HostAddress}}/swagger
+Accept: text/html
+
+### 2. Simulate Token Generation
+POST {{StimulationGoogleProvider_HostAddress}}/google-provider/simulate-token
+Content-Type: application/json
 Accept: application/json
 
-###
+{
+  "email": "student1@unicore.edu.vn",
+  "name": "Tran Van A",
+  "picture": "https://lh3.googleusercontent.com/a/default-avatar"
+}
+
+### 3. Verify Token
+POST {{StimulationGoogleProvider_HostAddress}}/google-provider/verify-token
+Content-Type: application/json
+Accept: application/json
+
+{
+  "idToken": "PASTE_TOKEN_HERE"
+}

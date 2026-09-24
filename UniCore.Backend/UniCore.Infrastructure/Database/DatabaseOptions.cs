@@ -1,4 +1,4 @@
-﻿namespace UniCore.Infrastructure.Database
+namespace UniCore.Infrastructure.Database
 {
     public class DatabaseOptions
     {
@@ -7,6 +7,7 @@
         public bool AutoMigrate { get; set; }
         public bool EnableSensitiveDataLogging { get; set; }
         public int CommandTimeout { get; set; }
+        public bool EnableRetryOnFailure { get; set; } = false;
         public int MaxRetryCount { get; set; }
         public int MaxRetryDelay { get; set; }
         public bool EnableQuerySplitting { get; set; }

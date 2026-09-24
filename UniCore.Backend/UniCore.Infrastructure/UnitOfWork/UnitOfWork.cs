@@ -1,4 +1,5 @@
 using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using UniCore.Application.Contract.Repository;
 using UniCore.Application.Contract.UnitOfWork;
@@ -86,6 +87,18 @@ namespace UniCore.Infrastructure.UnitOfWork
         {
             var type = typeof(TEntity);
             return (IRepository<TEntity>)_repositories.GetOrAdd(type, _ => new GenericRepositoryImplementation<TEntity>(_dbContext, _mapper));
+        }
+
+        public async Task ExecuteStrategyAsync(Func<CancellationToken, Task> operation, CancellationToken cancellationToken = default)
+        {
+            var strategy = _dbContext.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () => await operation(cancellationToken));
+        }
+
+        public async Task<TResult> ExecuteStrategyAsync<TResult>(Func<CancellationToken, Task<TResult>> operation, CancellationToken cancellationToken = default)
+        {
+            var strategy = _dbContext.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () => await operation(cancellationToken));
         }
 
         private void PopTransactionScope()

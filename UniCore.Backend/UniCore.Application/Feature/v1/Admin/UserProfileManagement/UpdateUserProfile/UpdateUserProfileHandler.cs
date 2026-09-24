@@ -101,7 +101,7 @@ namespace UniCore.Application.Feature.v1.Admin.UserProfileManagement.UpdateUserP
 
             return new UpdateUserProfileResponseDTO
             {
-                Profile = _mapper.Map<UserProfileDTO>(profile)
+                Profile = _mapper.Map<UserProfileDetailDTO>(profile)
             };
         }
     }

@@ -1,6 +1,6 @@
-namespace UniCore.Application.Feature.v1.Admin.AuditLogsManagement.GetAllAuditLogs
+namespace UniCore.Application.Feature.v1.Admin.AuditLogsManagement
 {
-    public class GetAllAuditLogsDTO
+    public class AuditLogSummaryDTO
     {
         public string Id { get; set; } = string.Empty;
         public DateTime LogDate { get; set; }
@@ -8,6 +8,5 @@ namespace UniCore.Application.Feature.v1.Admin.AuditLogsManagement.GetAllAuditLo
         public string? Logger { get; set; }
         public string? Message { get; set; }
         public string? TraceId { get; set; }
-        public bool HasException { get; set; }
     }
 }

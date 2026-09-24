@@ -33,7 +33,7 @@ namespace UniCore.Application.Feature.v1.Admin.CoursesManagement.GetCourseById
             var courseEntity = await _courseRepository.GetByIdAsync(request.Id, cancellationToken);
             return new GetCourseByIdResponseDTO
             {
-                Course = courseEntity != null ? _mapper.Map<CourseDTO>(courseEntity) : null
+                Course = courseEntity != null ? _mapper.Map<CourseDetailDTO>(courseEntity) : null
             };
         }
     }

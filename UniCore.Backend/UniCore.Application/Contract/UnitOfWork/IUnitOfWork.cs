@@ -43,5 +43,15 @@ namespace UniCore.Application.Contract.UnitOfWork
         /// Gets a repository instance for the specified entity type.
         /// </summary>
         IRepository<TEntity> GetRepository<TEntity>() where TEntity : class;
+
+        /// <summary>
+        /// Executes an operation within the configured execution strategy.
+        /// </summary>
+        Task ExecuteStrategyAsync(Func<CancellationToken, Task> operation, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Executes an operation within the configured execution strategy and returns a result.
+        /// </summary>
+        Task<TResult> ExecuteStrategyAsync<TResult>(Func<CancellationToken, Task<TResult>> operation, CancellationToken cancellationToken = default);
     }
 }

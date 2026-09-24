@@ -6,7 +6,8 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser
     {
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
+        public string? Password { get; set; } = "123456";
+        public string? StudentCode { get; set; }
         public string RoleId { get; set; } = string.Empty;
         public string? FirstName { get; set; }
         public string? LastName { get; set; }

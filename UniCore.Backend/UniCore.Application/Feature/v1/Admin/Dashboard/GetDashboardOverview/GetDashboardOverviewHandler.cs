@@ -49,7 +49,7 @@ namespace UniCore.Application.Feature.v1.Admin.Dashboard.GetDashboardOverview
             var totalDepartments = await _departmentRepository.CountAsync(cancellationToken: cancellationToken);
             var totalCourses = await _courseRepository.CountAsync(cancellationToken: cancellationToken);
 
-            var recentUsersPaged = await _userRepository.GetPageNumberPaginationAsync<UserDTO>(
+            var recentUsersPaged = await _userRepository.GetPageNumberPaginationAsync<DashboardRecentUserDTO>(
                 new PageNumberPaginationRequest
                 {
                     PageNumber = 1,

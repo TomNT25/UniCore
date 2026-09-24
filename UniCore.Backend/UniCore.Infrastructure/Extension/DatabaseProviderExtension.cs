@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using UniCore.Infrastructure.Database;
 
 namespace UniCore.Infrastructure.Extension
@@ -14,10 +14,14 @@ namespace UniCore.Infrastructure.Extension
                 "SQL Server" => optionsBuilder.UseSqlServer(dbOptions.ConnectionString, sqlServerOptions =>
                                 {
                                     sqlServerOptions.CommandTimeout(dbOptions.CommandTimeout);
-                                    sqlServerOptions.EnableRetryOnFailure(
-                                        maxRetryCount: dbOptions.MaxRetryCount,
-                                        maxRetryDelay: TimeSpan.FromSeconds(dbOptions.MaxRetryDelay),
-                                        errorNumbersToAdd: null);
+
+                                    if (dbOptions.EnableRetryOnFailure && dbOptions.MaxRetryCount > 0)
+                                    {
+                                        sqlServerOptions.EnableRetryOnFailure(
+                                            maxRetryCount: dbOptions.MaxRetryCount,
+                                            maxRetryDelay: TimeSpan.FromSeconds(dbOptions.MaxRetryDelay),
+                                            errorNumbersToAdd: null);
+                                    }
 
                                     if (dbOptions.EnableQuerySplitting)
                                     {

@@ -139,7 +139,18 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.UpdateUser
 
             return new UpdateUserResponseDTO
             {
-                User = _mapper.Map<UserDTO>(userEntity)
+                User = new UpdateUserResultDTO
+                {
+                    Id = userEntity.Id,
+                    Code = userEntity.Code,
+                    Username = userEntity.Username,
+                    Email = userEntity.Email,
+                    IsActive = userEntity.IsActive,
+                    IsEmailVerified = userEntity.IsEmailVerified,
+                    RoleId = role.Id,
+                    RoleName = role.Name,
+                    UpdatedAt = userEntity.UpdatedAt
+                }
             };
         }
     }

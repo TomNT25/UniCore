@@ -33,7 +33,7 @@ namespace UniCore.Application.Feature.v1.Admin.UserProfileManagement.GetUserProf
             var profile = await _userProfileRepository.GetByUserIdAsync(request.UserId, cancellationToken);
             return new GetUserProfileResponseDTO
             {
-                Profile = profile != null ? _mapper.Map<UserProfileDTO>(profile) : null
+                Profile = profile != null ? _mapper.Map<UserProfileDetailDTO>(profile) : null
             };
         }
     }

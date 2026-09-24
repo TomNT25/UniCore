@@ -52,7 +52,14 @@ namespace UniCore.Application.Feature.v1.Admin.CoursesManagement.UpdateCourseSta
 
             return new UpdateCourseStatusResponseDTO
             {
-                Course = _mapper.Map<CourseDTO>(updated ?? courseEntity)
+                Course = new UpdateCourseStatusResultDTO
+                {
+                    Id = courseEntity.Id,
+                    Code = courseEntity.Code,
+                    Name = courseEntity.Name,
+                    IsActive = courseEntity.IsActive,
+                    UpdatedAt = courseEntity.UpdatedAt
+                }
             };
         }
     }

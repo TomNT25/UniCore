@@ -9,7 +9,7 @@ namespace UniCore.Infrastructure.Database.ModelCreating
         {
             modelBuilder.Entity<User>(entity =>
             {
-                entity.ToTable("users");
+                entity.ToTable("users", tb => tb.UseSqlOutputClause(false));
                 entity.HasKey(e => e.Id);
 
                 entity.Property(e => e.Id)

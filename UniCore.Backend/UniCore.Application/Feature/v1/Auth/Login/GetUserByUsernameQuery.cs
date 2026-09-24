@@ -12,9 +12,7 @@ namespace UniCore.Application.Feature.v1.Auth.Login
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
 
-        public GetUserByUsernameQueryHandler(
-            IUserRepository userRepository,
-            IMapper mapper)
+        public GetUserByUsernameQueryHandler(IUserRepository userRepository, IMapper mapper)
         {
             _userRepository = userRepository;
             _mapper = mapper;
@@ -22,8 +20,8 @@ namespace UniCore.Application.Feature.v1.Auth.Login
 
         public async Task<UserDTO?> HandleAsync(GetUserByUsernameQuery request, CancellationToken cancellationToken = default)
         {
-            var result = await _userRepository.GetByUsernameAsync(request.username, cancellationToken);
-            return result == null ? null : _mapper.Map<UserDTO>(result);
+            var userEntity = await _userRepository.GetByUsernameAsync(request.username, cancellationToken);
+            return _mapper.Map<UserDTO>(userEntity);
         }
     }
 }
