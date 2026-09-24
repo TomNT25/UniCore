@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using UniCore.Application.Feature.v1.Courses.GetMyCourses.PersonalDetails;
 
 namespace UniCore.Application.Feature.v1.Courses.GetMyCourses
 {
@@ -18,5 +19,7 @@ namespace UniCore.Application.Feature.v1.Courses.GetMyCourses
         public decimal? FinalScore { get; set; }
 
         public string Status { get; set; } = null!;
+
+        // public IEnumerable<GetCourseDetailsScheduleDTO> Schedules { get; set; }
     }
 }

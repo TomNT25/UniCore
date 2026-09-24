@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using UniCore.Application.DTO;
 using UniCore.Application.Entity;
 
@@ -10,8 +11,10 @@ namespace UniCore.Application.Contract.Repository.Enitity.v1
         Task<List<string>> GetActiveStudentIdsByCourseIdAsync(string courseId, CancellationToken cancellationToken = default);
 	
         Task<PageNumberPaginationResponse<CourseStudent>> GetPaginatedByStuIdCourseIdsAsync(string stuId, 
-            PageNumberPaginationRequest pgRequest, 
-            CancellationToken ct);
+            PageNumberPaginationRequest pgRequest,
+            CancellationToken cancellationToken = default,
+            Expression<Func<CourseStudent, bool>>? filter = null
+            );
         Task<CourseStudent?> GetDetailedStuIdCourseIdsAsync(string studentId,
             string courseId, 
             CancellationToken ct);

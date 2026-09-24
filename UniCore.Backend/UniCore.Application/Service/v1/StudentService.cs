@@ -11,6 +11,7 @@ using UniCore.Application.Feature.v1.Courses.GetAllCourses;
 using UniCore.Application.Feature.v1.Courses.GetMyCourses;
 using UniCore.Application.Feature.v1.Courses.GetMyCourses.PersonalDetails;
 using UniCore.Application.Feature.v1.User.GetUserInfo;
+// using UniCore.Application.Feature.v1.User.PutUserInfo;
 
 
 namespace UniCore.Application.Service.v1
@@ -26,7 +27,7 @@ namespace UniCore.Application.Service.v1
         private readonly GetClassesByNamesHandler _getAllClassesByNamesHandler;
         private readonly GetMyCoursesHandler _getMyCoursesHandler;
         private readonly GetCourseDetailsHandler _getCourseDetailsHandler;
-    
+        // private readonly PutUserInfoHandler _putUserInfoHandler;
 
         public StudentService(
             GetUserInfoHandler getUserInfoHandler,
@@ -38,6 +39,7 @@ namespace UniCore.Application.Service.v1
             GetClassesByNamesHandler getAllClassesByNamesHandler,
             GetMyCoursesHandler getMyCoursesHandler,
             GetCourseDetailsHandler getCourseDetailsHandler
+            // PutUserInfoHandler putUserInfoHandler
             )
         {
             _getUserInfoHandler = getUserInfoHandler;
@@ -49,6 +51,7 @@ namespace UniCore.Application.Service.v1
             _getAllClassesByNamesHandler = getAllClassesByNamesHandler;
             _getMyCoursesHandler = getMyCoursesHandler;
             _getCourseDetailsHandler = getCourseDetailsHandler;
+            // _putUserInfoHandler = putUserInfoHandler;
         }
 
         public async Task<GetUserInfoResponseDTO> GetUserInfoAsync(GetUserInfoRequestDTO request, CancellationToken cancellationToken = default)
@@ -71,17 +74,22 @@ namespace UniCore.Application.Service.v1
 
         public async Task<GetClassesResponseDTO> GetClassesByName(GetClassesRequestDTO request, CancellationToken cancellationToken = default) 
             => await _getAllClassesByNamesHandler.HandleAsync(request, cancellationToken);
+        public async Task<GetMyCoursesResponseDTO> GetMyCoursesAsync(GetMyCoursesRequestDTO request, 
+            CancellationToken cancellationToken = default)
+            => await _getMyCoursesHandler.HandleAsync(request, cancellationToken);
+        public async Task<GetCourseDetailsResponseDTO> GetCourseDetailsAsync(GetCourseDetailsRequestDTO request,
+            CancellationToken cancellationToken = default)
+            => await _getCourseDetailsHandler.HandleAsync(request, cancellationToken);
+
         public Task<GetAllStudentsResponseDTO> GetClassmateListAsync(GetAllStudentsRequestDTO request, CancellationToken ct = default)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<GetMyCoursesResponseDTO> GetMyCoursesAsync(GetMyCoursesRequestDTO request, 
-            CancellationToken cancellationToken = default)
-            => await _getMyCoursesHandler.HandleAsync(request, cancellationToken);
+        // public async Task<PutUserInfoResponseDTO> PutUserInfoAsync(PutUserInfoRequestDTO request,
+        //     CancellationToken cancellationToken = default)
+        //     => await _putUserInfoHandler.HandleAsync(request, cancellationToken);
 
-        public async Task<GetCourseDetailsResponseDTO> GetCourseDetailsAsync(GetCourseDetailsRequestDTO request,
-            CancellationToken cancellationToken = default)
-            => await _getCourseDetailsHandler.HandleAsync(request, cancellationToken);
     }
+
 }

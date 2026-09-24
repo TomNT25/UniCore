@@ -1,6 +1,7 @@
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.DTO;
 using UniCore.Application.Entity;
@@ -17,7 +18,7 @@ namespace UniCore.Infrastructure.Repository.V1
         {
         }
 
-        public async Task<IEnumerable<CourseStudent>?> GetByStuIdCourseIdsAsync(string studentId, IEnumerable<string> courseIds, CancellationToken ct)
+        public async Task<IEnumerable<CourseStudent>?> GetByStuIdCourseIdsAsync(string studentId,  IEnumerable<string> courseIds, CancellationToken ct)
         {
             var result = await _dbSet
                             .Where(x => x.UserId.Equals(studentId) && courseIds.Contains(x.CourseId))
@@ -42,7 +43,8 @@ namespace UniCore.Infrastructure.Repository.V1
 
         public async Task<PageNumberPaginationResponse<CourseStudent>> GetPaginatedByStuIdCourseIdsAsync(string studentId,
     PageNumberPaginationRequest request,
-    CancellationToken cancellationToken)
+    CancellationToken cancellationToken = default,
+    Expression<Func<CourseStudent, bool>>? filter = null)
         {
             var query = _dbSet.AsNoTracking()
                 .Where(sc => sc.UserId == studentId);
@@ -55,7 +57,9 @@ namespace UniCore.Infrastructure.Repository.V1
 
             var items = await query
                             .Include(sc => sc.Course)
-                            .ThenInclude(c => c.Department)
+                                .ThenInclude(c => c.Department)
+                            .Include(sc => sc.Schedules)
+                            .Where(sc => sc.UserId == studentId)
                             .Skip(skip)
                             .Take(pageSize)
                             .ToListAsync(cancellationToken);
@@ -86,6 +90,7 @@ namespace UniCore.Infrastructure.Repository.V1
             var items = await _dbSet.AsNoTracking()
                             .Include(sc => sc.Course)
                                 .ThenInclude(c => c.Department)
+                            .Include(sc => sc.Schedules)
                             .Where(sc => sc.UserId == studentId && sc.Course.Id.Equals(courseId))
                             .FirstOrDefaultAsync(cancellationToken);
             return items;
@@ -99,7 +104,7 @@ namespace UniCore.Infrastructure.Repository.V1
                     cs.CourseId == courseId &&
                     cs.IsActive &&
                     !cs.IsDeleted)
-                .Select(cs => cs.UserId)
+                .Select(cs => cs.User.StudentCode)
                 .Distinct()
                 .ToListAsync(cancellationToken);
         }

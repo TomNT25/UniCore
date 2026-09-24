@@ -1,5 +1,6 @@
 ﻿using Mapster;
 using UniCore.Application.Entity;
+using UniCore.Application.Feature.v1.Courses.GetMyCourses.PersonalDetails;
 
 namespace UniCore.Application.Feature.v1.Courses.GetMyCourses
 {
@@ -26,6 +27,9 @@ namespace UniCore.Application.Feature.v1.Courses.GetMyCourses
 
             TypeAdapterConfig<CourseStudent, GetStudentCoursesDTO>
                 .NewConfig();
+            
+            // TypeAdapterConfig<Schedule, GetCourseDetailsScheduleDTO> 
+            //     .NewConfig();
         }
     }
 }
