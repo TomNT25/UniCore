@@ -111,11 +111,22 @@ namespace UniCore.Application.Feature.v1.FaceAuth.VerifyPin
                 };
             }
 
-            // Verify PIN
-            if (string.IsNullOrWhiteSpace(faceProfile.PinHash) ||
-                !_passwordHasher.VerifyHashedPassword(faceProfile.PinHash, request.Pin))
+            // Verify OTP (if issued during face login) or PIN hash
+            bool isMatch = false;
+            if (!string.IsNullOrWhiteSpace(challengeData.Otp) &&
+                string.Equals(challengeData.Otp.Trim(), request.Pin.Trim(), StringComparison.Ordinal))
             {
-                _logger.LogWarning("Invalid PIN for user: {UserId}", userId);
+                isMatch = true;
+            }
+            else if (!string.IsNullOrWhiteSpace(faceProfile.PinHash) &&
+                     _passwordHasher.VerifyHashedPassword(faceProfile.PinHash, request.Pin))
+            {
+                isMatch = true;
+            }
+
+            if (!isMatch)
+            {
+                _logger.LogWarning("Invalid PIN/OTP for user: {UserId}", userId);
 
                 // Increment failed attempts
                 var updatedProfile = await _faceProfileRepository.IncrementFailedPinAttemptsAsync(userId, cancellationToken);
@@ -139,7 +150,7 @@ namespace UniCore.Application.Feature.v1.FaceAuth.VerifyPin
                 {
                     Success = false,
                     ErrorCode = FaceAuthConstants.ErrorCodes.InvalidPin,
-                    ErrorMessage = $"Invalid PIN. {remaining} attempts remaining.",
+                    ErrorMessage = $"Invalid PIN or OTP. {remaining} attempts remaining.",
                     RemainingAttempts = remaining
                 };
             }

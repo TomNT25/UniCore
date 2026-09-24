@@ -8,7 +8,11 @@ using UniCore.Application.DTO;
 using UniCore.Application.Feature.v1.FaceAuth.Enroll;
 using UniCore.Application.Feature.v1.FaceAuth.GetStatus;
 using UniCore.Application.Feature.v1.FaceAuth.Login;
+using UniCore.Application.Feature.v1.FaceAuth.Mfa.DisableFaceMfa;
+using UniCore.Application.Feature.v1.FaceAuth.Mfa.EnableFaceMfa;
+using UniCore.Application.Feature.v1.FaceAuth.ResendOtp;
 using UniCore.Application.Feature.v1.FaceAuth.SetPin;
+using UniCore.Application.Feature.v1.FaceAuth.VerifyOtp;
 using UniCore.Application.Feature.v1.FaceAuth.VerifyPin;
 using UniCore.Helper.Constant;
 using UniCore.Helper.Localization;
@@ -265,6 +269,133 @@ namespace UniCore.API.Controllers.v1
             return OkResponse(result, _localizer.GetString(MessageConstants.FaceAuth.VerifyPinSuccess));
         }
 
+        /// <summary>
+        /// Enable Face Recognition MFA for the current user.
+        /// </summary>
+        /// <remarks>
+        /// Requires the user to have already enrolled face biometrics with the AI service.
+        /// </remarks>
+        [Authorize]
+        [HttpPost("mfa/enable")]
+        [ProducesResponseType(typeof(BaseAPIResponse<EnableFaceMfaResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<BaseAPIResponse<EnableFaceMfaResponseDTO>>> EnableMfa(
+            CancellationToken cancellationToken)
+        {
+            var userId = GetActorUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return UnauthorizedResponse<EnableFaceMfaResponseDTO>(
+                    _localizer.GetString(MessageConstants.Auth.IdentityNotFound));
+            }
+
+            var request = new EnableFaceMfaRequestDTO { UserId = userId };
+            var result = await _faceAuthService.EnableMfaAsync(request, cancellationToken);
+
+            if (!result.Success)
+            {
+                return BadRequestResponse<EnableFaceMfaResponseDTO>(
+                    result.ErrorMessage ?? _localizer.GetString(MessageConstants.System.UnexpectedError));
+            }
+
+            return OkResponse(result, result.Message ?? _localizer.GetString(MessageConstants.FaceAuth.EnableMfaSuccess));
+        }
+
+        /// <summary>
+        /// Disable Face Recognition MFA for the current user.
+        /// </summary>
+        [Authorize]
+        [HttpPost("mfa/disable")]
+        [ProducesResponseType(typeof(BaseAPIResponse<DisableFaceMfaResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<BaseAPIResponse<DisableFaceMfaResponseDTO>>> DisableMfa(
+            CancellationToken cancellationToken)
+        {
+            var userId = GetActorUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return UnauthorizedResponse<DisableFaceMfaResponseDTO>(
+                    _localizer.GetString(MessageConstants.Auth.IdentityNotFound));
+            }
+
+            var request = new DisableFaceMfaRequestDTO { UserId = userId };
+            var result = await _faceAuthService.DisableMfaAsync(request, cancellationToken);
+
+            if (!result.Success)
+            {
+                return BadRequestResponse<DisableFaceMfaResponseDTO>(
+                    result.ErrorMessage ?? _localizer.GetString(MessageConstants.System.UnexpectedError));
+            }
+
+            return OkResponse(result, result.Message ?? _localizer.GetString(MessageConstants.FaceAuth.DisableMfaSuccess));
+        }
+
+        /// <summary>
+        /// Verify OTP sent to email and complete face login.
+        /// </summary>
+        /// <remarks>
+        /// Anonymous endpoint (no JWT required).
+        /// Verifies the 6-digit OTP against the challenge token obtained from
+        /// the face login endpoint. On success, returns JWT access and refresh tokens.
+        /// </remarks>
+        [AllowAnonymous]
+        [HttpPost("verify-otp")]
+        [ProducesResponseType(typeof(BaseAPIResponse<VerifyOtpResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<BaseAPIResponse<VerifyOtpResponseDTO>>> VerifyOtp(
+            [FromBody] VerifyFaceOtpRequest body,
+            CancellationToken cancellationToken)
+        {
+            var request = new VerifyOtpRequestDTO
+            {
+                ChallengeToken = body.ChallengeToken,
+                Otp = body.Otp
+            };
+
+            var result = await _faceAuthService.VerifyOtpAsync(request, cancellationToken);
+
+            if (!result.Success)
+            {
+                return BadRequestResponse<VerifyOtpResponseDTO>(
+                    result.ErrorMessage ?? _localizer.GetString(MessageConstants.FaceAuth.VerifyOtpFailed));
+            }
+
+            return OkResponse(result, _localizer.GetString(MessageConstants.FaceAuth.VerifyOtpSuccess));
+        }
+
+        /// <summary>
+        /// Resend OTP for face login challenge.
+        /// </summary>
+        /// <remarks>
+        /// Anonymous endpoint (no JWT required).
+        /// Re-generates and sends a new 6-digit OTP to the registered email address.
+        /// </remarks>
+        [AllowAnonymous]
+        [HttpPost("resend-otp")]
+        [ProducesResponseType(typeof(BaseAPIResponse<ResendOtpResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<BaseAPIResponse<ResendOtpResponseDTO>>> ResendOtp(
+            [FromBody] ResendFaceOtpRequest body,
+            CancellationToken cancellationToken)
+        {
+            var request = new ResendOtpRequestDTO
+            {
+                ChallengeToken = body.ChallengeToken
+            };
+
+            var result = await _faceAuthService.ResendOtpAsync(request, cancellationToken);
+
+            if (!result.Success)
+            {
+                return BadRequestResponse<ResendOtpResponseDTO>(
+                    result.ErrorMessage ?? _localizer.GetString(MessageConstants.FaceAuth.InvalidChallenge));
+            }
+
+            return OkResponse(result, result.Message ?? _localizer.GetString(MessageConstants.FaceAuth.OtpSentSuccess));
+        }
+
         private string? GetActorUserId()
         {
             return User.FindFirst(AuthConstants.Claims.UserId)?.Value
@@ -317,5 +448,32 @@ namespace UniCore.API.Controllers.v1
         /// 6-digit PIN.
         /// </summary>
         public string Pin { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Request body for verifying OTP (during face login).
+    /// </summary>
+    public class VerifyFaceOtpRequest
+    {
+        /// <summary>
+        /// Challenge token from face login response.
+        /// </summary>
+        public string ChallengeToken { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 6-digit OTP code sent via email.
+        /// </summary>
+        public string Otp { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Request body for resending OTP (during face login).
+    /// </summary>
+    public class ResendFaceOtpRequest
+    {
+        /// <summary>
+        /// Challenge token from face login response.
+        /// </summary>
+        public string ChallengeToken { get; set; } = string.Empty;
     }
 }

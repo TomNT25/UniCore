@@ -12,7 +12,7 @@ namespace UniCore.Application.DTO
         }
 
         public string? SearchTerm { get; set; }
-        public string? SortColumn { get; set; }
-        public bool SortDescending { get; set; }
+        public string? SortColumn { get; set; } = "createdAt";
+        public bool SortDescending { get; set; } = true;
     }
 }

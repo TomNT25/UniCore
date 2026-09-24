@@ -41,12 +41,7 @@ namespace UniCore.Application.Feature.v1.Role.GetAllRole
             return new GetAllRoleResponseDTO
             {
                 Items = pagedResult.Items,
-                PageNumber = pagedResult.PageNumber,
-                PageSize = pagedResult.PageSize,
-                TotalRecords = pagedResult.TotalRecords,
-                TotalPages = pagedResult.TotalPages,
-                HasNextPage = pagedResult.HasNextPage,
-                HasPreviousPage = pagedResult.HasPreviousPage
+                Metadata = pagedResult.Metadata
             };
         }
     }

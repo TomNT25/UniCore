@@ -54,12 +54,7 @@ namespace UniCore.Application.Feature.v1.Admin.AuditLogsManagement.GetAllAuditLo
             return new GetAllAuditLogsResponseDTO
             {
                 Items = pagedResult.Items,
-                PageNumber = pagedResult.PageNumber,
-                PageSize = pagedResult.PageSize,
-                TotalRecords = pagedResult.TotalRecords,
-                TotalPages = pagedResult.TotalPages,
-                HasNextPage = pagedResult.HasNextPage,
-                HasPreviousPage = pagedResult.HasPreviousPage
+                Metadata = pagedResult.Metadata
             };
         }
     }

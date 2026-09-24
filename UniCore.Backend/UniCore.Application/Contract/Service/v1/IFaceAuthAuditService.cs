@@ -51,7 +51,11 @@ namespace UniCore.Application.Contract.Service.v1
         SetPin,
         Login,
         VerifyPin,
-        GetStatus
+        GetStatus,
+        EnableMfa,
+        DisableMfa,
+        VerifyOtp,
+        ResendOtp
     }
 
     public enum FaceAuthResult

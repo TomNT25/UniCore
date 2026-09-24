@@ -18,6 +18,7 @@ using UniCore.Application.Feature.v1.Admin.UserManagement.UpdateUser;
 using UniCore.Application.Feature.v1.Admin.UserManagement.UpdateUserStatus;
 using UniCore.Application.Feature.v1.Admin.UserProfileManagement.GetUserProfile;
 using UniCore.Application.Feature.v1.Admin.UserProfileManagement.UpdateUserProfile;
+using UniCore.Application.Feature.v1.Admin.UserProfileManagement.VerifyUserProfile;
 using UniCore.Application.Feature.v1.Admin.CoursesManagement.GetAllCourses;
 
 namespace UniCore.Application.Contract.Service.v1
@@ -35,6 +36,7 @@ namespace UniCore.Application.Contract.Service.v1
 
         Task<GetUserProfileResponseDTO> GetUserProfileAsync(string userId, CancellationToken cancellationToken = default);
         Task<UpdateUserProfileResponseDTO> UpdateUserProfileAsync(UpdateUserProfileRequestDTO request, CancellationToken cancellationToken = default);
+        Task<VerifyUserProfileResponseDTO> VerifyUserProfileAsync(VerifyUserProfileRequestDTO request, CancellationToken cancellationToken = default);
         
         Task<GetAllStudentsResponseDTO> GetAllStudentsAsync(GetAllStudentsRequestDTO request, CancellationToken cancellationToken = default);
         Task<GetAllCoursesResponseDTO> GetAllCoursesAsync(GetAllCoursesRequestDTO request, CancellationToken cancellationToken = default);

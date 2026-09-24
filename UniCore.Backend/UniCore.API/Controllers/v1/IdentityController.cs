@@ -52,10 +52,11 @@ namespace UniCore.API.Controllers.v1
         }
 
         /// <summary>
-        /// Scan CCCD via AI OCR, upsert user_person_ids, set VerificationStatus = VERIFIED.
-        /// form-data field: image
+        /// Scan CCCD via AI OCR, upsert user_person_ids and user_profiles (is_verified = false).
+        /// form-data field: image or file
         /// </summary>
         [HttpPost("cccd/ocr")]
+        [HttpPost("ocr")]
         [Consumes("multipart/form-data")]
         [RequestSizeLimit(10 * 1024 * 1024)]
         [ProducesResponseType(typeof(BaseAPIResponse<ScanCccdResponseDTO>), StatusCodes.Status200OK)]
@@ -63,6 +64,7 @@ namespace UniCore.API.Controllers.v1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<BaseAPIResponse<ScanCccdResponseDTO>>> ScanCccd(
             IFormFile? image,
+            IFormFile? file,
             CancellationToken cancellationToken)
         {
             var userId = GetActorUserId();
@@ -72,22 +74,23 @@ namespace UniCore.API.Controllers.v1
                     _localizer.GetString(MessageConstants.Auth.IdentityNotFound));
             }
 
-            if (image == null || image.Length == 0)
+            var uploadedFile = image ?? file;
+            if (uploadedFile == null || uploadedFile.Length == 0)
             {
                 return BadRequestResponse<ScanCccdResponseDTO>(
                     _localizer.GetString(MessageConstants.Identity.ImageRequired));
             }
 
-            await using var stream = image.OpenReadStream();
+            await using var stream = uploadedFile.OpenReadStream();
 
             var result = await _identityService.ScanCccdAsync(
                 new ScanCccdRequestDTO
                 {
                     UserId = userId,
                     ImageStream = stream,
-                    FileName = image.FileName,
-                    ContentType = image.ContentType,
-                    FileLength = image.Length
+                    FileName = uploadedFile.FileName,
+                    ContentType = uploadedFile.ContentType,
+                    FileLength = uploadedFile.Length
                 },
                 cancellationToken);
 

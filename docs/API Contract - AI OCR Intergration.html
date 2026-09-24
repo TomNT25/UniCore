@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Contract - AI Integrated OCR Vietnamese ID Scan</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --badge-post: #2563eb;
+      --code-bg: #0f172a;
+      --code-text: #f8fafc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background-color: var(--bg);
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: var(--surface);
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.85rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .meta-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .meta-item strong {
+      color: var(--text);
+    }
+
+    section {
+      margin-bottom: 2.5rem;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      color: var(--text);
+      border-left: 4px solid var(--primary);
+      padding-left: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      color: var(--text);
+      margin: 1.25rem 0 0.5rem 0;
+    }
+
+    p, li {
+      margin-bottom: 0.5rem;
+    }
+
+    ul, ol {
+      padding-left: 1.25rem;
+    }
+
+    .endpoint-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .endpoint-header {
+      background: #f1f5f9;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .method {
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: white;
+      text-transform: uppercase;
+    }
+
+    .method.post {
+      background-color: var(--badge-post);
+    }
+
+    .path {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .endpoint-body {
+      padding: 1.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f8fafc;
+      font-weight: 600;
+    }
+
+    pre {
+      background-color: var(--code-bg);
+      color: var(--code-text);
+      padding: 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 0.75rem 0;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      font-size: 0.875rem;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      background-color: #f1f5f9;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      color: #0f172a;
+    }
+
+    pre code {
+      background-color: transparent;
+      padding: 0;
+      color: inherit;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .status-200 { background: #dcfce7; color: #15803d; }
+    .status-400 { background: #fef3c7; color: #b45309; }
+    .status-401 { background: #ffedd5; color: #c2410c; }
+    .status-415 { background: #fee2e2; color: #b91c1c; }
+    .status-500 { background: #f3e8ff; color: #6b21a8; }
+
+    .callout {
+      padding: 1rem 1.25rem;
+      border-radius: 6px;
+      margin: 1rem 0;
+      border-left: 4px solid;
+    }
+
+    .callout-info {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      color: #1e40af;
+    }
+
+    .callout-warn {
+      background: #fff7ed;
+      border-color: #f97316;
+      color: #7c2d12;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>API Contract - AI Integrated OCR Vietnamese ID Scan</h1>
+    <div class="meta-info">
+      <div class="meta-item"><strong>Module:</strong> AI_Integrated_OCR_Vietnamese_ID_scan</div>
+      <div class="meta-item"><strong>Version:</strong> 1.0.0</div>
+      <div class="meta-item"><strong>Date:</strong> 2026-09-24</div>
+      <div class="meta-item"><strong>Target Audience:</strong> FE & BE Engineers</div>
+    </div>
+  </header>
+
+  <!-- SECTION 1: OVERVIEW -->
+  <section>
+    <h2>1. Tổng quan Luồng Nghiệp vụ (Workflow & Architecture)</h2>
+    <p>
+      Tài liệu này định nghĩa API Contract cho dịch vụ trích xuất thông tin Căn cước công dân (CCCD) Việt Nam bằng công nghệ OCR (VietOCR).
+    </p>
+    <ul>
+      <li><strong>UI:</strong> Bắt buộc người dùng đặt ảnh CCCD nằm hoàn toàn trong khung (frame) quy định để khớp với hệ tọa độ bounding box cố định.</li>
+      <li><strong>BE Gateway:</strong> Tiếp nhận file từ UI (kèm JWT Token), xác thực phân quyền, sau đó chuyển tiếp payload (gồm <code>user-id</code> và <code>image</code>) sang AI_OCR_API.</li>
+      <li><strong>AI_OCR_API:</strong> Đánh giá chất lượng ảnh (độ chói, độ mờ, góc xoay), thực thi VietOCR để trích xuất văn bản và đóng gói kết quả theo Base Response chuẩn.</li>
+    </ul>
+
+    <div class="callout callout-info">
+      <strong>Quy tắc Hiệp đồng BE - FE:</strong>
+      <ul>
+        <li>Tất cả các API Response bắt buộc tuân thủ đúng cấu trúc <code>Base Response Envelope</code>.</li>
+        <li>Trường <code>statusCode = 0</code> đại diện cho xử lý OCR thành công. Khi gặp lỗi, <code>statusCode</code> phản ánh mã lỗi HTTP hoặc mã lỗi nghiệp vụ tương ứng.</li>
+        <li>Trường <code>errors</code> là danh sách mảng chứa chi tiết lý do thất bại. Nếu thành công, <code>errors</code> là mảng rỗng <code>[]</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SECTION 2: BASE RESPONSE ENVELOPE STRUCT -->
+  <section>
+    <h2>2. Cấu trúc Base Response Standard Envelope</h2>
+
+    <div class="grid-2">
+      <div>
+        <h3>2.1. Cấu trúc Response Thành công (Success)</h3>
+        <pre><code>{
+  "isSuccess": true,
+  "statusCode": 0,
+  "message": "Trích xuất thông tin CCCD thành công.",
+  "data": {
+    items: {
+      "id_number": "012345678901",
+      "full_name": "NGUYỄN VĂN A",
+      "date_of_birth": "01/01/1990",
+      "sex": "Nam",
+      "nationality": "Việt Nam",
+      "place_of_origin": "Hà Nội",
+      "place_of_residence": "Hà Nội",
+      "date_of_expiry": "01/01/2030"
+    }
+  },
+  "errors": [],
+  "timestamp": "2026-09-24T02:48:56.920Z"
+}</code></pre>
+      </div>
+
+      <div>
+        <h3>2.2. Cấu trúc Response Lỗi (Error)</h3>
+        <pre><code>{
+  "isSuccess": false,
+  "statusCode": 400,
+  "message": "Ảnh không đạt yêu cầu chất lượng",
+  "data": null,
+  "errors": [
+    "IMAGE_QUALITY_REJECTED: Độ chói hoặc độ mờ vượt quá ngưỡng cho phép, vui lòng chụp lại."
+  ],
+  "timestamp": "2026-09-24T02:48:56.920Z"
+}</code></pre>
+      </div>
+    </div>
+
+    <h3>Mô tả Chi tiết các Trường Base Response</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Trường (Field)</th>
+          <th>Kiểu dữ liệu (Type)</th>
+          <th>Bắt buộc</th>
+          <th>Mô tả chi tiết</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>isSuccess</code></td>
+          <td>boolean</td>
+          <td>Yes</td>
+          <td><code>true</code> khi OCR và xử lý thành công, <code>false</code> khi xảy ra lỗi.</td>
+        </tr>
+        <tr>
+          <td><code>statusCode</code></td>
+          <td>integer</td>
+          <td>Yes</td>
+          <td><code>0</code> biểu thị xử lý thành công. Khác <code>0</code> (hoặc HTTP Status) khi có lỗi.</td>
+        </tr>
+        <tr>
+          <td><code>message</code></td>
+          <td>string</td>
+          <td>Yes</td>
+          <td>Thông điệp tóm tắt kết quả xử lý.</td>
+        </tr>
+        <tr>
+          <td><code>data</code></td>
+          <td>object | null</td>
+          <td>Yes</td>
+          <td>Object chứa kết quả OCR dữ liệu CCCD. Bằng <code>null</code> nếu xử lý thất bại.</td>
+        </tr>
+        <tr>
+          <td><code>errors</code></td>
+          <td>array&lt;string&gt;</td>
+          <td>Yes</td>
+          <td>Mảng danh sách các thông báo lỗi chi tiết. Mảng rỗng <code>[]</code> khi thành công.</td>
+        </tr>
+        <tr>
+          <td><code>timestamp</code></td>
+          <td>string (DateTime)</td>
+          <td>Yes</td>
+          <td>Thời gian phản hồi định dạng ISO-8601 (UTC).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECTION 3: ENDPOINT SPECIFICATION -->
+  <section>
+    <h2>3. Chi tiết API Endpoint</h2>
+
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method post">POST</span>
+        <span class="path">http://172.29.50.34:8000/ocr</span>
+      </div>
+      <div class="endpoint-body">
+        <p><strong>Mục đích:</strong> Tải lên ảnh CCCD để hệ thống OCR trích xuất thông tin cá nhân.</p>
+        <p><strong>Headers yêu cầu:</strong></p>
+        <ul>
+          <li><code>Authorization</code>: Bearer &lt;User_JWT_Token&gt;</li>
+          <li><code>Content-Type</code>: multipart/form-data</li>
+        </ul>
+
+        <h3>3.1. Request Body (Form-Data)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Tham số (Field)</th>
+              <th>Kiểu dữ liệu</th>
+              <th>Bắt buộc</th>
+              <th>Mô tả</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>image</code></td>
+              <td>File (Binary)</td>
+              <td>Yes</td>
+              <td>File ảnh CCCD chụp trực tiếp từ UI. Định dạng hỗ trợ: <code>.png</code>, <code>.jpeg</code>, <code>.jpg</code>. Dung lượng &le; 10MB.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>3.2. Response Data Schema (Trường dữ liệu trong <code>data</code>)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Trường (Field)</th>
+              <th>Kiểu dữ liệu</th>
+              <th>Ví dụ</th>
+              <th>Mô tả</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id_number</code></td>
+              <td>string</td>
+              <td>"012345678901"</td>
+              <td>Số CCCD (12 chữ số).</td>
+            </tr>
+            <tr>
+              <td><code>full_name</code></td>
+              <td>string</td>
+              <td>"NGUYỄN VĂN A"</td>
+              <td>Họ và tên in hoa trên thẻ.</td>
+            </tr>
+            <tr>
+              <td><code>date_of_birth</code></td>
+              <td>string (date)</td>
+              <td>"01/01/1990"</td>
+              <td>Ngày sinh (Định dạng DD/MM/YYYY).</td>
+            </tr>
+            <tr>
+              <td><code>sex</code></td>
+              <td>string</td>
+              <td>"Nam" / "Nữ"</td>
+              <td>Giới tính.</td>
+            </tr>
+            <tr>
+              <td><code>nationality</code></td>
+              <td>string</td>
+              <td>"Việt Nam"</td>
+              <td>Quốc tịch.</td>
+            </tr>
+            <tr>
+              <td><code>place_of_origin</code></td>
+              <td>string</td>
+              <td>"Hà Nội"</td>
+              <td>Quê quán.</td>
+            </tr>
+            <tr>
+              <td><code>place_of_residence</code></td>
+              <td>string</td>
+              <td>"Hà Nội"</td>
+              <td>Nơi thường trú.</td>
+            </tr>
+            <tr>
+              <td><code>date_of_expiry</code></td>
+              <td>string (date)</td>
+              <td>"01/01/2030"</td>
+              <td>Ngày hết hạn thẻ (Định dạng DD/MM/YYYY).</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>3.3. Ví dụ Response Chi tiết</h3>
+
+        <p><span class="status-badge status-200">HTTP 200 OK</span> - Quét OCR thành công</p>
+        <pre><code>{
+  "isSuccess": true,
+  "statusCode": 0,
+  "message": "Trích xuất thông tin CCCD thành công.",
+  "data": {
+    items: {
+      "id_number": "012345678901",
+      "full_name": "NGUYỄN VĂN A",
+      "date_of_birth": "01/01/1990",
+      "sex": "Nam",
+      "nationality": "Việt Nam",
+      "place_of_origin": "Hà Nội",
+      "place_of_residence": "Hà Nội",
+      "date_of_expiry": "01/01/2030"
+    }
+  },
+  "errors": [],
+  "timestamp": "2026-09-24T02:48:56.920Z"
+}</code></pre>
+
+        <p><span class="status-badge status-400">HTTP 400 Bad Request</span> - Lỗi chất lượng ảnh (Chói, mờ, lệch khung)</p>
+        <pre><code>{
+  "isSuccess": false,
+  "statusCode": 400,
+  "message": "Ảnh tải lên không đạt chất lượng yêu cầu",
+  "data": null,
+  "errors": [
+    "IMAGE_QUALITY_REJECTED: Ảnh bị mờ hoặc không căn đúng khung hình cố định."
+  ],
+  "timestamp": "2026-09-24T02:48:56.920Z"
+}</code></pre>
+
+        <p><span class="status-badge status-415">HTTP 415 Unsupported Media Type</span> - Định dạng file không hợp lệ</p>
+        <pre><code>{
+  "isSuccess": false,
+  "statusCode": 415,
+  "message": "Định dạng file không được hỗ trợ",
+  "data": null,
+  "errors": [
+    "UNSUPPORTED_FORMAT: Chỉ chấp nhận định dạng ảnh .png, .jpeg, .jpg."
+  ],
+  "timestamp": "2026-09-24T02:48:56.920Z"
+}</code></pre>
+
+        <p><span class="status-badge status-401">HTTP 401 Unauthorized</span> - Unauthenticated / Token không hợp lệ</p>
+        <pre><code>{
+  "isSuccess": false,
+  "statusCode": 401,
+  "message": "Xác thực thất bại",
+  "data": null,
+  "errors": [
+    "UNAUTHORIZED: Access token không hợp lệ hoặc đã hết hạn."
+  ],
+  "timestamp": "2026-09-24T02:48:56.920Z"
+}</code></pre>
+
+        <p><span class="status-badge status-500">HTTP 500 Internal Server Error</span> - Lỗi xử lý AI Service / VietOCR</p>
+        <pre><code>{
+  "isSuccess": false,
+  "statusCode": 500,
+  "message": "Lỗi hệ thống OCR",
+  "data": null,
+  "errors": [
+    "INTERNAL_SERVER_ERROR: Không thể khởi chạy engine VietOCR, vui lòng thử lại sau."
+  ],
+  "timestamp": "2026-09-24T02:48:56.920Z"
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: FE & BE INTEGRATION NOTES -->
+  <section>
+    <h2>4. Hướng dẫn Tích hợp & Hiệp đồng (Integration Guidelines)</h2>
+    <div class="callout callout-warn">
+      <strong>Lưu ý quan trọng về Bounding Box cố định:</strong> Do VietOCR trích xuất dựa trên khung định sẵn, UI bắt buộc phải cung cấp giao diện camera/upload có khung cố định (Overlay Frame) để hướng dẫn người dùng đặt vừa khít mặt trước CCCD.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Thành phần</th>
+          <th>Trách nhiệm xử lý</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Frontend (FE)</strong></td>
+          <td>
+            <ul>
+              <li>Kiểm tra định dạng file (PNG/JPEG/JPG) và kích thước file (&le; 10MB) trước khi gửi.</li>
+              <li>Sử dụng <code>FormData</code> để gắn trường <code>image</code> gửi tới API BE.</li>
+              <li>Nếu <code>isSuccess === true</code>, tự động điền (auto-fill) dữ liệu từ <code>data</code> vào form thông tin cá nhân.</li>
+              <li>Nếu <code>isSuccess === false</code>, đọc mảng <code>errors[]</code> để hiển thị thông báo hướng dẫn người dùng chụp lại ảnh (ví dụ: "Ảnh bị mờ", "Vui lòng đặt vừa khung").</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Backend (BE Gateway)</strong></td>
+          <td>
+            <ul>
+              <li>Xác thực JWT Token từ Header.</li>
+              <li>Bổ sung <code>user-id</code> vào payload multipart và forward request sang AI_OCR_API.</li>
+              <li>Nhận kết quả từ AI Service và đóng gói chuẩn hóa theo đúng cấu trúc Base Response trước khi trả về FE.</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>AI OCR Service</strong></td>
+          <td>
+            <ul>
+              <li>Sử dụng FastAPI Middleware để bắt toàn bộ Exception về độ mờ, độ chói, độ xoay của ảnh.</li>
+              <li>Trả về lỗi có định dạng rõ ràng để BE Gateway dễ dàng mapping.</li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+</body>
+</html>

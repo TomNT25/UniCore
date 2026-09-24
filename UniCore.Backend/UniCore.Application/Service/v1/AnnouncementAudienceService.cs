@@ -10,7 +10,6 @@ namespace UniCore.Application.Service.v1
         private readonly IUserRepository _userRepository;
         private readonly IDepartmentRepository _departmentRepository;
         private readonly ISchoolClassRepository _schoolClassRepository;
-        private readonly IStudentClassRepository _studentClassRepository;
         private readonly ICourseRepository _courseRepository;
         private readonly ICourseStudentRepository _courseStudentRepository;
 
@@ -18,14 +17,12 @@ namespace UniCore.Application.Service.v1
             IUserRepository userRepository,
             IDepartmentRepository departmentRepository,
             ISchoolClassRepository schoolClassRepository,
-            IStudentClassRepository studentClassRepository,
             ICourseRepository courseRepository,
             ICourseStudentRepository courseStudentRepository)
         {
             _userRepository = userRepository;
             _departmentRepository = departmentRepository;
             _schoolClassRepository = schoolClassRepository;
-            _studentClassRepository = studentClassRepository;
             _courseRepository = courseRepository;
             _courseStudentRepository = courseStudentRepository;
         }
@@ -179,33 +176,23 @@ namespace UniCore.Application.Service.v1
         private async Task<IReadOnlyList<string>> ResolveStudentsByDepartmentIdsAsync(string? scopeValue, CancellationToken ct)
         {
             var ids = AnnouncementScopeStorage.ParseTargetIds(scopeValue);
-            var all = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var id in ids)
+            if (ids.Count == 0)
             {
-                var students = await _studentClassRepository.GetActiveStudentIdsByDepartmentIdAsync(id, ct);
-                foreach (var studentId in students)
-                {
-                    all.Add(studentId);
-                }
+                return Array.Empty<string>();
             }
 
-            return all.ToList();
+            return await _userRepository.GetActiveVerifiedStudentIdsByDepartmentIdsAsync(ids, ct);
         }
 
         private async Task<IReadOnlyList<string>> ResolveStudentsByClassIdsAsync(string? scopeValue, CancellationToken ct)
         {
             var ids = AnnouncementScopeStorage.ParseTargetIds(scopeValue);
-            var all = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var id in ids)
+            if (ids.Count == 0)
             {
-                var students = await _studentClassRepository.GetActiveStudentIdsByClassIdAsync(id, ct);
-                foreach (var studentId in students)
-                {
-                    all.Add(studentId);
-                }
+                return Array.Empty<string>();
             }
 
-            return all.ToList();
+            return await _userRepository.GetActiveVerifiedStudentIdsByClassIdsAsync(ids, ct);
         }
 
         private async Task<IReadOnlyList<string>> ResolveStudentsByCourseIdsAsync(string? scopeValue, CancellationToken ct)

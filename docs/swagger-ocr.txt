@@ -1,0 +1,67 @@
+"/ocr": {
+      "post": {
+        "summary": "Ocr Cccd",
+        "operationId": "ocr_cccd_ocr_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_ocr_cccd_ocr_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OCR processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OCRSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or empty uploaded file",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OCRErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Uploaded file is too large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OCRErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "OCR processing error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OCRErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }

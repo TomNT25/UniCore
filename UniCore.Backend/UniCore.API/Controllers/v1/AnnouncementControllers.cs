@@ -142,70 +142,60 @@ namespace UniCore.API.Controllers.v1
     }
 
     /// <summary>
-    /// Admin autocomplete targets for announcement scope (spec: data + meta, no BaseAPIResponse wrapper).
+    /// Admin autocomplete targets for announcement scope (spec: items + metadata cursor pagination).
     /// </summary>
+    [ApiController]
     [ApiVersion("1.0")]
     [Authorize(Roles = "Admin")]
     [Route("api/v{version:apiVersion}/admin/announcements/targets")]
-    public class AdminAnnouncementTargetsController : ControllerBase
+    public class AdminAnnouncementTargetsController : BaseController
     {
         private readonly IAnnouncementTargetSearchService _targetSearchService;
 
-        public AdminAnnouncementTargetsController(IAnnouncementTargetSearchService targetSearchService)
+        public AdminAnnouncementTargetsController(IAnnouncementTargetSearchService targetSearchService, IJsonStringLocalizer localizer)
+            : base(localizer)
         {
             _targetSearchService = targetSearchService;
         }
 
         [HttpGet("courses")]
-        [ProducesResponseType(typeof(AnnouncementTargetSearchResponseDto<CourseTargetItemDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<AnnouncementTargetSearchResponseDto<CourseTargetItemDto>>> SearchCourses(
-            [FromQuery] string? search,
-            [FromQuery] int? limit,
+        [ProducesResponseType(typeof(SearchCourseTargetsResponseDTO), StatusCodes.Status200OK)]
+        public async Task<ActionResult<BaseAPIResponse<SearchCourseTargetsResponseDTO>>> SearchCourses(
+            [FromQuery] SearchCourseTargetsRequestDTO request,
             CancellationToken cancellationToken)
         {
-            var result = await _targetSearchService.SearchCoursesAsync(
-                new AnnouncementTargetSearchQuery { Search = search, Limit = limit },
-                cancellationToken);
-            return Ok(result);
+            var result = await _targetSearchService.SearchCoursesAsync(request, cancellationToken);
+            return OkResponse<SearchCourseTargetsResponseDTO>(result, _localizer.GetString(MessageConstants.Announcement.TargetsSearchCoursesSuccess));
         }
 
         [HttpGet("classes")]
-        [ProducesResponseType(typeof(AnnouncementTargetSearchResponseDto<ClassTargetItemDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<AnnouncementTargetSearchResponseDto<ClassTargetItemDto>>> SearchClasses(
-            [FromQuery] string? search,
-            [FromQuery] int? limit,
+        [ProducesResponseType(typeof(SearchClassTargetsResponseDTO), StatusCodes.Status200OK)]
+        public async Task<ActionResult<BaseAPIResponse<SearchClassTargetsResponseDTO>>> SearchClasses(
+            [FromQuery] SearchClassTargetsRequestDTO request,
             CancellationToken cancellationToken)
         {
-            var result = await _targetSearchService.SearchClassesAsync(
-                new AnnouncementTargetSearchQuery { Search = search, Limit = limit },
-                cancellationToken);
-            return Ok(result);
+            var result = await _targetSearchService.SearchClassesAsync(request, cancellationToken);
+            return OkResponse<SearchClassTargetsResponseDTO>(result, _localizer.GetString(MessageConstants.Announcement.TargetsSearchClassesSuccess));
         }
 
         [HttpGet("departments")]
-        [ProducesResponseType(typeof(AnnouncementTargetSearchResponseDto<DepartmentTargetItemDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<AnnouncementTargetSearchResponseDto<DepartmentTargetItemDto>>> SearchDepartments(
-            [FromQuery] string? search,
-            [FromQuery] int? limit,
+        [ProducesResponseType(typeof(SearchDepartmentTargetsResponseDTO), StatusCodes.Status200OK)]
+        public async Task<ActionResult<BaseAPIResponse<SearchDepartmentTargetsResponseDTO>>> SearchDepartments(
+            [FromQuery] SearchDepartmentTargetsRequestDTO request,
             CancellationToken cancellationToken)
         {
-            var result = await _targetSearchService.SearchDepartmentsAsync(
-                new AnnouncementTargetSearchQuery { Search = search, Limit = limit },
-                cancellationToken);
-            return Ok(result);
+            var result = await _targetSearchService.SearchDepartmentsAsync(request, cancellationToken);
+            return OkResponse<SearchDepartmentTargetsResponseDTO>(result, _localizer.GetString(MessageConstants.Announcement.TargetsSearchDepartmentsSuccess));
         }
 
         [HttpGet("students")]
-        [ProducesResponseType(typeof(AnnouncementTargetSearchResponseDto<StudentTargetItemDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<AnnouncementTargetSearchResponseDto<StudentTargetItemDto>>> SearchStudents(
-            [FromQuery] string? search,
-            [FromQuery] int? limit,
+        [ProducesResponseType(typeof(SearchStudentTargetsResponseDTO), StatusCodes.Status200OK)]
+        public async Task<ActionResult<BaseAPIResponse<SearchStudentTargetsResponseDTO>>> SearchStudents(
+            [FromQuery] SearchStudentTargetsRequestDTO request,
             CancellationToken cancellationToken)
         {
-            var result = await _targetSearchService.SearchStudentsAsync(
-                new AnnouncementTargetSearchQuery { Search = search, Limit = limit },
-                cancellationToken);
-            return Ok(result);
+            var result = await _targetSearchService.SearchStudentsAsync(request, cancellationToken);
+            return OkResponse<SearchStudentTargetsResponseDTO>(result, _localizer.GetString(MessageConstants.Announcement.TargetsSearchStudentsSuccess));
         }
     }
 
@@ -249,7 +239,7 @@ namespace UniCore.API.Controllers.v1
         /// <summary>Workflow list (active/expired), no pagination — equivalent to GET .../me?status=</summary>
         [HttpGet("me")]
         [ProducesResponseType(typeof(StudentAnnouncementWorkflowListResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetMyWorkflowList(
+        public async Task<ActionResult<BaseAPIResponse<StudentAnnouncementWorkflowListResponse>>> GetMyWorkflowList(
             [FromQuery] string status = "active",
             CancellationToken cancellationToken = default)
         {
@@ -257,24 +247,24 @@ namespace UniCore.API.Controllers.v1
             var result = await _getWorkflowListHandler.HandleAsync(
                 new GetStudentAnnouncementWorkflowListRequest { StudentId = studentId, Status = status },
                 cancellationToken);
-            return Ok(result);
+            return OkResponse<StudentAnnouncementWorkflowListResponse>(result, _localizer.GetString(MessageConstants.Announcement.WorkflowListSuccess));
         }
 
         [HttpGet("get-new")]
         [ProducesResponseType(typeof(StudentAnnouncementWorkflowListResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetNewAnnouncements(CancellationToken cancellationToken = default)
+        public async Task<ActionResult<BaseAPIResponse<StudentAnnouncementWorkflowListResponse>>> GetNewAnnouncements(CancellationToken cancellationToken = default)
         {
             var studentId = GetCurrentUserId();
             var result = await _getNewAnnouncementsHandler.HandleAsync(
                 new GetStudentNewAnnouncementsRequest { StudentId = studentId },
                 cancellationToken);
-            return Ok(result);
+            return OkResponse<StudentAnnouncementWorkflowListResponse>(result, _localizer.GetString(MessageConstants.Announcement.NewAnnouncementsSuccess));
         }
 
         [HttpGet("me/{announcementId}")]
         [ProducesResponseType(typeof(StudentAnnouncementWorkflowItemDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetMyAnnouncementDetail(
+        public async Task<ActionResult<BaseAPIResponse<StudentAnnouncementWorkflowItemDto>>> GetMyAnnouncementDetail(
             string announcementId,
             CancellationToken cancellationToken = default)
         {
@@ -284,7 +274,7 @@ namespace UniCore.API.Controllers.v1
                 var result = await _getStudentByIdHandler.HandleAsync(
                     new GetStudentAnnouncementByIdRequest { StudentId = studentId, AnnouncementId = announcementId },
                     cancellationToken);
-                return Ok(result);
+                return OkResponse<StudentAnnouncementWorkflowItemDto>(result, _localizer.GetString(MessageConstants.Announcement.DetailSuccess));
             }
             catch (KeyNotFoundException ex)
             {
@@ -294,7 +284,7 @@ namespace UniCore.API.Controllers.v1
 
         [HttpPost("confirm-acknowledged")]
         [ProducesResponseType(typeof(MarkAnnouncementAcknowledgedResponseDTO), StatusCodes.Status200OK)]
-        public async Task<IActionResult> ConfirmAcknowledged(
+        public async Task<ActionResult<BaseAPIResponse<MarkAnnouncementAcknowledgedResponseDTO>>> ConfirmAcknowledged(
             [FromBody] ConfirmAcknowledgedRequestDto body,
             CancellationToken cancellationToken = default)
         {
@@ -308,7 +298,7 @@ namespace UniCore.API.Controllers.v1
             try
             {
                 var result = await _markAcknowledgedHandler.HandleAsync(request, cancellationToken);
-                return Ok(result);
+                return OkResponse<MarkAnnouncementAcknowledgedResponseDTO>(result, _localizer.GetString(MessageConstants.Announcement.ConfirmAcknowledgedSuccess));
             }
             catch (KeyNotFoundException ex)
             {
@@ -318,7 +308,7 @@ namespace UniCore.API.Controllers.v1
 
         [HttpGet]
         [ProducesResponseType(typeof(GetStudentAnnouncementsResponseDTO), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetMyAnnouncements(
+        public async Task<ActionResult<BaseAPIResponse<GetStudentAnnouncementsResponseDTO>>> GetMyAnnouncements(
             [FromQuery] bool? isRead = null,
             [FromQuery] string? type = null,
             [FromQuery] int page = 1,
@@ -337,13 +327,13 @@ namespace UniCore.API.Controllers.v1
             };
 
             var result = await _getStudentAnnouncementsHandler.HandleAsync(request, cancellationToken);
-            return Ok(result);
+            return OkResponse<GetStudentAnnouncementsResponseDTO>(result, _localizer.GetString(MessageConstants.Announcement.GetMyAnnouncementsSuccess));
         }
 
         [HttpPost("{announcementId}/view")]
         [ProducesResponseType(typeof(MarkAnnouncementViewedResponseDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> MarkAsViewed(
+        public async Task<ActionResult<BaseAPIResponse<MarkAnnouncementViewedResponseDTO>>> MarkAsViewed(
             string announcementId,
             CancellationToken cancellationToken = default)
         {
@@ -358,7 +348,7 @@ namespace UniCore.API.Controllers.v1
             try
             {
                 var result = await _markViewedHandler.HandleAsync(request, cancellationToken);
-                return Ok(result);
+                return OkResponse<MarkAnnouncementViewedResponseDTO>(result, _localizer.GetString(MessageConstants.Announcement.MarkAsViewedSuccess));
             }
             catch (KeyNotFoundException ex)
             {
@@ -369,7 +359,7 @@ namespace UniCore.API.Controllers.v1
         [HttpPost("{announcementId}/acknowledge")]
         [ProducesResponseType(typeof(MarkAnnouncementAcknowledgedResponseDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> MarkAsAcknowledged(
+        public async Task<ActionResult<BaseAPIResponse<MarkAnnouncementAcknowledgedResponseDTO>>> MarkAsAcknowledged(
             string announcementId,
             CancellationToken cancellationToken = default)
         {
@@ -384,7 +374,7 @@ namespace UniCore.API.Controllers.v1
             try
             {
                 var result = await _markAcknowledgedHandler.HandleAsync(request, cancellationToken);
-                return Ok(result);
+                return OkResponse<MarkAnnouncementAcknowledgedResponseDTO>(result, _localizer.GetString(MessageConstants.Announcement.ConfirmAcknowledgedSuccess));
             }
             catch (KeyNotFoundException ex)
             {
@@ -394,16 +384,10 @@ namespace UniCore.API.Controllers.v1
 
         private string GetCurrentUserId()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)
-                ?? User.FindFirst("sub")
-                ?? User.FindFirst("userId");
-
-            if (userIdClaim == null)
-            {
-                throw new UnauthorizedAccessException("User ID not found in token");
-            }
-
-            return userIdClaim.Value;
+            return User.FindFirst(AuthConstants.Claims.UserId)?.Value
+                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                   ?? User.FindFirst(ClaimTypes.Email)?.Value
+                   ?? string.Empty;
         }
     }
 

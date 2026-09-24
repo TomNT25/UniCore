@@ -8,13 +8,16 @@ namespace UniCore.Application.Feature.v1.FaceAuth.GetStatus
     public class GetFaceStatusHandler : IRequestHandler<GetFaceStatusRequestDTO, GetFaceStatusResponseDTO>
     {
         private readonly IUserFaceProfileRepository _faceProfileRepository;
+        private readonly IUserMfaSettingRepository _mfaSettingRepository;
         private readonly ILogger<GetFaceStatusHandler> _logger;
 
         public GetFaceStatusHandler(
             IUserFaceProfileRepository faceProfileRepository,
+            IUserMfaSettingRepository mfaSettingRepository,
             ILogger<GetFaceStatusHandler> logger)
         {
             _faceProfileRepository = faceProfileRepository;
+            _mfaSettingRepository = mfaSettingRepository;
             _logger = logger;
         }
 
@@ -25,6 +28,9 @@ namespace UniCore.Application.Feature.v1.FaceAuth.GetStatus
             _logger.LogDebug("Getting face status for user {UserId}", request.UserId);
 
             var profile = await _faceProfileRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var mfaSetting = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var isMfaEnabled = mfaSetting?.IsMfaEnabled ?? false;
+            var mfaMethod = mfaSetting?.MfaMethod;
 
             if (profile == null)
             {
@@ -35,7 +41,9 @@ namespace UniCore.Application.Feature.v1.FaceAuth.GetStatus
                     IsEnrolled = false,
                     RequiresPin = false,
                     IsSuspended = false,
-                    IsLocked = false
+                    IsLocked = false,
+                    IsMfaEnabled = isMfaEnabled,
+                    MfaMethod = mfaMethod
                 };
             }
 
@@ -51,7 +59,9 @@ namespace UniCore.Application.Feature.v1.FaceAuth.GetStatus
                 EnrolledAt = profile.EnrolledAt,
                 PinSetAt = profile.PinSetAt,
                 LockoutEnd = isLocked ? profile.PinLockoutEnd : null,
-                ModelVersion = profile.ModelVersion
+                ModelVersion = profile.ModelVersion,
+                IsMfaEnabled = isMfaEnabled,
+                MfaMethod = mfaMethod
             };
         }
     }

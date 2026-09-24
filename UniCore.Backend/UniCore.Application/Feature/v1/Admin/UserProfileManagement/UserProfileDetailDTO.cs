@@ -13,6 +13,10 @@ namespace UniCore.Application.Feature.v1.Admin.UserProfileManagement
         public DateTime? BirthDate { get; set; }
         public string? Address { get; set; }
         public string? Bio { get; set; }
+        public bool IsActive { get; set; } = true;
+        public bool IsVerified { get; set; }
+        public DateTime? VerifiedAt { get; set; }
+        public string? VerifiedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
 }

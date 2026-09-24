@@ -1,25 +1,83 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using UniCore.Application.DTO;
 
 namespace UniCore.Application.Feature.v1.Announcement.Targets
 {
-    public class AnnouncementTargetSearchQuery
+    public class AnnouncementTargetCursorPaginationRequest : CursorPaginationRequest
     {
-        public string? Search { get; set; }
-        public int? Limit { get; set; }
+        public string? Search
+        {
+            get => SearchTerm;
+            set => SearchTerm = value;
+        }
+
+        public int? Limit
+        {
+            get => PageSize;
+            set
+            {
+                if (value.HasValue)
+                {
+                    PageSize = value.Value;
+                }
+            }
+        }
     }
 
-    public class AnnouncementTargetSearchMetaDto
+    public class SearchCourseTargetsRequestDTO : AnnouncementTargetCursorPaginationRequest
     {
-        public int Total { get; set; }
-        public int Limit { get; set; }
-        public string? Search { get; set; }
-        public string Domain { get; set; } = string.Empty;
     }
 
-    public class AnnouncementTargetSearchResponseDto<T>
+    public class SearchClassTargetsRequestDTO : AnnouncementTargetCursorPaginationRequest
     {
-        public List<T> Data { get; set; } = new();
-        public AnnouncementTargetSearchMetaDto Meta { get; set; } = new();
+    }
+
+    public class SearchDepartmentTargetsRequestDTO : AnnouncementTargetCursorPaginationRequest
+    {
+    }
+
+    public class SearchStudentTargetsRequestDTO : AnnouncementTargetCursorPaginationRequest
+    {
+    }
+
+    public class SearchCourseTargetsResponseDTO : CursorPaginationResponse<CourseTargetItemDto>
+    {
+        public SearchCourseTargetsResponseDTO() : base() { }
+        public SearchCourseTargetsResponseDTO(IEnumerable<CourseTargetItemDto> items, CursorPaginationMetaResponse metadata)
+            : base(items, metadata) { }
+    }
+
+    public class SearchClassTargetsResponseDTO : CursorPaginationResponse<ClassTargetItemDto>
+    {
+        public SearchClassTargetsResponseDTO() : base() { }
+        public SearchClassTargetsResponseDTO(IEnumerable<ClassTargetItemDto> items, CursorPaginationMetaResponse metadata)
+            : base(items, metadata) { }
+    }
+
+    public class SearchDepartmentTargetsResponseDTO : CursorPaginationResponse<DepartmentTargetItemDto>
+    {
+        public SearchDepartmentTargetsResponseDTO() : base() { }
+        public SearchDepartmentTargetsResponseDTO(IEnumerable<DepartmentTargetItemDto> items, CursorPaginationMetaResponse metadata)
+            : base(items, metadata) { }
+    }
+
+    public class SearchStudentTargetsResponseDTO : CursorPaginationResponse<StudentTargetItemDto>
+    {
+        public SearchStudentTargetsResponseDTO() : base() { }
+        public SearchStudentTargetsResponseDTO(IEnumerable<StudentTargetItemDto> items, CursorPaginationMetaResponse metadata)
+            : base(items, metadata) { }
+    }
+
+    public class AnnouncementTargetSearchQuery : AnnouncementTargetCursorPaginationRequest
+    {
+    }
+
+    public class AnnouncementTargetSearchResponseDto<T> : CursorPaginationResponse<T>
+    {
+        public AnnouncementTargetSearchResponseDto() : base() { }
+        public AnnouncementTargetSearchResponseDto(IEnumerable<T> items, CursorPaginationMetaResponse metadata)
+            : base(items, metadata) { }
     }
 
     public class CourseTargetItemDto

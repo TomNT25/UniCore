@@ -20,6 +20,7 @@ using UniCore.Application.Feature.v1.Admin.UserManagement.UpdateUser;
 using UniCore.Application.Feature.v1.Admin.UserManagement.UpdateUserStatus;
 using UniCore.Application.Feature.v1.Admin.UserProfileManagement.GetUserProfile;
 using UniCore.Application.Feature.v1.Admin.UserProfileManagement.UpdateUserProfile;
+using UniCore.Application.Feature.v1.Admin.UserProfileManagement.VerifyUserProfile;
 
 namespace UniCore.Application.Service.v1
 {
@@ -34,6 +35,7 @@ namespace UniCore.Application.Service.v1
         private readonly UpdateUserStatusHandler _updateUserStatusHandler;
         private readonly GetUserProfileHandler _getUserProfileHandler;
         private readonly UpdateUserProfileHandler _updateUserProfileHandler;
+        private readonly VerifyUserProfileHandler _verifyUserProfileHandler;
         private readonly GetAllStudentsHandler _getAllStudentsHandler;
         private readonly GetAllCoursesHandler _getAllCoursesHandler;
         private readonly GetCourseByIdHandler _getCourseByIdHandler;
@@ -58,6 +60,7 @@ namespace UniCore.Application.Service.v1
             UpdateUserStatusHandler updateUserStatusHandler,
             GetUserProfileHandler getUserProfileHandler,
             UpdateUserProfileHandler updateUserProfileHandler,
+            VerifyUserProfileHandler verifyUserProfileHandler,
             GetAllStudentsHandler getAllStudentsHandler,
             GetAllCoursesHandler getAllCoursesHandler,
             GetCourseByIdHandler getCourseByIdHandler,
@@ -80,6 +83,7 @@ namespace UniCore.Application.Service.v1
             _updateUserStatusHandler = updateUserStatusHandler;
             _getUserProfileHandler = getUserProfileHandler;
             _updateUserProfileHandler = updateUserProfileHandler;
+            _verifyUserProfileHandler = verifyUserProfileHandler;
             _getAllStudentsHandler = getAllStudentsHandler;
             _getAllCoursesHandler = getAllCoursesHandler;
             _getCourseByIdHandler = getCourseByIdHandler;
@@ -120,6 +124,9 @@ namespace UniCore.Application.Service.v1
 
         public Task<UpdateUserProfileResponseDTO> UpdateUserProfileAsync(UpdateUserProfileRequestDTO request, CancellationToken cancellationToken = default)
             => _updateUserProfileHandler.HandleAsync(request, cancellationToken);
+
+        public Task<VerifyUserProfileResponseDTO> VerifyUserProfileAsync(VerifyUserProfileRequestDTO request, CancellationToken cancellationToken = default)
+            => _verifyUserProfileHandler.HandleAsync(request, cancellationToken);
 
         public Task<GetAllStudentsResponseDTO> GetAllStudentsAsync(GetAllStudentsRequestDTO request, CancellationToken cancellationToken = default)
             => _getAllStudentsHandler.HandleAsync(request, cancellationToken);

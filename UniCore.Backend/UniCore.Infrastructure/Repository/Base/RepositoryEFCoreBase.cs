@@ -111,12 +111,15 @@ namespace UniCore.Infrastructure.Repository.Base
             var result = new PageNumberPaginationResponse<TDto>()
             {
                 Items = items,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalRecords = totalRecords,
-                TotalPages = totalPages,
-                HasNextPage = pageNumber < totalPages,
-                HasPreviousPage = pageNumber > 1
+                Metadata = new PageNumberPaginationMetaResponse
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalRecords = totalRecords,
+                    TotalPages = totalPages,
+                    HasNextPage = pageNumber < totalPages,
+                    HasPreviousPage = pageNumber > 1
+                }
             };
 
             return result;
@@ -135,9 +138,9 @@ namespace UniCore.Infrastructure.Repository.Base
                 query = query.Where(filter);
             }
 
-            query = query.ApplyCursorFilter(request.Cursor, request.SortColumn, request.SortDescending);
-
             var sortCol = string.IsNullOrWhiteSpace(request.SortColumn) ? "Id" : request.SortColumn;
+
+            query = query.ApplyCursorFilter(request.Cursor, sortCol, request.SortDescending);
             query = query.OrderByDynamic(sortCol, request.SortDescending);
 
             var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
@@ -157,20 +160,33 @@ namespace UniCore.Infrastructure.Repository.Base
             if (hasNextPage && items.Count > 0)
             {
                 var lastItem = items[items.Count - 1];
-                var prop = typeof(TDto).GetProperty(sortCol) ?? typeof(TDto).GetProperty("Id");
+                var normalizedSort = sortCol.Replace("_", "");
+                var prop = typeof(TDto).GetProperties()
+                    .FirstOrDefault(p => string.Equals(p.Name, sortCol, StringComparison.OrdinalIgnoreCase) ||
+                                         string.Equals(p.Name, normalizedSort, StringComparison.OrdinalIgnoreCase))
+                    ?? typeof(TDto).GetProperties()
+                        .FirstOrDefault(p => string.Equals(p.Name, "Id", StringComparison.OrdinalIgnoreCase) ||
+                                             p.Name.EndsWith("Id", StringComparison.OrdinalIgnoreCase));
+
                 if (prop != null)
                 {
-                    var rawVal = prop.GetValue(lastItem)?.ToString() ?? string.Empty;
-                    nextCursor = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(rawVal));
+                    var rawVal = prop.GetValue(lastItem)?.ToString();
+                    if (!string.IsNullOrEmpty(rawVal))
+                    {
+                        nextCursor = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(rawVal));
+                    }
                 }
             }
 
             return new CursorPaginationResponse<TDto>()
             {
                 Items = items,
-                PageSize = pageSize,
-                HasNextPage = hasNextPage,
-                NextCursor = nextCursor
+                Metadata = new CursorPaginationMetaResponse
+                {
+                    PageSize = pageSize,
+                    HasNextPage = hasNextPage,
+                    NextCursor = nextCursor
+                }
             };
         }
 

@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using UniCore.Application.Contract.RequestHandlerHub;
 using System.Linq.Expressions;
@@ -43,12 +43,7 @@ namespace UniCore.Application.Feature.v1.Courses.GetAllCourses
                 return new GetAllCoursesResponseDTO
                 {
                     Items = pagedResult.Items,
-                    PageNumber = pagedResult.PageNumber,
-                    PageSize = pagedResult.PageSize,
-                    TotalRecords = pagedResult.TotalRecords,
-                    TotalPages = pagedResult.TotalPages,
-                    HasNextPage = pagedResult.HasNextPage,
-                    HasPreviousPage = pagedResult.HasPreviousPage
+                    Metadata = pagedResult.Metadata
                 };
             }
         }

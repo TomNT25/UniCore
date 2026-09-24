@@ -41,12 +41,7 @@ namespace UniCore.Application.Feature.v1.Permission.GetAllPermission
             return new GetAllPermissionResponseDTO
             {
                 Items = pagedResult.Items,
-                PageNumber = pagedResult.PageNumber,
-                PageSize = pagedResult.PageSize,
-                TotalRecords = pagedResult.TotalRecords,
-                TotalPages = pagedResult.TotalPages,
-                HasNextPage = pagedResult.HasNextPage,
-                HasPreviousPage = pagedResult.HasPreviousPage
+                Metadata = pagedResult.Metadata
             };
         }
     }

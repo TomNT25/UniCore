@@ -11,8 +11,10 @@ using UniCore.Application.Feature.v1.Admin.UserManagement.GetAllUsers;
 using UniCore.Application.Feature.v1.Admin.UserManagement.GetUserById;
 using UniCore.Application.Feature.v1.Admin.UserManagement.UpdateUser;
 using UniCore.Application.Feature.v1.Admin.UserManagement.UpdateUserStatus;
+using System.Security.Claims;
 using UniCore.Application.Feature.v1.Admin.UserProfileManagement.GetUserProfile;
 using UniCore.Application.Feature.v1.Admin.UserProfileManagement.UpdateUserProfile;
+using UniCore.Application.Feature.v1.Admin.UserProfileManagement.VerifyUserProfile;
 using UniCore.Helper.Constant;
 using UniCore.Helper.Localization;
 
@@ -158,6 +160,26 @@ namespace UniCore.API.Controllers.v1.Admin
             return OkResponse<UpdateUserProfileResponseDTO>(result, message);
         }
 
+        /// <summary>
+        /// Verify or unverify user profile
+        /// </summary>
+        [HttpPatch("{userId}/profile/verify")]
+        [ProducesResponseType(typeof(BaseAPIResponse<VerifyUserProfileResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<BaseAPIResponse<VerifyUserProfileResponseDTO>>> VerifyUserProfile(
+            string userId,
+            [FromBody] VerifyUserProfileRequestDTO? request,
+            CancellationToken cancellationToken = default)
+        {
+            request ??= new VerifyUserProfileRequestDTO();
+            request.UserId = userId;
+            request.AdminUserId = GetActorUserId();
+            var result = await _adminService.VerifyUserProfileAsync(request, cancellationToken);
+            var message = _localizer.GetString(MessageConstants.Admin.VerifyUserProfileSuccess);
+            return OkResponse<VerifyUserProfileResponseDTO>(result, message);
+        }
+
         // ==========================================
         // 3. STUDENT (USER) MANAGEMENT
         // ==========================================
@@ -173,6 +195,13 @@ namespace UniCore.API.Controllers.v1.Admin
             var result = await _adminService.GetAllStudentsAsync(request, cancellationToken);
             var message = _localizer.GetString(MessageConstants.Admin.GetAllStudentsSuccess);
             return OkResponse<GetAllStudentsResponseDTO>(result, message);
+        }
+
+        private string? GetActorUserId()
+        {
+            return User.FindFirst(AuthConstants.Claims.UserId)?.Value
+                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                   ?? User.FindFirst(ClaimTypes.Email)?.Value;
         }
     }
 }

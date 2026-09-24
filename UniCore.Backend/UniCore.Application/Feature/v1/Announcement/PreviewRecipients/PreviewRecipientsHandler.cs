@@ -31,8 +31,7 @@ namespace UniCore.Application.Feature.v1.Announcement.PreviewRecipients
             var scopeType = request.ScopeType.Trim().ToUpperInvariant();
             var scopeValue = AnnouncementScopeStorage.BuildScopeValueForRequest(
                 scopeType,
-                request.ScopeValue,
-                request.Targets);
+                request.ScopeValue);
             var targetStudentIds = request.TargetStudentIds.Count > 0
                 ? request.TargetStudentIds
                 : (string.Equals(scopeType, AnnouncementConstants.Scope.SpecificStudents, StringComparison.OrdinalIgnoreCase)

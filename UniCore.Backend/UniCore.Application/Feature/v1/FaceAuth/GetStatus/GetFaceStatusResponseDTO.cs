@@ -49,5 +49,15 @@ namespace UniCore.Application.Feature.v1.FaceAuth.GetStatus
         /// Face AI model version used for enrollment.
         /// </summary>
         public string? ModelVersion { get; set; }
+
+        /// <summary>
+        /// Whether Face Recognition MFA is enabled.
+        /// </summary>
+        public bool IsMfaEnabled { get; set; }
+
+        /// <summary>
+        /// MFA method (e.g. FACE).
+        /// </summary>
+        public string? MfaMethod { get; set; }
     }
 }

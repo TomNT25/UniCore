@@ -20,6 +20,14 @@ public sealed class InMemoryEmailStore
         return ordered.Skip(skip).Take(pageSize).ToList();
     }
 
+    public IReadOnlyList<SimulatedEmailMessage> GetMyMessages(string email, int page, int pageSize, out int total)
+    {
+        var ordered = _messages.Values.Where(m => m.To.Equals(email, StringComparison.OrdinalIgnoreCase)).OrderByDescending(m => m.CreatedAtUtc).ToList();
+        total = ordered.Count;
+        var skip = Math.Max(0, (page - 1) * pageSize);
+        return ordered.Skip(skip).Take(pageSize).ToList();
+    }
+
     public SimulatedEmailMessage? GetById(string id) =>
         _messages.TryGetValue(id, out var msg) ? msg : null;
 

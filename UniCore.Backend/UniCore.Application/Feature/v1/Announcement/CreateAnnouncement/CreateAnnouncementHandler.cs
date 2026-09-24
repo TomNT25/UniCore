@@ -43,7 +43,6 @@ namespace UniCore.Application.Feature.v1.Announcement.CreateAnnouncement
             var scopeType = request.ScopeType.Trim().ToUpperInvariant();
             var type = request.Type.Trim().ToUpperInvariant();
 
-            // PUBLIC announcements are always NORMAL (no read-tracking / email).
             if (scopeType == AnnouncementConstants.Scope.Public)
             {
                 type = AnnouncementConstants.Type.Normal;
@@ -51,11 +50,10 @@ namespace UniCore.Application.Feature.v1.Announcement.CreateAnnouncement
 
             var scopeValue = AnnouncementScopeStorage.BuildScopeValueForRequest(
                 scopeType,
-                request.ScopeValue,
-                request.Targets);
+                request.ScopeValue);
             AnnouncementScopeStorage.EnsureStoredLength(scopeValue);
 
-            var targetStudentIds = ResolveTargetStudentIds(scopeType, request.TargetStudentIds, request.Targets);
+            var targetStudentIds = request.TargetStudentIds;
 
             await _audienceService.ValidateScopeAsync(
                 scopeType,
@@ -75,12 +73,16 @@ namespace UniCore.Application.Feature.v1.Announcement.CreateAnnouncement
                 Status = status,
                 ScopeType = scopeType,
                 ScopeValue = scopeValue,
-                RequireAcknowledgement = request.RequireAcknowledgement,
                 PublishDate = request.PublishDate,
                 ExpiredDate = request.ExpiredDate,
                 CreatedAt = now,
                 CreatedBy = request.ActorUserId
             };
+
+            if (request.Type == AnnouncementConstants.Type.Important || request.Type == AnnouncementConstants.Type.Urgent)
+            {
+                entity.RequireAcknowledgement = true;
+            }
 
             await _announcementRepository.AddAsync(entity, cancellationToken);
 
@@ -97,21 +99,6 @@ namespace UniCore.Application.Feature.v1.Announcement.CreateAnnouncement
             {
                 Announcement = _mapper.Map<AnnouncementDTO>(created)
             };
-        }
-
-        private static List<string> ResolveTargetStudentIds(
-            string scopeType,
-            List<string> targetStudentIds,
-            List<string> targets)
-        {
-            if (string.Equals(scopeType, AnnouncementConstants.Scope.SpecificStudents, StringComparison.OrdinalIgnoreCase)
-                && targetStudentIds.Count == 0
-                && targets.Count > 0)
-            {
-                return targets;
-            }
-
-            return targetStudentIds;
         }
     }
 }

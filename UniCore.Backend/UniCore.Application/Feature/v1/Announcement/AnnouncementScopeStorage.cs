@@ -56,8 +56,7 @@ namespace UniCore.Application.Feature.v1.Announcement
 
         public static string? BuildScopeValueForRequest(
             string scopeType,
-            string? scopeValue,
-            IEnumerable<string>? targets)
+            string? scopeValue)
         {
             var scope = scopeType.Trim().ToUpperInvariant();
             if (scope is UniCore.Helper.Constant.AnnouncementConstants.Scope.Public
@@ -65,12 +64,6 @@ namespace UniCore.Application.Feature.v1.Announcement
                 or UniCore.Helper.Constant.AnnouncementConstants.Scope.SpecificStudents)
             {
                 return null;
-            }
-
-            var fromTargets = AnnouncementLifecycle.NormalizeIds(targets);
-            if (fromTargets.Count > 0)
-            {
-                return SerializeTargetIds(fromTargets);
             }
 
             return string.IsNullOrWhiteSpace(scopeValue) ? null : scopeValue.Trim();

@@ -4,20 +4,20 @@ namespace UniCore.Application.Contract.Service.v1
 {
     public interface IAnnouncementTargetSearchService
     {
-        Task<AnnouncementTargetSearchResponseDto<CourseTargetItemDto>> SearchCoursesAsync(
-            AnnouncementTargetSearchQuery query,
+        Task<SearchCourseTargetsResponseDTO> SearchCoursesAsync(
+            SearchCourseTargetsRequestDTO request,
             CancellationToken cancellationToken = default);
 
-        Task<AnnouncementTargetSearchResponseDto<ClassTargetItemDto>> SearchClassesAsync(
-            AnnouncementTargetSearchQuery query,
+        Task<SearchClassTargetsResponseDTO> SearchClassesAsync(
+            SearchClassTargetsRequestDTO request,
             CancellationToken cancellationToken = default);
 
-        Task<AnnouncementTargetSearchResponseDto<DepartmentTargetItemDto>> SearchDepartmentsAsync(
-            AnnouncementTargetSearchQuery query,
+        Task<SearchDepartmentTargetsResponseDTO> SearchDepartmentsAsync(
+            SearchDepartmentTargetsRequestDTO request,
             CancellationToken cancellationToken = default);
 
-        Task<AnnouncementTargetSearchResponseDto<StudentTargetItemDto>> SearchStudentsAsync(
-            AnnouncementTargetSearchQuery query,
+        Task<SearchStudentTargetsResponseDTO> SearchStudentsAsync(
+            SearchStudentTargetsRequestDTO request,
             CancellationToken cancellationToken = default);
     }
 }

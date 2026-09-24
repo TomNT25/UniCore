@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Contract - AI Integrated Face Recognition (Enrollment & Login)</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --badge-post: #2563eb;
+      --badge-get: #16a34a;
+      --code-bg: #0f172a;
+      --code-text: #f8fafc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background-color: var(--bg);
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: var(--surface);
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.85rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .meta-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .meta-item strong {
+      color: var(--text);
+    }
+
+    section {
+      margin-bottom: 2.5rem;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      color: var(--text);
+      border-left: 4px solid var(--primary);
+      padding-left: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      color: var(--text);
+      margin: 1.25rem 0 0.5rem 0;
+    }
+
+    p, li {
+      margin-bottom: 0.5rem;
+    }
+
+    ul, ol {
+      padding-left: 1.25rem;
+    }
+
+    .endpoint-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .endpoint-header {
+      background: #f1f5f9;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .method {
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: white;
+      text-transform: uppercase;
+    }
+
+    .method.post {
+      background-color: var(--badge-post);
+    }
+
+    .path {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .endpoint-body {
+      padding: 1.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f8fafc;
+      font-weight: 600;
+    }
+
+    pre {
+      background-color: var(--code-bg);
+      color: var(--code-text);
+      padding: 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 0.75rem 0;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      font-size: 0.875rem;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      background-color: #f1f5f9;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      color: #0f172a;
+    }
+
+    pre code {
+      background-color: transparent;
+      padding: 0;
+      color: inherit;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .status-200 { background: #dcfce7; color: #15803d; }
+    .status-400 { background: #fef3c7; color: #b45309; }
+    .status-401 { background: #ffedd5; color: #c2410c; }
+    .status-422 { background: #fee2e2; color: #b91c1c; }
+    .status-429 { background: #f3e8ff; color: #6b21a8; }
+    .status-500 { background: #fee2e2; color: #991b1b; }
+    .status-503 { background: #f3e8ff; color: #7e22ce; }
+
+    .callout {
+      padding: 1rem 1.25rem;
+      border-radius: 6px;
+      margin: 1rem 0;
+      border-left: 4px solid;
+    }
+
+    .callout-info {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      color: #1e40af;
+    }
+
+    .callout-warn {
+      background: #fff7ed;
+      border-color: #f97316;
+      color: #7c2d12;
+    }
+
+    .callout-danger {
+      background: #fef2f2;
+      border-color: #ef4444;
+      color: #991b1b;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>API Contract - AI Integrated Face Recognition (Enroll & Login)</h1>
+    <div class="meta-info">
+      <div class="meta-item"><strong>Module:</strong> AI_Integration_FaceRecognition_Login</div>
+      <div class="meta-item"><strong>Version:</strong> 1.0.0</div>
+      <div class="meta-item"><strong>Date:</strong> 2026-09-24</div>
+      <div class="meta-item"><strong>Pipeline:</strong> Buffalo_L + Cosine Similarity + Liveness</div>
+    </div>
+  </header>
+
+  <!-- SECTION 1: GENERAL OVERVIEW -->
+  <section>
+    <h2>1. Nguyên tắc thiết kế & Giới hạn bảo mật (Security Boundaries)</h2>
+    <p>Tài liệu này định nghĩa giao thức kết nối chi tiết (API Contract) cho luồng Đăng ký khuôn mặt (Face Enroll) và Đăng nhập bằng khuôn mặt (Face Login).</p>
+
+    <div class="callout callout-danger">
+      <strong>Quy tắc bảo mật bắt buộc:</strong>
+      <ul>
+        <li><strong>Không tin tưởng dữ liệu từ Client:</strong> Ở luồng Enroll, Backend lấy <code>user_id</code> từ Access Token đã xác thực. Client không được phép tự truyền <code>user_id</code> qua form-data.</li>
+        <li><strong>Không truyền danh tính ở luồng Login:</strong> Ở luồng Login, Client chỉ gửi ảnh sinh trắc học. AI Engine tự thực hiện Similarity Search để suy ra Candidate <code>user_id</code>.</li>
+        <li><strong>Xác thực hai yếu tố (2FA / Secondary Factor):</strong> Việc khớp sinh trắc học chỉ đóng vai trò yếu tố thứ nhất. Sau khi Face Match thành công, Backend yêu cầu người dùng xác nhận yếu tố thứ 2 (Mật khẩu phụ / PIN 6 số) trước khi cấp Session/Token.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SECTION 2: BASE RESPONSE ENVELOPE STRUCT -->
+  <section>
+    <h2>2. Cấu trúc Phản hồi Chuẩn (Base Response Envelope)</h2>
+    <p>Toàn bộ API thuộc module bắt buộc đóng gói phản hồi theo cấu trúc Envelope dưới đây:</p>
+
+    <div class="grid-2">
+      <div>
+        <h3>2.1. Cấu trúc Response Thành công (Success)</h3>
+        <pre><code>{
+  "isSuccess": true,
+  "statusCode": 0,
+  "message": "Xử lý thành công.",
+  "data": { ... },
+  "errors": [],
+  "timestamp": "2026-09-24T03:00:00.000Z"
+}</code></pre>
+      </div>
+
+      <div>
+        <h3>2.2. Cấu trúc Response Lỗi (Error)</h3>
+        <pre><code>{
+  "isSuccess": false,
+  "statusCode": 422,
+  "message": "Kiểm tra chất lượng ảnh thất bại.",
+  "data": null,
+  "errors": [
+    {
+      "code": "MULTIPLE_FACES",
+      "detail": "Phát hiện nhiều hơn 1 khuôn mặt trong khung hình."
+    }
+  ],
+  "timestamp": "2026-09-24T03:00:00.000Z"
+}</code></pre>
+      </div>
+    </div>
+
+    <h3>Mô tả chi tiết các trường Envelope</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Trường (Field)</th>
+          <th>Kiểu dữ liệu</th>
+          <th>Bắt buộc</th>
+          <th>Mô tả</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>isSuccess</code></td>
+          <td>boolean</td>
+          <td>Yes</td>
+          <td><code>true</code> nếu request xử lý thành công, <code>false</code> nếu xảy ra lỗi.</td>
+        </tr>
+        <tr>
+          <td><code>statusCode</code></td>
+          <td>integer</td>
+          <td>Yes</td>
+          <td><code>0</code> khi thành công. Khi thất bại, mã này phản ánh HTTP Status Code hoặc Mã lỗi nghiệp vụ.</td>
+        </tr>
+        <tr>
+          <td><code>message</code></td>
+          <td>string</td>
+          <td>Yes</td>
+          <td>Thông điệp tổng quan mô tả kết quả xử lý.</td>
+        </tr>
+        <tr>
+          <td><code>data</code></td>
+          <td>object | null</td>
+          <td>Yes</td>
+          <td>Payload chứa dữ liệu nghiệp vụ. Bằng <code>null</code> khi có lỗi.</td>
+        </tr>
+        <tr>
+          <td><code>errors</code></td>
+          <td>array&lt;object&gt;</td>
+          <td>Yes</td>
+          <td>Mảng chứa thông tin chi tiết các lỗi (gồm <code>code</code> và <code>detail</code>). Mảng rỗng <code>[]</code> khi thành công.</td>
+        </tr>
+        <tr>
+          <td><code>timestamp</code></td>
+          <td>string (ISO-8601)</td>
+          <td>Yes</td>
+          <td>Thời điểm tạo response theo định dạng UTC.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECTION 3: API ENDPOINTS -->
+  <section>
+    <h2>3. Chi tiết các Endpoint API</h2>
+
+    <!-- ENDPOINT 1: ENROLL -->
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method post">POST</span>
+        <span class="path">http://172.29.50.34:8001/face-recognition/enroll</span>
+      </div>
+      <div class="endpoint-body">
+        <p><strong>Mục đích:</strong> Đăng ký hồ sơ sinh trắc học khuôn mặt cho người dùng đã đăng nhập. Hỗ trợ chế độ 1 ảnh hoặc 5 ảnh (các góc mặt khác nhau) để thực hiện Quality-Weighted Fusion.</p>
+
+        <p><strong>Headers:</strong></p>
+        <ul>
+          <li><code>Authorization</code>: Bearer &lt;Access_Token&gt; (Bắt buộc)</li>
+          <li><code>Content-Type</code>: multipart/form-data</li>
+        </ul>
+
+        <h3>3.1. Request Body (multipart/form-data)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Tham số</th>
+              <th>Kiểu dữ liệu</th>
+              <th>Bắt buộc</th>
+              <th>Mô tả</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>user_id</code></td>
+              <td>String</td>
+              <td>Yes</td>
+              <td>User id requirement</td>
+            </tr>
+            <tr>
+              <td><code>username</code></td>
+              <td>String</td>
+              <td>Yes</td>
+              <td>Username requirement</td>
+            </tr>
+            <tr>
+              <td><code>face_1</code></td>
+              <td>File (Binary)</td>
+              <td>Yes</td>
+              <td>Ảnh khuôn mặt chính diện (.jpg, .jpeg, .png, &le; 10MB).</td>
+            </tr>
+            <tr>
+              <td><code>face_2</code></td>
+              <td>File (Binary)</td>
+              <td>No</td>
+              <td>Ảnh xoay trái (Multi-face mode).</td>
+            </tr>
+            <tr>
+              <td><code>face_3</code></td>
+              <td>File (Binary)</td>
+              <td>No</td>
+              <td>Ảnh xoay phải (Multi-face mode).</td>
+            </tr>
+            <tr>
+              <td><code>face_4</code></td>
+              <td>File (Binary)</td>
+              <td>No</td>
+              <td>Ảnh ngước lên (Multi-face mode).</td>
+            </tr>
+            <tr>
+              <td><code>face_5</code></td>
+              <td>File (Binary)</td>
+              <td>No</td>
+              <td>Ảnh cúi xuống (Multi-face mode).</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>3.2. Success Response (200 OK)</h3>
+        <pre><code>{
+          "isSuccess": true,
+          "statusCode": 0,
+          "message": "Đăng ký khuôn mặt thành công.",
+          "data": {
+            items: {
+              "user_id": "usr_9876543210",
+              "username": "demo"
+            }
+          },
+          "errors": [],
+          "timestamp": "2026-09-24T03:00:00.000Z"
+        }</code></pre>
+
+        <h3>3.3. Error Response Ví dụ (422 Unprocessable Entity - Liveness Fail)</h3>
+        <pre><code>{
+          "isSuccess": false,
+          "statusCode": 422,
+          "message": "Kiểm tra Liveness thất bại.",
+          "data": null,
+          "errors": [
+            {
+              "code": "LIVENESS_FAILED",
+              "detail": "Khuôn mặt trong ảnh không vượt qua kiểm tra chống giả mạo (Presentation Attack Detected)."
+            }
+          ],
+          "timestamp": "2026-09-24T03:00:00.000Z"
+        }</code></pre>
+      </div>
+    </div>
+
+    <!-- ENDPOINT 2: RECOGNIZE / LOGIN -->
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method post">POST</span>
+        <span class="path">http://172.29.50.34:8001/face-recognition</span>
+      </div>
+      <div class="endpoint-body">
+        <p><strong>Mục đích:</strong> Nhận diện danh tính người dùng qua ảnh khuôn mặt để bắt đầu luồng Đăng nhập (Login).</p>
+
+        <p><strong>Headers:</strong></p>
+        <ul>
+          <li><code>Content-Type</code>: multipart/form-data</li>
+          <li><code>X-Correlation-ID</code>: &lt;UUID&gt; (Khuyến nghị dùng để trace request)</li>
+        </ul>
+
+        <h3>3.1. Request Body (multipart/form-data)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Tham số</th>
+              <th>Kiểu dữ liệu</th>
+              <th>Bắt buộc</th>
+              <th>Mô tả</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>face</code></td>
+              <td>File (Binary)</td>
+              <td>Yes</td>
+              <td>Ảnh chụp khuôn mặt để nhận diện (.jpg, .jpeg, .png, &le; 10MB). <strong>Không truyền user_id/username.</strong></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>3.2. Success Response (200 OK)</h3>
+        <p><span class="status-badge status-200">HTTP 200 OK</span> - Tìm thấy danh tính khớp ngưỡng cấu hình</p>
+        <pre><code>{
+        "isSuccess": true,
+        "statusCode": 0,
+        "message": "Nhận diện khuôn mặt thành công.",
+        "data": {
+          items: {
+              "user_id": "usr_9876543210",
+              "username": "demo"
+            }
+        },
+        "errors": [],
+        "timestamp": "2026-09-24T03:00:00.000Z"
+      }</code></pre>
+
+        <h3>3.3. Error Responses</h3>
+        <p><span class="status-badge status-401">HTTP 401 Unauthorized</span> - Không có khuôn mặt nào khớp ngưỡng (NO_MATCH)</p>
+        <pre><code>{
+          "isSuccess": false,
+          "statusCode": 401,
+          "message": "Xác thực khuôn mặt thất bại.",
+          "data": null,
+          "errors": [
+            {
+              "code": "NO_MATCH",
+              "detail": "Khuôn mặt không khớp với bất kỳ tài khoản nào trong hệ thống."
+            }
+          ],
+          "timestamp": "2026-09-24T03:00:00.000Z"
+        }</code></pre>
+
+        <p><span class="status-badge status-422">HTTP 422 Unprocessable Entity</span> - Nhiều hơn 1 khuôn mặt trong ảnh</p>
+        <pre><code>{
+          "isSuccess": false,
+          "statusCode": 422,
+          "message": "Ảnh chụp không hợp lệ.",
+          "data": null,
+          "errors": [
+            {
+              "code": "MULTIPLE_FACES",
+              "detail": "Phát hiện nhiều khuôn mặt. Vui lòng chỉ để một người trước camera."
+            }
+          ],
+          "timestamp": "2026-09-24T03:00:00.000Z"
+        }</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: ERROR CODES MATRIX -->
+  <section>
+    <h2>4. Bảng mã lỗi chuẩn hóa (Error Code Matrix)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Error Code</th>
+          <th>HTTP Status</th>
+          <th>Nguyên nhân / Ý nghĩa</th>
+          <th>Hành động gợi ý cho UI/FE</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>INVALID_REQUEST</code></td>
+          <td>400 Bad Request</td>
+          <td>Request thiếu trường bắt buộc hoặc sai định dạng payload.</td>
+          <td>Hiển thị thông báo lỗi nhập liệu chung.</td>
+        </tr>
+        <tr>
+          <td><code>INVALID_TOKEN</code></td>
+          <td>401 Unauthorized</td>
+          <td>Access Token bị hết hạn hoặc không hợp lệ (khi Enroll).</td>
+          <td>Chuyển hướng người dùng về màn hình Đăng nhập lại.</td>
+        </tr>
+        <tr>
+          <td><code>NO_MATCH</code></td>
+          <td>401 Unauthorized</td>
+          <td>Độ tương đồng Cosine &lt; Ngưỡng cấu hình.</td>
+          <td>Báo "Khuôn mặt không khớp. Vui lòng thử lại".</td>
+        </tr>
+        <tr>
+          <td><code>LOW_QUALITY</code></td>
+          <td>422 Unprocessable Entity</td>
+          <td>Ảnh quá mờ, quá chói hoặc thiếu ánh sáng.</td>
+          <td>Hiển thị hướng dẫn "Hãy chụp ở nơi đủ sáng và giữ yên máy".</td>
+        </tr>
+        <tr>
+          <td><code>NO_FACE</code></td>
+          <td>422 Unprocessable Entity</td>
+          <td>Không tìm thấy khuôn mặt trong ảnh.</td>
+          <td>Hiển thị hướng dẫn "Hãy đưa khuôn mặt vào giữa khung hình".</td>
+        </tr>
+        <tr>
+          <td><code>MULTIPLE_FACES</code></td>
+          <td>422 Unprocessable Entity</td>
+          <td>Phát hiện &gt; 1 khuôn mặt trong khung hình.</td>
+          <td>Hiển thị hướng dẫn "Đảm bảo chỉ có 1 người trong camera".</td>
+        </tr>
+        <tr>
+          <td><code>LIVENESS_FAILED</code></td>
+          <td>422 Unprocessable Entity</td>
+          <td>Không đạt kiểm tra liveness (ảnh giả/video/màn hình).</td>
+          <td>Thông báo "Cảnh báo bảo mật: Xác thực không hợp lệ".</td>
+        </tr>
+        <tr>
+          <td><code>TOO_MANY_ATTEMPTS</code></td>
+          <td>429 Too Many Requests</td>
+          <td>Vượt quá số lần thử đăng nhập/enroll cho phép.</td>
+          <td>Khóa tính năng tạm thời và hiển thị đếm ngược thời gian thử lại.</td>
+        </tr>
+        <tr>
+          <td><code>MODEL_UNAVAILABLE</code></td>
+          <td>503 Service Unavailable</td>
+          <td>Model AI / GPU server đang quá tải hoặc khởi động lại.</td>
+          <td>Báo "Hệ thống bận, vui lòng thử lại sau giây lát".</td>
+        </tr>
+        <tr>
+          <td><code>INTERNAL_AI_ERROR</code></td>
+          <td>500 Internal Server Error</td>
+          <td>Lỗi không xác định tại AI Processing Engine.</td>
+          <td>Báo lỗi hệ thống chung.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECTION 5: INTEGRATION GUIDELINES -->
+  <section>
+    <h2>5. Trách nhiệm xử lý giữa các thành phần hệ thống</h2>
+    <div class="callout callout-info">
+      <strong>Sơ đồ phân định trách nhiệm (Responsibility Separation):</strong>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Thành phần</th>
+          <th>Nhiệm vụ bắt buộc</th>
+          <th>Hành vi bị CẤM</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Frontend (UI/App)</strong></td>
+          <td>
+            <ul>
+              <li>Chụp/Validate ảnh đủ định dạng, dung lượng &le; 10MB trước khi gửi.</li>
+              <li>Hiển thị khung hình Hướng dẫn (Overlay Frame) để hỗ trợ căn chỉnh góc mặt.</li>
+              <li>Chỉ cho phép Face Login khi account có trạng thái <code>FACE_ENROLLED</code>.</li>
+            </ul>
+          </td>
+          <td>
+            <ul>
+              <li>Không gửi <code>user_id</code> hay <code>username</code> ở API Face Recognition/Login.</li>
+              <li>Không tự đưa ra quyết định xác thực nếu không có Session Ticket hợp lệ.</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Backend API Gateway</strong></td>
+          <td>
+            <ul>
+              <li>Xác thực JWT Token đối với API Enroll; tự chèn <code>user_id</code> vào internal payload.</li>
+              <li>Quản lý Rate-limiting (Chống brute-force attack).</li>
+              <li>Lưu vết Audit Log (Request ID, Timestamp, Score, Status Code) không chứa raw image.</li>
+            </ul>
+          </td>
+          <td>
+            <ul>
+              <li>Không lưu trữ trực tiếp ảnh sinh trắc học gốc (Raw Image) trong cơ sở dữ liệu ứng dụng.</li>
+              <li>Không cấp Access Token khi chưa qua xác thực yếu tố thứ 2 (Secondary PIN).</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>AI Service (FastAPI)</strong></td>
+          <td>
+            <ul>
+              <li>Thực thi pipeline: Quality Check &rarr; Face Detection &rarr; Liveness &rarr; Embedding (Buffalo_L) &rarr; Search/Fusion.</li>
+              <li>Trả về lỗi có cấu trúc chuẩn Base Envelope khi vi phạm ngưỡng chất lượng.</li>
+            </ul>
+          </td>
+          <td>
+            <ul>
+              <li>Không tự quản lý trạng thái tài khoản hay quyền truy cập người dùng.</li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+</body>
+</html>

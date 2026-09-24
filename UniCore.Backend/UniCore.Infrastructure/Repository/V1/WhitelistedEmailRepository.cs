@@ -1,4 +1,5 @@
 using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Entity;
 using UniCore.Infrastructure.Database;
@@ -10,6 +11,14 @@ namespace UniCore.Infrastructure.Repository.V1
     {
         public WhitelistedEmailRepository(UniCoreDbContext dbContext, IMapper mapper) : base(dbContext, mapper)
         {
+        }
+
+        public async Task<List<WhitelistedEmail>> GetActiveEntriesAsync(CancellationToken cancellationToken = default)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(w => w.IsActive == true)
+                .ToListAsync(cancellationToken);
         }
     }
 }

@@ -1,7 +1,7 @@
 using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Contract.Service.v1;
+using UniCore.Application.Entity;
 using UniCore.Application.Feature.v1.Announcement.Targets;
-using UniCore.Helper.Constant;
 
 namespace UniCore.Application.Service.v1
 {
@@ -24,108 +24,79 @@ namespace UniCore.Application.Service.v1
             _userRepository = userRepository;
         }
 
-        public async Task<AnnouncementTargetSearchResponseDto<CourseTargetItemDto>> SearchCoursesAsync(
-            AnnouncementTargetSearchQuery query,
+        public async Task<SearchCourseTargetsResponseDTO> SearchCoursesAsync(
+            SearchCourseTargetsRequestDTO request,
             CancellationToken cancellationToken = default)
         {
-            var limit = AnnouncementTargetLimit.Normalize(query.Limit);
-            var search = NormalizeSearch(query.Search);
-            var (items, total) = await _courseRepository.SearchActiveAsync(search, limit, cancellationToken);
+            var pagedResult = await _courseRepository.SearchActiveCursorAsync(request, cancellationToken);
 
-            return new AnnouncementTargetSearchResponseDto<CourseTargetItemDto>
+            return new SearchCourseTargetsResponseDTO
             {
-                Data = items.Select(c => new CourseTargetItemDto
+                Items = pagedResult.Items.Select(c => new CourseTargetItemDto
                 {
                     CourseId = c.Id,
                     CourseName = c.Name,
                     CourseCode = c.Code
                 }).ToList(),
-                Meta = BuildMeta(total, limit, search, AnnouncementTargetConstants.Domain.Course)
+                Metadata = pagedResult.Metadata
             };
         }
 
-        public async Task<AnnouncementTargetSearchResponseDto<ClassTargetItemDto>> SearchClassesAsync(
-            AnnouncementTargetSearchQuery query,
+        public async Task<SearchClassTargetsResponseDTO> SearchClassesAsync(
+            SearchClassTargetsRequestDTO request,
             CancellationToken cancellationToken = default)
         {
-            var limit = AnnouncementTargetLimit.Normalize(query.Limit);
-            var search = NormalizeSearch(query.Search);
-            var (items, total) = await _schoolClassRepository.SearchActiveAsync(search, limit, cancellationToken);
+            var pagedResult = await _schoolClassRepository.SearchActiveCursorAsync(request, cancellationToken);
 
-            return new AnnouncementTargetSearchResponseDto<ClassTargetItemDto>
+            return new SearchClassTargetsResponseDTO
             {
-                Data = items.Select(c => new ClassTargetItemDto
+                Items = pagedResult.Items.Select(c => new ClassTargetItemDto
                 {
                     ClassId = c.Id,
                     ClassName = c.Name,
                     ClassCode = c.Code
                 }).ToList(),
-                Meta = BuildMeta(total, limit, search, AnnouncementTargetConstants.Domain.Class)
+                Metadata = pagedResult.Metadata
             };
         }
 
-        public async Task<AnnouncementTargetSearchResponseDto<DepartmentTargetItemDto>> SearchDepartmentsAsync(
-            AnnouncementTargetSearchQuery query,
+        public async Task<SearchDepartmentTargetsResponseDTO> SearchDepartmentsAsync(
+            SearchDepartmentTargetsRequestDTO request,
             CancellationToken cancellationToken = default)
         {
-            var limit = AnnouncementTargetLimit.Normalize(query.Limit);
-            var search = NormalizeSearch(query.Search);
-            var (items, total) = await _departmentRepository.SearchActiveAsync(search, limit, cancellationToken);
+            var pagedResult = await _departmentRepository.SearchActiveCursorAsync(request, cancellationToken);
 
-            return new AnnouncementTargetSearchResponseDto<DepartmentTargetItemDto>
+            return new SearchDepartmentTargetsResponseDTO
             {
-                Data = items.Select(d => new DepartmentTargetItemDto
+                Items = pagedResult.Items.Select(d => new DepartmentTargetItemDto
                 {
                     DepartmentId = d.Id,
                     DepartmentName = d.Name,
                     DepartmentCode = d.Code
                 }).ToList(),
-                Meta = BuildMeta(total, limit, search, AnnouncementTargetConstants.Domain.Department)
+                Metadata = pagedResult.Metadata
             };
         }
 
-        public async Task<AnnouncementTargetSearchResponseDto<StudentTargetItemDto>> SearchStudentsAsync(
-            AnnouncementTargetSearchQuery query,
+        public async Task<SearchStudentTargetsResponseDTO> SearchStudentsAsync(
+            SearchStudentTargetsRequestDTO request,
             CancellationToken cancellationToken = default)
         {
-            var limit = AnnouncementTargetLimit.Normalize(query.Limit);
-            var search = NormalizeSearch(query.Search);
-            var (items, total) = await _userRepository.SearchActiveVerifiedStudentsAsync(search, limit, cancellationToken);
+            var pagedResult = await _userRepository.SearchActiveVerifiedStudentsCursorAsync(request, cancellationToken);
 
-            return new AnnouncementTargetSearchResponseDto<StudentTargetItemDto>
+            return new SearchStudentTargetsResponseDTO
             {
-                Data = items.Select(u => new StudentTargetItemDto
+                Items = pagedResult.Items.Select(u => new StudentTargetItemDto
                 {
                     StudentId = u.Id,
                     StudentName = ResolveStudentName(u),
-                    StudentCode = u.Code ?? u.Username
+                    StudentCode = u.StudentCode ?? u.Code ?? u.Username
                 }).ToList(),
-                Meta = BuildMeta(total, limit, search, AnnouncementTargetConstants.Domain.Students)
+                Metadata = pagedResult.Metadata
             };
         }
 
-        private static string? NormalizeSearch(string? search)
-        {
-            if (string.IsNullOrWhiteSpace(search))
-            {
-                return null;
-            }
-
-            return search.Trim();
-        }
-
-        private static AnnouncementTargetSearchMetaDto BuildMeta(int total, int limit, string? search, string domain)
-        {
-            return new AnnouncementTargetSearchMetaDto
-            {
-                Total = total,
-                Limit = limit,
-                Search = search,
-                Domain = domain
-            };
-        }
-
-        private static string ResolveStudentName(UniCore.Application.Entity.User user)
+        private static string ResolveStudentName(User user)
         {
             if (!string.IsNullOrWhiteSpace(user.UserProfile?.FullName))
             {

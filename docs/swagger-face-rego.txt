@@ -1,0 +1,357 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Face Recognition AI API",
+    "description": "HTTP wrapper for FaceEnrollment and FaceRecognition",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Root",
+        "description": "Health check endpoint.",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "description": "Health check endpoint.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/face/enroll": {
+      "post": {
+        "summary": "Enroll Face",
+        "description": "Enroll a user's face with 1-5 images.\n\n- **Single image mode**: Provide only `face_1` for basic enrollment\n- **Multi-angle mode**: Provide all 5 images for better recognition accuracy\n\nThe images should be taken from different angles:\n1. Front view (looking straight)\n2. Left turn (~30°)\n3. Right turn (~30°)\n4. Looking up (~20°)\n5. Looking down (~20°)\n\nReturns enrollment result with `embedding_id` on success.",
+        "operationId": "enroll_face_ai_face_enroll_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_enroll_face_ai_face_enroll_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/face/recognize": {
+      "post": {
+        "summary": "Recognize Face",
+        "description": "Recognize a face from a single image.\n\nReturns matched `user_id` and `similarity` score on success,\nor appropriate error code if recognition fails.\n\nPossible error codes:\n- `IMAGE_READ_FAILED`: Could not read the image\n- `IMAGE_TOO_BLURRY`: Image quality too low\n- `NO_FACE_DETECTED`: No face found in image\n- `MULTIPLE_FACES`: More than one face detected\n- `SPOOF_DETECTED`: Liveness check failed (not a real face)\n- `NO_CANDIDATES`: No matching user found",
+        "operationId": "recognize_face_ai_face_recognize_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_recognize_face_ai_face_recognize_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecognizeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_enroll_face_ai_face_enroll_post": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "Unique user identifier"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username",
+            "description": "Display name for the user"
+          },
+          "face_1": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Face 1",
+            "description": "Face image 1 (front)"
+          },
+          "face_2": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Face 2",
+            "description": "Face image 2 (left)"
+          },
+          "face_3": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Face 3",
+            "description": "Face image 3 (right)"
+          },
+          "face_4": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Face 4",
+            "description": "Face image 4 (up)"
+          },
+          "face_5": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Face 5",
+            "description": "Face image 5 (down)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "username",
+          "face_1"
+        ],
+        "title": "Body_enroll_face_ai_face_enroll_post"
+      },
+      "Body_recognize_face_ai_face_recognize_post": {
+        "properties": {
+          "face": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Face",
+            "description": "Face image to recognize"
+          }
+        },
+        "type": "object",
+        "required": [
+          "face"
+        ],
+        "title": "Body_recognize_face_ai_face_recognize_post"
+      },
+      "EnrollResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "request_id",
+          "model_version",
+          "timestamp"
+        ],
+        "title": "EnrollResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "RecognizeResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "request_id",
+          "model_version",
+          "timestamp"
+        ],
+        "title": "RecognizeResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
+Beta
+0 / 0
+used queries
+1

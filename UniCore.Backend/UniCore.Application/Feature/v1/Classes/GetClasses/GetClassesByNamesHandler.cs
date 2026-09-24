@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using System.Linq.Expressions;
 using UniCore.Application.Contract.Repository.Enitity.v1;
@@ -42,12 +42,7 @@ namespace UniCore.Application.Feature.v1.Classes.GetClasses
             return new GetClassesResponseDTO
             {
                 Items = pagedResult.Items,
-                PageNumber = pagedResult.PageNumber,
-                PageSize = pagedResult.PageSize,
-                TotalRecords = pagedResult.TotalRecords,
-                TotalPages = pagedResult.TotalPages,
-                HasNextPage = pagedResult.HasNextPage,
-                HasPreviousPage = pagedResult.HasPreviousPage
+                Metadata = pagedResult.Metadata
             };
         }
     }

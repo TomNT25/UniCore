@@ -14,5 +14,7 @@ namespace UniCore.Application.Feature.v1.Identity.ScanCccd
         public string VerificationStatus { get; set; } = "VERIFIED";
         public DateTime? VerifiedAt { get; set; }
         public string? PersonIdRecordId { get; set; }
+        public bool IsProfileVerified { get; set; } = false;
+        public string? UserProfileId { get; set; }
     }
 }

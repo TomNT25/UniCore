@@ -1,8 +1,11 @@
+using System.Text;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using UniCore.Application.Contract.Repository.Enitity.v1;
+using UniCore.Application.DTO;
 using UniCore.Application.Entity;
 using UniCore.Infrastructure.Database;
+using UniCore.Infrastructure.Extension;
 using UniCore.Infrastructure.Repository.Base;
 
 namespace UniCore.Infrastructure.Repository.V1
@@ -147,6 +150,65 @@ namespace UniCore.Infrastructure.Repository.V1
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<string>> GetActiveVerifiedStudentIdsByClassIdsAsync(
+            IEnumerable<string> classIds,
+            CancellationToken cancellationToken = default)
+        {
+            var ids = classIds
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (ids.Count == 0)
+            {
+                return new List<string>();
+            }
+
+            return await _dbSet
+                .AsNoTracking()
+                .Where(u =>
+                    u.ClassId != null &&
+                    ids.Contains(u.ClassId) &&
+                    u.IsActive &&
+                    u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == "Student" && ur.Role.IsActive) &&
+                    u.UserPersonId != null &&
+                    u.UserPersonId.IsActive &&
+                    u.UserPersonId.VerificationStatus == "VERIFIED")
+                .Select(u => u.Id)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<string>> GetActiveVerifiedStudentIdsByDepartmentIdsAsync(
+            IEnumerable<string> departmentIds,
+            CancellationToken cancellationToken = default)
+        {
+            var ids = departmentIds
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (ids.Count == 0)
+            {
+                return new List<string>();
+            }
+
+            return await _dbSet
+                .AsNoTracking()
+                .Where(u =>
+                    u.Class != null &&
+                    u.Class.DepartmentId != null &&
+                    ids.Contains(u.Class.DepartmentId) &&
+                    u.Class.IsActive &&
+                    !u.Class.IsDeleted &&
+                    u.IsActive &&
+                    u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == "Student" && ur.Role.IsActive) &&
+                    u.UserPersonId != null &&
+                    u.UserPersonId.IsActive &&
+                    u.UserPersonId.VerificationStatus == "VERIFIED")
+                .Select(u => u.Id)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<(List<User> Items, int TotalCount)> SearchActiveVerifiedStudentsAsync(
             string? search,
             int limit,
@@ -184,6 +246,85 @@ namespace UniCore.Infrastructure.Repository.V1
                 .ToListAsync(cancellationToken);
 
             return (items, totalCount);
+        }
+
+        public async Task<CursorPaginationResponse<User>> SearchActiveVerifiedStudentsCursorAsync(
+            CursorPaginationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _dbSet
+                .AsNoTracking()
+                .Include(u => u.UserProfile)
+                .Include(u => u.UserPersonId)
+                .Where(u =>
+                    u.IsActive &&
+                    u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == "Student" && ur.Role.IsActive) &&
+                    u.UserPersonId != null &&
+                    u.UserPersonId.IsActive &&
+                    u.UserPersonId.VerificationStatus == "VERIFIED");
+
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                var term = request.SearchTerm.Trim();
+                query = query.Where(u =>
+                    EF.Functions.Like(u.Username, $"%{term}%") ||
+                    (u.Code != null && EF.Functions.Like(u.Code, $"%{term}%")) ||
+                    (u.UserProfile != null && u.UserProfile.FullName != null &&
+                     EF.Functions.Like(u.UserProfile.FullName, $"%{term}%")) ||
+                    (u.UserProfile != null && u.UserProfile.FirstName != null &&
+                     EF.Functions.Like(u.UserProfile.FirstName, $"%{term}%")) ||
+                    (u.UserProfile != null && u.UserProfile.LastName != null &&
+                     EF.Functions.Like(u.UserProfile.LastName, $"%{term}%")));
+            }
+
+            var sortCol = string.IsNullOrWhiteSpace(request.SortColumn) ? "Id" : request.SortColumn;
+            query = query.ApplyCursorFilter(request.Cursor, sortCol, request.SortDescending);
+            query = query.OrderByDynamic(sortCol, request.SortDescending);
+
+            var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
+
+            var items = await query
+                .Take(pageSize + 1)
+                .ToListAsync(cancellationToken);
+
+            var hasNextPage = items.Count > pageSize;
+            if (hasNextPage)
+            {
+                items.RemoveAt(items.Count - 1);
+            }
+
+            string? nextCursor = null;
+            if (hasNextPage && items.Count > 0)
+            {
+                var lastItem = items[^1];
+                var normalizedSort = sortCol.Replace("_", "");
+                var prop = typeof(User).GetProperties()
+                    .FirstOrDefault(p => string.Equals(p.Name, sortCol, StringComparison.OrdinalIgnoreCase) ||
+                                         string.Equals(p.Name, normalizedSort, StringComparison.OrdinalIgnoreCase))
+                    ?? typeof(User).GetProperties()
+                        .FirstOrDefault(p => string.Equals(p.Name, "Id", StringComparison.OrdinalIgnoreCase) ||
+                                             p.Name.EndsWith("Id", StringComparison.OrdinalIgnoreCase));
+
+                if (prop != null)
+                {
+                    var rawVal = prop.GetValue(lastItem)?.ToString();
+                    if (!string.IsNullOrEmpty(rawVal))
+                    {
+                        nextCursor = Convert.ToBase64String(Encoding.UTF8.GetBytes(rawVal));
+                    }
+                }
+            }
+
+            return new CursorPaginationResponse<User>
+            {
+                Items = items,
+                Metadata = new CursorPaginationMetaResponse
+                {
+                    PageSize = pageSize,
+                    HasNextPage = hasNextPage,
+                    NextCursor = nextCursor
+                }
+            };
         }
     }
 }

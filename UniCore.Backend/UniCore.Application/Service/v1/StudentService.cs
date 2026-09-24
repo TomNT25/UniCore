@@ -35,7 +35,7 @@ namespace UniCore.Application.Service.v1
             GetClassCourseInfosHandler getClassCourseInfosHandler,
             GetCoursesStudentsHandler getCoursesStudentsHandler,
             GetAllCoursesNameHandler getAllCoursesNameHandler,
-            GetClassesByNamesHandler getAllClassesByNamesHandler
+            GetClassesByNamesHandler getAllClassesByNamesHandler,
             GetMyCoursesHandler getMyCoursesHandler,
             GetCourseDetailsHandler getCourseDetailsHandler
             )

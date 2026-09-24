@@ -18,6 +18,7 @@ namespace UniCore.Application.Feature.v1.Announcement.GetAllAnnouncement
 
         public async Task<GetAllAnnouncementResponseDTO> HandleAsync(GetAllAnnouncementRequestDTO request, CancellationToken cancellationToken)
         {
+            ApplySorting(request);
             Expression<Func<UniCore.Application.Entity.Announcement, bool>>? filter = BuildFilter(request);
 
             var pagedResult = await _announcementRepository.GetPageNumberPaginationAsync<AnnouncementDTO>(
@@ -32,77 +33,97 @@ namespace UniCore.Application.Feature.v1.Announcement.GetAllAnnouncement
 
             return new GetAllAnnouncementResponseDTO
             {
-                Data = data,
-                Meta = new AnnouncementPaginationMetaDTO
+                Items = data,
+                Metadata = pagedResult.Metadata
+            };
+        }
+
+        private static void ApplySorting(GetAllAnnouncementRequestDTO request)
+        {
+            if (!string.IsNullOrWhiteSpace(request.SortBy))
+            {
+                request.SortColumn = MapSortBy(request.SortBy);
+            }
+            else if (string.IsNullOrWhiteSpace(request.SortColumn))
+            {
+                request.SortColumn = nameof(UniCore.Application.Entity.Announcement.PublishDate);
+                if (string.IsNullOrWhiteSpace(request.SortOrder))
                 {
-                    Page = pagedResult.PageNumber,
-                    PageSize = pagedResult.PageSize,
-                    TotalItems = pagedResult.TotalRecords,
-                    TotalPages = pagedResult.TotalPages,
-                    HasNextPage = pagedResult.HasNextPage,
-                    HasPreviousPage = pagedResult.HasPreviousPage
+                    request.SortDescending = true;
                 }
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.SortOrder))
+            {
+                request.SortDescending = string.Equals(
+                    request.SortOrder.Trim(),
+                    "desc",
+                    StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        private static string MapSortBy(string sortBy)
+        {
+            return sortBy.Trim().ToLowerInvariant() switch
+            {
+"startdate" or "publishdate" or "publish_date" =>
+                    nameof(UniCore.Application.Entity.Announcement.PublishDate),
+                "enddate" or "expireddate" or "expired_date" =>
+                    nameof(UniCore.Application.Entity.Announcement.ExpiredDate),
+                "title" => nameof(UniCore.Application.Entity.Announcement.Title),
+                "code" => nameof(UniCore.Application.Entity.Announcement.Code),
+                "type" or "announcementtype" => nameof(UniCore.Application.Entity.Announcement.Type),
+                "scopetype" or "scope_type" => nameof(UniCore.Application.Entity.Announcement.ScopeType),
+                "status" => nameof(UniCore.Application.Entity.Announcement.Status),
+                "createdat" or "created_at" => nameof(UniCore.Application.Entity.Announcement.CreatedAt),
+                "updatedat" or "updated_at" => nameof(UniCore.Application.Entity.Announcement.UpdatedAt),
+                _ => sortBy.Trim()
             };
         }
 
         private static Expression<Func<UniCore.Application.Entity.Announcement, bool>>? BuildFilter(GetAllAnnouncementRequestDTO request)
         {
             var hasSearch = !string.IsNullOrWhiteSpace(request.SearchTerm);
-            var hasStatus = !string.IsNullOrWhiteSpace(request.Status);
-            var now = DateTime.UtcNow;
-            var status = hasStatus ? request.Status!.Trim().ToUpperInvariant() : null;
+            var status = !string.IsNullOrWhiteSpace(request.Status)
+                ? request.Status.Trim().ToUpperInvariant()
+                : null;
+            var type = !string.IsNullOrWhiteSpace(request.AnnouncementType)
+                ? request.AnnouncementType.Trim().ToUpperInvariant()
+                : null;
+            var scopeType = !string.IsNullOrWhiteSpace(request.ScopeType)
+                ? request.ScopeType.Trim().ToUpperInvariant()
+                : null;
+            var activeFrom = request.ActiveFrom;
+            var activeTo = request.ActiveTo;
 
-            if (!hasSearch && !hasStatus)
+            var applyStatus = status is AnnouncementConstants.Status.Upcoming
+                or AnnouncementConstants.Status.Active
+                or AnnouncementConstants.Status.Expired;
+            var hasType = type != null;
+            var hasScope = scopeType != null;
+            var hasActiveFrom = activeFrom.HasValue;
+            var hasActiveTo = activeTo.HasValue;
+
+            if (!hasSearch && !applyStatus && !hasType && !hasScope && !hasActiveFrom && !hasActiveTo)
             {
                 return null;
             }
 
-            if (hasSearch && status == AnnouncementConstants.Status.Upcoming)
-            {
-                var term = request.SearchTerm!;
-                return a =>
-                    ((a.Title != null && a.Title.Contains(term)) || (a.Code != null && a.Code.Contains(term)))
-                    && now < a.PublishDate;
-            }
+            var term = hasSearch ? request.SearchTerm!.Trim() : null;
+            var now = DateTime.UtcNow;
 
-            if (hasSearch && status == AnnouncementConstants.Status.Active)
-            {
-                var term = request.SearchTerm!;
-                return a =>
-                    ((a.Title != null && a.Title.Contains(term)) || (a.Code != null && a.Code.Contains(term)))
-                    && now >= a.PublishDate && now < a.ExpiredDate;
-            }
-
-            if (hasSearch && status == AnnouncementConstants.Status.Expired)
-            {
-                var term = request.SearchTerm!;
-                return a =>
-                    ((a.Title != null && a.Title.Contains(term)) || (a.Code != null && a.Code.Contains(term)))
-                    && now >= a.ExpiredDate;
-            }
-
-            if (hasSearch)
-            {
-                var term = request.SearchTerm!;
-                return a => (a.Title != null && a.Title.Contains(term)) || (a.Code != null && a.Code.Contains(term));
-            }
-
-            if (status == AnnouncementConstants.Status.Upcoming)
-            {
-                return a => now < a.PublishDate;
-            }
-
-            if (status == AnnouncementConstants.Status.Active)
-            {
-                return a => now >= a.PublishDate && now < a.ExpiredDate;
-            }
-
-            if (status == AnnouncementConstants.Status.Expired)
-            {
-                return a => now >= a.ExpiredDate;
-            }
-
-            return null;
+            return a =>
+                (!hasSearch
+                    || (a.Title != null && a.Title.Contains(term!))
+                    || (a.Code != null && a.Code.Contains(term!)))
+                && (!hasType || a.Type == type)
+                && (!hasScope || a.ScopeType == scopeType)
+                && (!applyStatus
+                    || (status == AnnouncementConstants.Status.Upcoming && now < a.PublishDate)
+                    || (status == AnnouncementConstants.Status.Active && now >= a.PublishDate && now < a.ExpiredDate)
+                    || (status == AnnouncementConstants.Status.Expired && now >= a.ExpiredDate))
+                && (!hasActiveFrom || a.ExpiredDate > activeFrom!.Value)
+                && (!hasActiveTo || a.PublishDate <= activeTo!.Value);
         }
     }
 }

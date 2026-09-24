@@ -6,6 +6,7 @@ using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Contract.RequestHandlerHub;
 using UniCore.Application.Contract.Service.v1;
 using UniCore.Helper.Constant;
+using UniCore.Helper.Localization;
 
 namespace UniCore.Application.Feature.v1.FaceAuth.Login
 {
@@ -17,6 +18,9 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
         private readonly ICacheService _cacheService;
         private readonly IFaceAuthAuditService _auditService;
         private readonly IConfiguration _configuration;
+        private readonly IUserMfaSettingRepository _mfaSettingRepository;
+        private readonly IEmailSender _emailSender;
+        private readonly IJsonStringLocalizer _localizer;
         private readonly ILogger<FaceLoginHandler> _logger;
 
         // Challenge token config
@@ -27,17 +31,23 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
             IFaceAiClient faceAiClient,
             IUserFaceProfileRepository faceProfileRepository,
             IUserRepository userRepository,
+            IUserMfaSettingRepository mfaSettingRepository,
+            IEmailSender emailSender,
             ICacheService cacheService,
             IFaceAuthAuditService auditService,
             IConfiguration configuration,
+            IJsonStringLocalizer localizer,
             ILogger<FaceLoginHandler> logger)
         {
             _faceAiClient = faceAiClient;
             _faceProfileRepository = faceProfileRepository;
             _userRepository = userRepository;
+            _mfaSettingRepository = mfaSettingRepository;
+            _emailSender = emailSender;
             _cacheService = cacheService;
             _auditService = auditService;
             _configuration = configuration;
+            _localizer = localizer;
             _logger = logger;
         }
 
@@ -166,6 +176,19 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
                 };
             }
 
+            // Verify user has enabled Face Recognition MFA
+            var mfaSetting = await _mfaSettingRepository.GetByUserIdAsync(userId, cancellationToken);
+            if (mfaSetting == null || !mfaSetting.IsMfaEnabled || (mfaSetting.MfaMethod != "FACE" && mfaSetting.MfaMethod != "FACE_RECOGNITION"))
+            {
+                _logger.LogWarning("Face matched but Face Recognition MFA is not enabled for user: {UserId}", userId);
+                return new FaceLoginResponseDTO
+                {
+                    Success = false,
+                    ErrorCode = FaceAuthConstants.ErrorCodes.NotEnrolled,
+                    ErrorMessage = _localizer.GetString(MessageConstants.FaceAuth.MfaNotEnabled)
+                };
+            }
+
             // Check if PIN is locked
             if (faceProfile.PinLockoutEnd.HasValue && faceProfile.PinLockoutEnd > DateTime.UtcNow)
             {
@@ -180,6 +203,9 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
                 };
             }
 
+            // Generate secure 6-digit numeric OTP
+            var otp = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString("D6");
+
             // Generate challenge token
             var challengeToken = GenerateChallengeToken();
             var challengeMinutes = GetChallengeMinutes();
@@ -190,6 +216,9 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
             var challengeData = new FaceChallengeData
             {
                 UserId = userId,
+                Email = user.Email,
+                Otp = otp,
+                FailedOtpAttempts = 0,
                 Similarity = recognizeResult.Similarity,
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = expiresAt
@@ -204,6 +233,31 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
             _logger.LogInformation(
                 "Face login challenge issued for user {UserId}. Similarity: {Similarity}, ExpiresAt: {ExpiresAt}",
                 userId, recognizeResult.Similarity, expiresAt);
+
+            // Dispatch OTP via Email (StimulationEmailProvider / Smtp)
+            try
+            {
+                var emailSubject = "UniCore - Mã OTP xác thực đăng nhập khuôn mặt";
+                var emailBody = $@"
+<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;'>
+    <h2 style='color: #2563eb;'>Xác thực đăng nhập sinh trắc học</h2>
+    <p>Xin chào <strong>{user.Username}</strong>,</p>
+    <p>Hệ thống vừa nhận diện thành công khuôn mặt của bạn để đăng nhập vào UniCore.</p>
+    <p>Mã OTP xác thực đăng nhập của bạn là:</p>
+    <div style='background-color: #f1f5f9; padding: 15px; border-radius: 8px; font-size: 28px; font-weight: bold; letter-spacing: 5px; text-align: center; color: #1e293b; margin: 20px 0;'>
+        {otp}
+    </div>
+    <p>Mã OTP có hiệu lực trong vòng <strong>{challengeMinutes} phút</strong>. Vui lòng không chia sẻ mã này cho bất kỳ ai.</p>
+    <hr style='border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;' />
+    <p style='color: #64748b; font-size: 12px;'>Nếu bạn không thực hiện đăng nhập này, vui lòng liên hệ quản trị viên ngay lập tức.</p>
+</div>";
+
+                await _emailSender.SendAsync(user.Email, emailSubject, emailBody, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send Face Login OTP email to {Email}", user.Email);
+            }
 
             stopwatch.Stop();
 
@@ -226,7 +280,9 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
                 Success = true,
                 ChallengeToken = challengeToken,
                 ChallengeExpiresAt = expiresAt,
-                Similarity = recognizeResult.Similarity
+                Similarity = recognizeResult.Similarity,
+                MaskedEmail = MaskEmail(user.Email),
+                Message = _localizer.GetString(MessageConstants.FaceAuth.LoginSuccess)
             };
         }
 
@@ -262,6 +318,19 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
             };
         }
 
+        private static string MaskEmail(string? email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return string.Empty;
+            var atIndex = email.IndexOf('@');
+            if (atIndex <= 1) return email;
+            var localPart = email[..atIndex];
+            var domain = email[atIndex..];
+            var maskedLocal = localPart.Length <= 2
+                ? localPart[0] + "***"
+                : localPart[0] + new string('*', Math.Min(localPart.Length - 2, 4)) + localPart[^1];
+            return maskedLocal + domain;
+        }
+
         private async Task LogFailureAsync(
             string requestId,
             string? userId,
@@ -290,6 +359,9 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
     public class FaceChallengeData
     {
         public string UserId { get; set; } = string.Empty;
+        public string? Email { get; set; }
+        public string? Otp { get; set; }
+        public int FailedOtpAttempts { get; set; } = 0;
         public double Similarity { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime ExpiresAt { get; set; }

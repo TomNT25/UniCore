@@ -14,6 +14,16 @@ namespace UniCore.Helper.Constant
             public const string GetPublicListSuccess = "Announcement.GetPublicListSuccess";
             public const string GetPublicByIdSuccess = "Announcement.GetPublicByIdSuccess";
             public const string NotFound = "Announcement.NotFound";
+            public const string TargetsSearchStudentsSuccess = "Announcement.Targets.SearchStudentsSuccess";
+            public const string TargetsSearchCoursesSuccess = "Announcement.Targets.SearchCoursesSuccess";
+            public const string TargetsSearchClassesSuccess = "Announcement.Targets.SearchClassesSuccess";
+            public const string TargetsSearchDepartmentsSuccess = "Announcement.Targets.SearchDepartmentsSuccess";
+            public const string WorkflowListSuccess = "Announcement.WorkflowList.Success";
+            public const string NewAnnouncementsSuccess = "Announcement.NewAnnouncements.Success";
+            public const string DetailSuccess = "Announcement.Detail.Success";
+            public const string ConfirmAcknowledgedSuccess = "Announcement.ConfirmAcknowledged.Success";
+            public const string GetMyAnnouncementsSuccess = "Announcement.GetMyAnnouncements.Success";
+            public const string MarkAsViewedSuccess = "Announcement.MarkAsViewed.Success";
         }
 
         public static class Identity
@@ -39,6 +49,18 @@ namespace UniCore.Helper.Constant
             public const string SetPinFailed = "FaceAuth.SetPinFailed";
             public const string LoginFailed = "FaceAuth.LoginFailed";
             public const string VerifyPinFailed = "FaceAuth.VerifyPinFailed";
+
+            // MFA & OTP messages
+            public const string EnableMfaSuccess = "FaceAuth.EnableMfaSuccess";
+            public const string DisableMfaSuccess = "FaceAuth.DisableMfaSuccess";
+            public const string EnrollmentRequiredForMfa = "FaceAuth.EnrollmentRequiredForMfa";
+            public const string MfaNotEnabled = "FaceAuth.MfaNotEnabled";
+            public const string OtpSentSuccess = "FaceAuth.OtpSentSuccess";
+            public const string VerifyOtpSuccess = "FaceAuth.VerifyOtpSuccess";
+            public const string VerifyOtpFailed = "FaceAuth.VerifyOtpFailed";
+            public const string InvalidOtp = "FaceAuth.InvalidOtp";
+            public const string OtpRequired = "FaceAuth.OtpRequired";
+            public const string OtpInvalidLength = "FaceAuth.OtpInvalidLength";
 
             // Validation messages
             public const string UserIdRequired = "FaceAuth.UserIdRequired";
@@ -224,6 +246,8 @@ namespace UniCore.Helper.Constant
             public const string GetUserProfileSuccess = "Admin.GetUserProfileSuccess";
 
             public const string UpdateUserProfileSuccess = "Admin.UpdateUserProfileSuccess";
+
+            public const string VerifyUserProfileSuccess = "Admin.VerifyUserProfileSuccess";
 
             public const string UserNotFound = "Admin.UserNotFound";
 

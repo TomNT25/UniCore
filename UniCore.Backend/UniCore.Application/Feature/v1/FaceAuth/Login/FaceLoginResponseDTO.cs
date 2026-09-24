@@ -28,6 +28,16 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
         public double? Similarity { get; set; }
 
         /// <summary>
+        /// Masked email address where OTP was dispatched.
+        /// </summary>
+        public string? MaskedEmail { get; set; }
+
+        /// <summary>
+        /// Informational message regarding the OTP challenge.
+        /// </summary>
+        public string? Message { get; set; }
+
+        /// <summary>
         /// Error code if face recognition failed.
         /// </summary>
         public string? ErrorCode { get; set; }

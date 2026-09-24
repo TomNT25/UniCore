@@ -13,7 +13,7 @@ namespace UniCore.Application.Service.v1
         private readonly IAnnouncementAudienceService _audienceService;
         private readonly IAnnouncementStudentRepository _announcementStudentRepository;
         private readonly IAnnouncementEmailLogRepository _emailLogRepository;
-        private readonly IAnnouncementEmailWhitelistRepository _whitelistRepository;
+        private readonly IWhitelistedEmailRepository _whitelistRepository;
         private readonly IUserRepository _userRepository;
         private readonly IEmailSender _emailSender;
         private readonly EmailOptions _emailOptions;
@@ -22,7 +22,7 @@ namespace UniCore.Application.Service.v1
             IAnnouncementAudienceService audienceService,
             IAnnouncementStudentRepository announcementStudentRepository,
             IAnnouncementEmailLogRepository emailLogRepository,
-            IAnnouncementEmailWhitelistRepository whitelistRepository,
+            IWhitelistedEmailRepository whitelistRepository,
             IUserRepository userRepository,
             IEmailSender emailSender,
             IOptions<EmailOptions> emailOptions)
@@ -91,27 +91,18 @@ namespace UniCore.Application.Service.v1
                 return;
             }
 
-            var emails = AnnouncementLifecycle.NormalizeIds(
-                whitelist.Where(w => w.Type == AnnouncementConstants.Whitelist.Email).Select(w => w.Value.ToLowerInvariant()));
-            var domains = AnnouncementLifecycle.NormalizeIds(
-                whitelist.Where(w => w.Type == AnnouncementConstants.Whitelist.Domain).Select(w => w.Value.ToLowerInvariant()));
-
-            var recipients = await _userRepository.GetActiveStudentEmailsByIdsAsync(studentIds, cancellationToken);
-            var allowed = recipients
-                .Where(r => IsWhitelisted(r.Email, emails, domains))
+            var emails = whitelist
+                .Select(w => w.Email.Trim().ToLowerInvariant())
                 .ToList();
 
-            if (allowed.Count == 0)
-            {
-                return;
-            }
+            var recipients = await _userRepository.GetActiveStudentEmailsByIdsAsync(studentIds, cancellationToken);
 
             var subject = $"[{announcement.Type}] {announcement.Title}";
             var body = BuildEmailBody(announcement);
             var now = DateTime.UtcNow;
             var logs = new List<AnnouncementEmailLog>();
 
-            foreach (var (studentId, email) in allowed)
+            foreach (var (studentId, email) in recipients)
             {
                 var log = new AnnouncementEmailLog
                 {
@@ -139,24 +130,6 @@ namespace UniCore.Application.Service.v1
             }
 
             await _emailLogRepository.AddRangeLogsAsync(logs, cancellationToken);
-        }
-
-        private static bool IsWhitelisted(string email, List<string> emails, List<string> domains)
-        {
-            var normalized = email.Trim().ToLowerInvariant();
-            if (emails.Contains(normalized, StringComparer.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            var at = normalized.LastIndexOf('@');
-            if (at < 0 || at == normalized.Length - 1)
-            {
-                return false;
-            }
-
-            var domain = normalized[(at + 1)..];
-            return domains.Contains(domain, StringComparer.OrdinalIgnoreCase);
         }
 
         private static string BuildEmailBody(Announcement announcement)

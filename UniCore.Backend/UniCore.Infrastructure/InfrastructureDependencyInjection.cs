@@ -51,9 +51,24 @@ public static class InfrastructureDependencyInjection
 
         services.AddScoped(sp => new DatabaseConfiguration(DatabaseConfigurationConstant.SQL_SERVER_CONNECTION_STRING));
 
-        services.Configure<UniCore.Helper.Options.EmailOptions>(
-            configuration.GetSection(UniCore.Helper.Options.EmailOptions.SectionName));
-        services.AddScoped<UniCore.Application.Contract.Service.v1.IEmailSender, UniCore.Infrastructure.Service.SmtpEmailSender>();
+        var emailSection = configuration.GetSection(UniCore.Helper.Options.EmailOptions.SectionName);
+        services.Configure<UniCore.Helper.Options.EmailOptions>(emailSection);
+        var emailOptions = emailSection.Get<UniCore.Helper.Options.EmailOptions>() ?? new UniCore.Helper.Options.EmailOptions();
+
+        if (string.Equals(emailOptions.Provider, "HttpSimulation", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(emailOptions.Provider, "Simulation", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddHttpClient<UniCore.Application.Contract.Service.v1.IEmailSender, UniCore.Infrastructure.Service.HttpSimulationEmailSender>((sp, client) =>
+            {
+                var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<UniCore.Helper.Options.EmailOptions>>().Value;
+                var baseUrl = string.IsNullOrWhiteSpace(opts.SimulationBaseUrl) ? "http://127.0.0.1:5289" : opts.SimulationBaseUrl;
+                client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+            });
+        }
+        else
+        {
+            services.AddScoped<UniCore.Application.Contract.Service.v1.IEmailSender, UniCore.Infrastructure.Service.SmtpEmailSender>();
+        }
 
         services.Configure<UniCore.Helper.Options.AiOcrOptions>(
             configuration.GetSection(UniCore.Helper.Options.AiOcrOptions.SectionName));

@@ -16,6 +16,9 @@ namespace UniCore.Application.Entity
         public string? Address { get; set; }
         public string? Bio { get; set; }
         public bool IsActive { get; set; } = true;
+        public bool IsVerified { get; set; } = false;
+        public DateTime? VerifiedAt { get; set; }
+        public string? VerifiedBy { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public string? CreatedBy { get; set; }

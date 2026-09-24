@@ -66,6 +66,9 @@ namespace UniCore.Infrastructure.Repository.V1
                 .Where(a =>
                     a.ScopeType == AnnouncementConstants.Scope.Public
                     || a.ScopeType == AnnouncementConstants.Scope.Students
+                    || a.ScopeType == AnnouncementConstants.Scope.SpecificStudents
+                    || a.ScopeType == AnnouncementConstants.Scope.Course
+                    || a.ScopeType == AnnouncementConstants.Scope.Department
                     || a.AnnouncementStudents.Any(s => s.StudentId == studentId));
 
             var normalizedTimeStatus = string.IsNullOrWhiteSpace(timeStatus)

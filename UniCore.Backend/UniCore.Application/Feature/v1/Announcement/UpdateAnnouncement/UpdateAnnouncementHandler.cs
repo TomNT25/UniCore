@@ -61,8 +61,7 @@ namespace UniCore.Application.Feature.v1.Announcement.UpdateAnnouncement
 
             var scopeValue = AnnouncementScopeStorage.BuildScopeValueForRequest(
                 scopeType,
-                request.ScopeValue,
-                request.Targets);
+                request.ScopeValue);
             AnnouncementScopeStorage.EnsureStoredLength(scopeValue);
 
             var targetStudentIds = ResolveTargetStudentIds(scopeType, request.TargetStudentIds, request.Targets);
@@ -74,13 +73,17 @@ namespace UniCore.Application.Feature.v1.Announcement.UpdateAnnouncement
                 cancellationToken);
             var now = DateTime.UtcNow;
 
+            if (request.Type == AnnouncementConstants.Type.Important || request.Type == AnnouncementConstants.Type.Urgent)
+            {
+                entity.RequireAcknowledgement = true;
+            }
+
             entity.Title = request.Title.Trim();
             entity.Description = request.Description;
             entity.Content = request.Content;
             entity.Type = type;
             entity.ScopeType = scopeType;
             entity.ScopeValue = scopeValue;
-            entity.RequireAcknowledgement = request.RequireAcknowledgement;
             entity.PublishDate = request.PublishDate;
             entity.ExpiredDate = request.ExpiredDate;
             entity.Status = AnnouncementLifecycle.ComputeStatus(request.PublishDate, request.ExpiredDate, now);

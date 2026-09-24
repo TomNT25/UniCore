@@ -17,10 +17,10 @@ namespace UniCore.Infrastructure.Repository.V1
         {
         }
 
-        public async Task<IEnumerable<CourseStudent>?> GetByStuIdCourseIdsAsync(string studentId, CancellationToken ct)
+        public async Task<IEnumerable<CourseStudent>?> GetByStuIdCourseIdsAsync(string studentId, IEnumerable<string> courseIds, CancellationToken ct)
         {
             var result = await _dbSet
-                            .Where(x => x.UserId.Equals(studentId))
+                            .Where(x => x.UserId.Equals(studentId) && courseIds.Contains(x.CourseId))
                             .Take(30)
                             .AsNoTracking()
                             .ToListAsync(ct);
@@ -44,7 +44,8 @@ namespace UniCore.Infrastructure.Repository.V1
     PageNumberPaginationRequest request,
     CancellationToken cancellationToken)
         {
-            var query = _dbSet.AsNoTracking();
+            var query = _dbSet.AsNoTracking()
+                .Where(sc => sc.UserId == studentId);
 
             var totalRecords = await query.CountAsync(cancellationToken);
 
@@ -54,8 +55,7 @@ namespace UniCore.Infrastructure.Repository.V1
 
             var items = await query
                             .Include(sc => sc.Course)
-                                .ThenInclude(c => c.Department)
-                            .Where(sc => sc.UserId == studentId)
+                            .ThenInclude(c => c.Department)
                             .Skip(skip)
                             .Take(pageSize)
                             .ToListAsync(cancellationToken);
@@ -64,12 +64,15 @@ namespace UniCore.Infrastructure.Repository.V1
             var results = new PageNumberPaginationResponse<CourseStudent>()
             {
                 Items = items,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalRecords = totalRecords,
-                TotalPages = totalPages,
-                HasNextPage = pageNumber < totalPages,
-                HasPreviousPage = pageNumber > 1
+                Metadata = new PageNumberPaginationMetaResponse
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalRecords = totalRecords,
+                    TotalPages = totalPages,
+                    HasNextPage = pageNumber < totalPages,
+                    HasPreviousPage = pageNumber > 1
+                }
             };
 
             return results;
@@ -96,7 +99,7 @@ namespace UniCore.Infrastructure.Repository.V1
                     cs.CourseId == courseId &&
                     cs.IsActive &&
                     !cs.IsDeleted)
-                .Select(cs => cs.User.StudentCode)
+                .Select(cs => cs.UserId)
                 .Distinct()
                 .ToListAsync(cancellationToken);
         }

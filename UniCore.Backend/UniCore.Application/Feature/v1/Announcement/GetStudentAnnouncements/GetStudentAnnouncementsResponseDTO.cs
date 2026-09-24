@@ -3,9 +3,19 @@ using UniCore.Application.DTO;
 
 namespace UniCore.Application.Feature.v1.Announcement.GetStudentAnnouncements
 {
-    public class GetStudentAnnouncementsResponseDTO : PageNumberPaginationResponse<StudentAnnouncementItemDTO>
+    public class StudentAnnouncementPaginationMetaResponse : PageNumberPaginationMetaResponse
     {
         public int UnreadCount { get; set; }
+    }
+
+    public class GetStudentAnnouncementsResponseDTO : PageNumberPaginationResponse<StudentAnnouncementItemDTO, StudentAnnouncementPaginationMetaResponse>
+    {
+        [JsonIgnore]
+        public int UnreadCount
+        {
+            get => Metadata?.UnreadCount ?? 0;
+            set => EnsureMetadata().UnreadCount = value;
+        }
     }
 
     public class StudentAnnouncementItemDTO

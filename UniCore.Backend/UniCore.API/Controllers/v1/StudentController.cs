@@ -285,7 +285,6 @@ namespace UniCore.API.Controllers.v1
 
             var input = new GetMyCoursesRequestDTO { UserID = userId };
 
-
             var result = await _studentService.GetMyCoursesAsync(input);
             var message = _localizer.GetString(MessageConstants.Role.GetAllSuccess);
             return OkResponse<GetMyCoursesResponseDTO>(result, message);

@@ -112,41 +112,65 @@ namespace UniCore.Infrastructure.Service
                 _logger.LogDebug("Face AI enroll response: {StatusCode} - {Body}",
                     response.StatusCode, responseBody);
 
-                var envelope = JsonSerializer.Deserialize<FaceAiEnvelope>(responseBody, JsonOptions);
+                using var doc = JsonDocument.Parse(responseBody);
+                var root = doc.RootElement;
 
-                if (envelope == null)
+                bool isSuccess = false;
+                if (root.TryGetProperty("isSuccess", out var isSuccessProp) || root.TryGetProperty("success", out isSuccessProp))
                 {
-                    return new FaceEnrollResult
-                    {
-                        Success = false,
-                        ErrorCode = FaceAuthConstants.ErrorCodes.InternalError,
-                        ErrorMessage = "Invalid response from Face AI"
-                    };
+                    isSuccess = isSuccessProp.GetBoolean();
+                }
+                else if (root.TryGetProperty("statusCode", out var statusProp) && statusProp.GetInt32() == 0)
+                {
+                    isSuccess = true;
+                }
+                else if (response.IsSuccessStatusCode)
+                {
+                    isSuccess = true;
                 }
 
-                if (envelope.Success && envelope.Data != null)
+                if (isSuccess && response.IsSuccessStatusCode)
                 {
+                    JsonElement dataElem = root;
+                    if (root.TryGetProperty("data", out var dElem))
+                    {
+                        if (dElem.TryGetProperty("items", out var itemsElem))
+                        {
+                            dataElem = itemsElem;
+                        }
+                        else
+                        {
+                            dataElem = dElem;
+                        }
+                    }
+
+                    var embeddingId = GetPropString(dataElem, "embedding_id") ?? GetPropString(root, "embedding_id") ?? Guid.NewGuid().ToString();
+                    var resUserId = GetPropString(dataElem, "user_id") ?? GetPropString(root, "user_id") ?? userId;
+                    var resUsername = GetPropString(dataElem, "username") ?? GetPropString(root, "username") ?? username;
+                    var modelVersion = GetPropString(root, "model_version") ?? GetPropString(dataElem, "model_version") ?? "buffalo_l_v1";
+                    var requestId = GetPropString(root, "request_id") ?? GetPropString(dataElem, "request_id");
+
                     return new FaceEnrollResult
                     {
                         Success = true,
-                        RequestId = envelope.RequestId,
-                        ModelVersion = envelope.ModelVersion,
-                        EmbeddingId = envelope.Data.EmbeddingId,
-                        UserId = envelope.Data.UserId,
-                        Username = envelope.Data.Username,
-                        NumImagesUsed = envelope.Data.NumImagesUsed ?? 1
+                        RequestId = requestId,
+                        ModelVersion = modelVersion,
+                        EmbeddingId = embeddingId,
+                        UserId = resUserId,
+                        Username = resUsername,
+                        NumImagesUsed = faceImages.Count
                     };
                 }
                 else
                 {
+                    var (errCode, errMsg) = ExtractError(root);
                     return new FaceEnrollResult
                     {
                         Success = false,
-                        RequestId = envelope.RequestId,
-                        ModelVersion = envelope.ModelVersion,
-                        ErrorCode = envelope.Error?.ErrorCode ?? "UNKNOWN_ERROR",
-                        ErrorMessage = envelope.Error?.Message,
-                        Stage = envelope.Error?.Stage
+                        RequestId = GetPropString(root, "request_id"),
+                        ModelVersion = GetPropString(root, "model_version"),
+                        ErrorCode = errCode ?? FaceAuthConstants.ErrorCodes.InternalError,
+                        ErrorMessage = errMsg ?? "Face enrollment failed"
                     };
                 }
             }
@@ -234,42 +258,68 @@ namespace UniCore.Infrastructure.Service
                 _logger.LogDebug("Face AI recognize response: {StatusCode} - {Body}",
                     response.StatusCode, responseBody);
 
-                var envelope = JsonSerializer.Deserialize<FaceAiEnvelope>(responseBody, JsonOptions);
+                using var doc = JsonDocument.Parse(responseBody);
+                var root = doc.RootElement;
 
-                if (envelope == null)
+                bool isSuccess = false;
+                if (root.TryGetProperty("isSuccess", out var isSuccessProp) || root.TryGetProperty("success", out isSuccessProp))
                 {
-                    return new FaceRecognizeResult
-                    {
-                        Success = false,
-                        ErrorCode = FaceAuthConstants.ErrorCodes.InternalError,
-                        ErrorMessage = "Invalid response from Face AI"
-                    };
+                    isSuccess = isSuccessProp.GetBoolean();
+                }
+                else if (root.TryGetProperty("statusCode", out var statusProp) && statusProp.GetInt32() == 0)
+                {
+                    isSuccess = true;
+                }
+                else if (response.IsSuccessStatusCode)
+                {
+                    isSuccess = true;
                 }
 
-                if (envelope.Success && envelope.Data != null)
+                if (isSuccess && response.IsSuccessStatusCode)
                 {
+                    JsonElement dataElem = root;
+                    if (root.TryGetProperty("data", out var dElem))
+                    {
+                        if (dElem.TryGetProperty("items", out var itemsElem))
+                        {
+                            dataElem = itemsElem;
+                        }
+                        else
+                        {
+                            dataElem = dElem;
+                        }
+                    }
+
+                    var resUserId = GetPropString(dataElem, "user_id") ?? GetPropString(root, "user_id");
+                    var resUsername = GetPropString(dataElem, "username") ?? GetPropString(root, "username");
+                    var similarity = GetPropDouble(dataElem, "similarity") ?? GetPropDouble(root, "similarity") ?? 0;
+                    var threshold = GetPropDouble(dataElem, "threshold") ?? GetPropDouble(root, "threshold") ?? _options.SimilarityThreshold;
+                    var status = GetPropString(dataElem, "status") ?? GetPropString(root, "status");
+                    var requestId = GetPropString(root, "request_id") ?? GetPropString(dataElem, "request_id");
+                    var modelVersion = GetPropString(root, "model_version") ?? GetPropString(dataElem, "model_version") ?? "buffalo_l_v1";
+
                     return new FaceRecognizeResult
                     {
                         Success = true,
-                        RequestId = envelope.RequestId,
-                        ModelVersion = envelope.ModelVersion,
-                        UserId = envelope.Data.UserId,
-                        Username = envelope.Data.Username,
-                        Similarity = envelope.Data.Similarity ?? 0,
-                        Threshold = envelope.Data.Threshold ?? _options.SimilarityThreshold,
-                        Status = envelope.Data.Status
+                        RequestId = requestId,
+                        ModelVersion = modelVersion,
+                        UserId = resUserId,
+                        Username = resUsername,
+                        Similarity = similarity,
+                        Threshold = threshold,
+                        Status = status
                     };
                 }
                 else
                 {
+                    var (errCode, errMsg) = ExtractError(root);
                     return new FaceRecognizeResult
                     {
                         Success = false,
-                        RequestId = envelope.RequestId,
-                        ModelVersion = envelope.ModelVersion,
-                        ErrorCode = envelope.Error?.ErrorCode ?? "UNKNOWN_ERROR",
-                        ErrorMessage = envelope.Error?.Message,
-                        Stage = envelope.Error?.Stage
+                        RequestId = GetPropString(root, "request_id"),
+                        ModelVersion = GetPropString(root, "model_version"),
+                        ErrorCode = errCode ?? FaceAuthConstants.ErrorCodes.InternalError,
+                        ErrorMessage = errMsg ?? "Face recognition failed"
                     };
                 }
             }
@@ -305,36 +355,69 @@ namespace UniCore.Infrastructure.Service
             }
         }
 
-        #region Response Models
-
-        private class FaceAiEnvelope
+        private static string? GetPropString(JsonElement element, string propName)
         {
-            public bool Success { get; set; }
-            public string? RequestId { get; set; }
-            public string? ModelVersion { get; set; }
-            public string? Timestamp { get; set; }
-            public FaceAiData? Data { get; set; }
-            public FaceAiError? Error { get; set; }
+            if (element.ValueKind == JsonValueKind.Object && element.TryGetProperty(propName, out var prop))
+            {
+                return prop.GetString();
+            }
+            return null;
         }
 
-        private class FaceAiData
+        private static double? GetPropDouble(JsonElement element, string propName)
         {
-            public string? EmbeddingId { get; set; }
-            public string? UserId { get; set; }
-            public string? Username { get; set; }
-            public int? NumImagesUsed { get; set; }
-            public double? Similarity { get; set; }
-            public double? Threshold { get; set; }
-            public string? Status { get; set; }
+            if (element.ValueKind == JsonValueKind.Object && element.TryGetProperty(propName, out var prop))
+            {
+                if (prop.ValueKind == JsonValueKind.Number && prop.TryGetDouble(out var d))
+                {
+                    return d;
+                }
+            }
+            return null;
         }
 
-        private class FaceAiError
+        private static (string? ErrorCode, string? ErrorMessage) ExtractError(JsonElement root)
         {
-            public string? ErrorCode { get; set; }
-            public string? Message { get; set; }
-            public string? Stage { get; set; }
-        }
+            string? errorCode = null;
+            string? errorMessage = null;
 
-        #endregion
+            if (root.TryGetProperty("errors", out var errorsProp) && errorsProp.ValueKind == JsonValueKind.Array && errorsProp.GetArrayLength() > 0)
+            {
+                var first = errorsProp[0];
+                if (first.ValueKind == JsonValueKind.String)
+                {
+                    errorMessage = first.GetString();
+                }
+                else if (first.ValueKind == JsonValueKind.Object)
+                {
+                    if (first.TryGetProperty("code", out var c)) errorCode = c.GetString();
+                    if (first.TryGetProperty("detail", out var d)) errorMessage = d.GetString();
+                    else if (first.TryGetProperty("message", out var m)) errorMessage = m.GetString();
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(errorMessage) && root.TryGetProperty("error", out var errorProp))
+            {
+                if (errorProp.ValueKind == JsonValueKind.Object)
+                {
+                    if (errorProp.TryGetProperty("error_code", out var ec)) errorCode = ec.GetString();
+                    else if (errorProp.TryGetProperty("code", out var c)) errorCode = c.GetString();
+
+                    if (errorProp.TryGetProperty("message", out var m)) errorMessage = m.GetString();
+                    else if (errorProp.TryGetProperty("detail", out var d)) errorMessage = d.GetString();
+                }
+                else if (errorProp.ValueKind == JsonValueKind.String)
+                {
+                    errorMessage = errorProp.GetString();
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(errorMessage) && root.TryGetProperty("message", out var msgProp))
+            {
+                errorMessage = msgProp.GetString();
+            }
+
+            return (errorCode, errorMessage);
+        }
     }
 }

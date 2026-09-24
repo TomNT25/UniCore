@@ -68,108 +68,118 @@ namespace UniCore.Infrastructure.Service
             using var response = await _httpClient.PostAsync(path, content, cancellationToken);
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
 
-            AiOcrApiEnvelope? envelope;
-            try
+            using var doc = JsonDocument.Parse(body);
+            var root = doc.RootElement;
+
+            bool isSuccess = false;
+            if (root.TryGetProperty("isSuccess", out var isSuccessProp) || root.TryGetProperty("success", out isSuccessProp))
             {
-                envelope = JsonSerializer.Deserialize<AiOcrApiEnvelope>(body, JsonOptions);
+                isSuccess = isSuccessProp.GetBoolean();
             }
-            catch (JsonException ex)
+            else if (root.TryGetProperty("statusCode", out var statusProp) && statusProp.GetInt32() == 0)
             {
-                _logger.LogError(ex, "AI OCR returned non-JSON body: {Body}", body);
-                throw new InvalidOperationException("AI OCR returned an invalid response.");
+                isSuccess = true;
+            }
+            else if (response.IsSuccessStatusCode)
+            {
+                isSuccess = true;
             }
 
-            if (envelope == null)
+            if (!isSuccess || !response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException("AI OCR returned an empty response.");
-            }
+                string? errorCode = null;
+                string? errorMessage = null;
 
-            if (!envelope.Success || envelope.Error != null)
-            {
-                var code = envelope.Error?.Code ?? "OCR_FAILED";
-                var message = envelope.Error?.Message ?? "OCR failed.";
+                if (root.TryGetProperty("errors", out var errorsProp) && errorsProp.ValueKind == JsonValueKind.Array && errorsProp.GetArrayLength() > 0)
+                {
+                    var firstErr = errorsProp[0];
+                    if (firstErr.ValueKind == JsonValueKind.String)
+                    {
+                        errorMessage = firstErr.GetString();
+                    }
+                    else if (firstErr.ValueKind == JsonValueKind.Object)
+                    {
+                        if (firstErr.TryGetProperty("code", out var c)) errorCode = c.GetString();
+                        if (firstErr.TryGetProperty("detail", out var d)) errorMessage = d.GetString();
+                        else if (firstErr.TryGetProperty("message", out var m)) errorMessage = m.GetString();
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(errorMessage) && root.TryGetProperty("error", out var errorProp))
+                {
+                    if (errorProp.ValueKind == JsonValueKind.Object)
+                    {
+                        if (errorProp.TryGetProperty("code", out var c)) errorCode = c.GetString();
+                        if (errorProp.TryGetProperty("message", out var m)) errorMessage = m.GetString();
+                    }
+                    else if (errorProp.ValueKind == JsonValueKind.String)
+                    {
+                        errorMessage = errorProp.GetString();
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(errorMessage) && root.TryGetProperty("message", out var msgProp))
+                {
+                    errorMessage = msgProp.GetString();
+                }
+
+                errorCode ??= "OCR_FAILED";
+                errorMessage ??= "OCR processing failed.";
+
                 _logger.LogWarning(
                     "AI OCR rejected scan for user {UserId}: {ErrorCode} — {Message}",
-                    userId, code, message);
-                throw new InvalidOperationException($"{code}: {message}");
+                    userId, errorCode, errorMessage);
+                throw new InvalidOperationException($"{errorCode}: {errorMessage}");
             }
 
-            if (!response.IsSuccessStatusCode)
+            // Find target element with data
+            JsonElement dataElem = root;
+            if (root.TryGetProperty("data", out var dElem))
             {
-                _logger.LogError(
-                    "AI OCR HTTP {StatusCode} for user {UserId}: {Body}",
-                    (int)response.StatusCode, userId, body);
-                throw new InvalidOperationException(
-                    $"AI OCR service returned {(int)response.StatusCode}.");
+                if (dElem.TryGetProperty("items", out var itemsElem))
+                {
+                    dataElem = itemsElem;
+                }
+                else
+                {
+                    dataElem = dElem;
+                }
             }
 
-            var data = envelope.Data
-                       ?? throw new InvalidOperationException("AI OCR success response has no data.");
+            string? idNumber = GetJsonString(dataElem, "id_number") ?? GetJsonString(root, "id_number");
+            string? fullName = GetJsonString(dataElem, "full_name") ?? GetJsonString(root, "full_name");
+            string? dateOfBirth = GetJsonString(dataElem, "date_of_birth") ?? GetJsonString(dataElem, "dob") ?? GetJsonString(root, "date_of_birth");
+            string? sex = GetJsonString(dataElem, "sex") ?? GetJsonString(dataElem, "gender") ?? GetJsonString(root, "sex");
+            string? nationality = GetJsonString(dataElem, "nationality") ?? GetJsonString(root, "nationality");
+            string? placeOfOrigin = GetJsonString(dataElem, "place_of_origin") ?? GetJsonString(dataElem, "home_town") ?? GetJsonString(root, "place_of_origin");
+            string? placeOfResidence = GetJsonString(dataElem, "place_of_residence") ?? GetJsonString(dataElem, "address") ?? GetJsonString(root, "place_of_residence");
+            string? dateOfExpiry = GetJsonString(dataElem, "date_of_expiry") ?? GetJsonString(dataElem, "doe") ?? GetJsonString(root, "date_of_expiry");
 
-            if (string.IsNullOrWhiteSpace(data.IdNumber) || string.IsNullOrWhiteSpace(data.FullName))
+            if (string.IsNullOrWhiteSpace(idNumber) || string.IsNullOrWhiteSpace(fullName))
             {
                 throw new InvalidOperationException("AI OCR response is missing id_number or full_name.");
             }
 
             return new AiOcrScanResult
             {
-                IdNumber = data.IdNumber.Trim(),
-                FullName = data.FullName.Trim(),
-                DateOfBirth = data.DateOfBirth,
-                Sex = data.Sex,
-                Nationality = data.Nationality,
-                PlaceOfOrigin = data.PlaceOfOrigin,
-                PlaceOfResidence = data.PlaceOfResidence,
-                DateOfExpiry = data.DateOfExpiry
+                IdNumber = idNumber.Trim(),
+                FullName = fullName.Trim(),
+                DateOfBirth = dateOfBirth,
+                Sex = sex,
+                Nationality = nationality,
+                PlaceOfOrigin = placeOfOrigin,
+                PlaceOfResidence = placeOfResidence,
+                DateOfExpiry = dateOfExpiry
             };
         }
 
-        private sealed class AiOcrApiEnvelope
+        private static string? GetJsonString(JsonElement element, string propertyName)
         {
-            [JsonPropertyName("success")]
-            public bool Success { get; set; }
-
-            [JsonPropertyName("data")]
-            public AiOcrApiDataDto? Data { get; set; }
-
-            [JsonPropertyName("error")]
-            public AiOcrApiErrorDto? Error { get; set; }
-        }
-
-        private sealed class AiOcrApiDataDto
-        {
-            [JsonPropertyName("id_number")]
-            public string? IdNumber { get; set; }
-
-            [JsonPropertyName("full_name")]
-            public string? FullName { get; set; }
-
-            [JsonPropertyName("date_of_birth")]
-            public string? DateOfBirth { get; set; }
-
-            [JsonPropertyName("sex")]
-            public string? Sex { get; set; }
-
-            [JsonPropertyName("nationality")]
-            public string? Nationality { get; set; }
-
-            [JsonPropertyName("place_of_origin")]
-            public string? PlaceOfOrigin { get; set; }
-
-            [JsonPropertyName("place_of_residence")]
-            public string? PlaceOfResidence { get; set; }
-
-            [JsonPropertyName("date_of_expiry")]
-            public string? DateOfExpiry { get; set; }
-        }
-
-        private sealed class AiOcrApiErrorDto
-        {
-            [JsonPropertyName("code")]
-            public string? Code { get; set; }
-
-            [JsonPropertyName("message")]
-            public string? Message { get; set; }
+            if (element.ValueKind == JsonValueKind.Object && element.TryGetProperty(propertyName, out var prop))
+            {
+                return prop.GetString();
+            }
+            return null;
         }
     }
 }

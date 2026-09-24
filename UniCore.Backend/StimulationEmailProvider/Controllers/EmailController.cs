@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using StimulationEmailProvider.Services;
@@ -37,6 +38,12 @@ public class EmailController : ControllerBase
     {
         public string Id { get; set; } = string.Empty;
         public string Status { get; set; } = "accepted";
+    }
+
+    public sealed class GetMyMessagesRequest
+    {
+        [JsonPropertyName("email")]
+        public string Email { get; set; } = string.Empty;
     }
 
     public sealed class MessageListResponse
@@ -107,5 +114,21 @@ public class EmailController : ControllerBase
     {
         _store.ClearAll();
         return NoContent();
+    }
+
+    [HttpGet("messages/me")]
+    public ActionResult<MessageListResponse> GetMyMessages([FromQuery] string email, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        pageSize = Math.Clamp(pageSize, 1, 100);
+        page = Math.Max(1, page);
+
+        var items = _store.GetMyMessages(email, page, pageSize, out var total);
+        return Ok(new MessageListResponse
+        {
+            Data = items.ToList(),
+            Total = total,
+            Page = page,
+            PageSize = pageSize
+        });
     }
 }

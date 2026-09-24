@@ -11,14 +11,9 @@ namespace UniCore.Application.Feature.v1.Announcement.CreateAnnouncement
         public string Type { get; set; } = string.Empty;
         [JsonPropertyName("scope_type")]
         public string ScopeType { get; set; } = string.Empty;
+        [JsonPropertyName("scope_value")]
         public string? ScopeValue { get; set; }
-
-        /// <summary>
-        /// Target entity ids for DEPARTMENT / CLASS / COURSE (stored in scope_value). Use entity Id from target search APIs.
-        /// </summary>
-        [JsonPropertyName("targets")]
-        public List<string> Targets { get; set; } = new();
-
+        
         /// <summary>Required when ScopeType = SPECIFIC_STUDENTS.</summary>
         public List<string> TargetStudentIds { get; set; } = new();
         public bool RequireAcknowledgement { get; set; }

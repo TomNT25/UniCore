@@ -1,3 +1,4 @@
+using UniCore.Application.DTO;
 using UniCore.Application.Entity;
 
 namespace UniCore.Application.Contract.Repository.Enitity.v1
@@ -18,9 +19,20 @@ namespace UniCore.Application.Contract.Repository.Enitity.v1
             IEnumerable<string> studentIds,
             CancellationToken cancellationToken = default);
 
+        Task<List<string>> GetActiveVerifiedStudentIdsByClassIdsAsync(
+            IEnumerable<string> classIds,
+            CancellationToken cancellationToken = default);
+
+        Task<List<string>> GetActiveVerifiedStudentIdsByDepartmentIdsAsync(
+            IEnumerable<string> departmentIds,
+            CancellationToken cancellationToken = default);
+
         Task<(List<User> Items, int TotalCount)> SearchActiveVerifiedStudentsAsync(
             string? search,
             int limit,
+            CancellationToken cancellationToken = default);
+        Task<CursorPaginationResponse<User>> SearchActiveVerifiedStudentsCursorAsync(
+            CursorPaginationRequest request,
             CancellationToken cancellationToken = default);
     }
 }

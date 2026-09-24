@@ -9,7 +9,7 @@ namespace UniCore.Infrastructure.Database.ModelCreating
         {
             modelBuilder.Entity<UserProfile>(entity =>
             {
-                entity.ToTable("user_profiles");
+                entity.ToTable("user_profiles", tb => tb.UseSqlOutputClause(false));
                 entity.HasKey(e => e.Id);
 
                 entity.Property(e => e.Id)
@@ -34,6 +34,13 @@ namespace UniCore.Infrastructure.Database.ModelCreating
                 entity.Property(e => e.IsActive)
                     .HasColumnName("is_active")
                     .HasDefaultValue(true);
+
+                entity.Property(e => e.IsVerified)
+                    .HasColumnName("is_verified")
+                    .HasDefaultValue(false);
+
+                entity.Property(e => e.VerifiedAt).HasColumnName("verified_at");
+                entity.Property(e => e.VerifiedBy).HasColumnName("verified_by").HasMaxLength(50);
 
                 entity.Property(e => e.CreatedAt)
                     .HasColumnName("created_at")

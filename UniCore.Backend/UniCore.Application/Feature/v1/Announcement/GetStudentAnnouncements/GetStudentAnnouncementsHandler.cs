@@ -77,14 +77,20 @@ namespace UniCore.Application.Feature.v1.Announcement.GetStudentAnnouncements
             // Count unread
             var unreadCount = items.Count(i => !i.IsRead);
 
+            var totalPages = (int)Math.Ceiling(announcements.TotalCount / (double)request.PageSize);
             return new GetStudentAnnouncementsResponseDTO
             {
                 Items = items,
-                TotalRecords = announcements.TotalCount,
-                UnreadCount = unreadCount,
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize,
-                TotalPages = (int)Math.Ceiling(announcements.TotalCount / (double)request.PageSize)
+                Metadata = new StudentAnnouncementPaginationMetaResponse
+                {
+                    PageNumber = request.PageNumber,
+                    PageSize = request.PageSize,
+                    TotalRecords = announcements.TotalCount,
+                    TotalPages = totalPages,
+                    HasNextPage = request.PageNumber < totalPages,
+                    HasPreviousPage = request.PageNumber > 1,
+                    UnreadCount = unreadCount
+                }
             };
         }
     }
