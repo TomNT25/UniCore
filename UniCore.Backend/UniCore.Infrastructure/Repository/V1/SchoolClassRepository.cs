@@ -30,14 +30,14 @@ namespace UniCore.Infrastructure.Repository.V1
             return results;
         }
 
-        public async Task<IEnumerable<SchoolClass>?> GetClassmatesByClassIdAsync(string classId, string userId, CancellationToken cancellationToken = default)
+        public async Task<SchoolClass?> GetClassmatesByClassIdAsync(string classId, string userId, CancellationToken cancellationToken = default)
         {
             return await _dbSet
                 .AsNoTracking()
                 .Include(c => c.Students)
                 .Where(c => c.Id.Equals(classId))
                 .Take(30)
-                .ToListAsync(cancellationToken);
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<SchoolClass?> GetByIdAsync(string id, CancellationToken cancellationToken = default)

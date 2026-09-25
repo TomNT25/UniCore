@@ -46,16 +46,16 @@ namespace UniCore.Application.Feature.v1.ClassRoom.GetClassFriends
 
             var classID = user.ClassId;
 
-            var classmates = await _schoolClassRepository.GetClassmatesByClassIdAsync(classID, request.UserID, ct);
+            var classInfo = await _schoolClassRepository.GetClassmatesByClassIdAsync(classID, request.UserID, ct);
 
-            if (classmates == null)
+            if (classInfo is null)
             {
-                throw new NullReferenceException(nameof(classmates));
+                throw new NullReferenceException(nameof(classInfo));
             }
 
             var response = new GetClassFriendsResponseDTO
             {
-                ClassmatesList = _mapper.Map<IEnumerable<GetClassFriendsDTO>>(classmates.User)
+                ClassmatesList = _mapper.Map<IEnumerable<GetClassFriendsDTO>>(classInfo.Students)
             };
 
             return response;

@@ -190,15 +190,9 @@ namespace UniCore.API.Controllers.v1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<BaseAPIResponse<GetClassFriendsResponseDTO>>> GetClassmates(
-            [FromQuery] string? classId,
+
             CancellationToken ct = default)
         {
-            if (string.IsNullOrEmpty(classId))
-            {
-                var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
-                return BadRequestResponse<GetClassFriendsResponseDTO>(errMessage);
-            }
-
             var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
              ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
              ?? User.FindFirst(ClaimTypes.Email)?.Value
@@ -210,7 +204,7 @@ namespace UniCore.API.Controllers.v1
                 return UnauthorizedResponse<GetClassFriendsResponseDTO>(errMessage);
             }
 
-            var input = new GetClassFriendsRequestDTO { ClassID = classId, UserID = userId };
+            var input = new GetClassFriendsRequestDTO { UserID = userId };
 
             var result = await _studentService.GetClassmateListAsync(input, ct);
             if (result == null)
