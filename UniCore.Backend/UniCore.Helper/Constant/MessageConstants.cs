@@ -14,7 +14,7 @@ namespace UniCore.Helper.Constant
             public const string GetPublicListSuccess = "Announcement.GetPublicListSuccess";
             public const string GetPublicByIdSuccess = "Announcement.GetPublicByIdSuccess";
             public const string NotFound = "Announcement.NotFound";
-            public const string TargetsSearchStudentsSuccess = "Announcement.Targets.SearchStudentsSuccess";
+             public const string TargetsSearchStudentsSuccess = "Announcement.Targets.SearchStudentsSuccess";
             public const string TargetsSearchCoursesSuccess = "Announcement.Targets.SearchCoursesSuccess";
             public const string TargetsSearchClassesSuccess = "Announcement.Targets.SearchClassesSuccess";
             public const string TargetsSearchDepartmentsSuccess = "Announcement.Targets.SearchDepartmentsSuccess";
@@ -49,7 +49,6 @@ namespace UniCore.Helper.Constant
             public const string SetPinFailed = "FaceAuth.SetPinFailed";
             public const string LoginFailed = "FaceAuth.LoginFailed";
             public const string VerifyPinFailed = "FaceAuth.VerifyPinFailed";
-
             // MFA & OTP messages
             public const string EnableMfaSuccess = "FaceAuth.EnableMfaSuccess";
             public const string DisableMfaSuccess = "FaceAuth.DisableMfaSuccess";
@@ -61,7 +60,6 @@ namespace UniCore.Helper.Constant
             public const string InvalidOtp = "FaceAuth.InvalidOtp";
             public const string OtpRequired = "FaceAuth.OtpRequired";
             public const string OtpInvalidLength = "FaceAuth.OtpInvalidLength";
-
             // Validation messages
             public const string UserIdRequired = "FaceAuth.UserIdRequired";
             public const string ImagesRequired = "FaceAuth.ImagesRequired";
@@ -88,6 +86,8 @@ namespace UniCore.Helper.Constant
         public static class System
         {
             public const string ValidationFailed = "System.ValidationFailed";
+            public const string BadRequest = "System.BadRequest";
+
             public const string UnexpectedError = "System.UnexpectedError";
             public const string ResourceNotFound = "System.ResourceNotFound";
             public const string UnauthorizedAccess = "System.UnauthorizedAccess";
@@ -160,16 +160,29 @@ namespace UniCore.Helper.Constant
         public static class Student
 
         {
-
+            // Standard CRUD operations
             public const string GetAllSuccess = "Student.GetAllSuccess";
-
             public const string GetByIdSuccess = "Student.GetByIdSuccess";
-
             public const string AddSuccess = "Student.AddSuccess";
-
             public const string UpdateSuccess = "Student.UpdateSuccess";
-
             public const string DeleteSuccess = "Student.DeleteSuccess";
+
+            // Get Info & Put Info
+            public const string GetInfoSuccess = "Student.GetInfoSuccess";
+            public const string GetInfoFailed = "Student.GetInfoFailed";
+            public const string PutInfoSuccess = "Student.PutInfoSuccess";
+            public const string PutInfoFailed = "Student.PutInfoFailed";
+
+            // Get My Courses & Course Details
+            public const string GetMyCoursesSuccess = "Student.GetMyCoursesSuccess";
+            public const string GetMyCoursesEmpty = "Student.GetMyCoursesEmpty";
+            public const string GetCourseDetailsSuccess = "Student.GetCourseDetailsSuccess";
+            public const string GetCourseDetailsNotFound = "Student.GetCourseDetailsNotFound";
+
+            // Errors & Authentication/Authorization
+            public const string NotFoundError = "Student.NotFoundError";
+            public const string NotAuthenticated = "Student.NotAuthenticated";
+            public const string NotAuthorized = "Student.NotAuthorized";
 
         }
 
@@ -246,9 +259,8 @@ namespace UniCore.Helper.Constant
             public const string GetUserProfileSuccess = "Admin.GetUserProfileSuccess";
 
             public const string UpdateUserProfileSuccess = "Admin.UpdateUserProfileSuccess";
-
+            
             public const string VerifyUserProfileSuccess = "Admin.VerifyUserProfileSuccess";
-
             public const string UserNotFound = "Admin.UserNotFound";
 
             public const string ProfileNotFound = "Admin.ProfileNotFound";

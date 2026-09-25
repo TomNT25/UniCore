@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace UniCore.Application.Feature.v1.Courses.GetMyCourses
+namespace UniCore.Application.Feature.v1.Courses.GetMyCourses.ListDetails
 {
     public class GetMyCoursesValidator : AbstractValidator<GetMyCoursesRequestDTO>
     {

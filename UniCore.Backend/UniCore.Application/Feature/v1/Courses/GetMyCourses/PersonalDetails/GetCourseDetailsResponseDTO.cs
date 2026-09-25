@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using UniCore.Application.Feature.v1.Courses.GetMyCourses;
+using UniCore.Application.Feature.v1.Courses.GetMyCourses.InternalDTOs;
 
 namespace UniCore.Application.Feature.v1.Courses.GetMyCourses.PersonalDetails
 {

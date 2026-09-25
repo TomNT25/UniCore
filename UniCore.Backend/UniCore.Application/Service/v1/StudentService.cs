@@ -8,7 +8,7 @@ using UniCore.Application.Feature.v1.ClassRoom.GetClassFriends;
 using UniCore.Application.Feature.v1.ClassRoom.GetClassInfos;
 using UniCore.Application.Feature.v1.ClassRoom.GetCoursesStudents;
 using UniCore.Application.Feature.v1.Courses.GetAllCourses;
-using UniCore.Application.Feature.v1.Courses.GetMyCourses;
+using UniCore.Application.Feature.v1.Courses.GetMyCourses.ListDetails;
 using UniCore.Application.Feature.v1.Courses.GetMyCourses.PersonalDetails;
 using UniCore.Application.Feature.v1.User.GetUserInfo;
 // using UniCore.Application.Feature.v1.User.PutUserInfo;

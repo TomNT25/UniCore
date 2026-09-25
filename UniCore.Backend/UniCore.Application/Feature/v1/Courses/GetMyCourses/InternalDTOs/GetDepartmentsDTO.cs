@@ -1,5 +1,4 @@
-﻿
-namespace UniCore.Application.Feature.v1.Courses.GetMyCourses
+﻿namespace UniCore.Application.Feature.v1.Courses.GetMyCourses.InternalDTOs
 {
     public class GetDepartmentsDTO
     {

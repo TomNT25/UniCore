@@ -1,7 +1,7 @@
 ﻿using UniCore.Application.Contract.RequestHandlerHub;
 using UniCore.Application.DTO;
 
-namespace UniCore.Application.Feature.v1.Courses.GetMyCourses
+namespace UniCore.Application.Feature.v1.Courses.GetMyCourses.ListDetails
 {
     public class GetMyCoursesRequestDTO : PageNumberPaginationRequest, IRequest<GetMyCoursesResponseDTO>
     {

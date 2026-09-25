@@ -18,10 +18,10 @@ namespace UniCore.Infrastructure.Repository.V1
         {
         }
 
-        public async Task<IEnumerable<CourseStudent>?> GetByStuIdCourseIdsAsync(string studentId,  IEnumerable<string> courseIds, CancellationToken ct)
+        public async Task<IEnumerable<CourseStudent>?> GetByStuIdCourseIdsAsync(string studentId, CancellationToken ct)
         {
             var result = await _dbSet
-                            .Where(x => x.UserId.Equals(studentId) && courseIds.Contains(x.CourseId))
+                            .Where(x => x.UserId.Equals(studentId))
                             .Take(30)
                             .AsNoTracking()
                             .ToListAsync(ct);
@@ -46,8 +46,12 @@ namespace UniCore.Infrastructure.Repository.V1
     CancellationToken cancellationToken = default,
     Expression<Func<CourseStudent, bool>>? filter = null)
         {
-            var query = _dbSet.AsNoTracking()
-                .Where(sc => sc.UserId == studentId);
+            var query = _dbSet.AsNoTracking().Where(sc => sc.UserId == studentId);
+
+            if(filter is not null)
+            {
+                query.Where(filter);
+            }
 
             var totalRecords = await query.CountAsync(cancellationToken);
 
@@ -59,10 +63,10 @@ namespace UniCore.Infrastructure.Repository.V1
                             .Include(sc => sc.Course)
                                 .ThenInclude(c => c.Department)
                             .Include(sc => sc.Schedules)
-                            .Where(sc => sc.UserId == studentId)
                             .Skip(skip)
                             .Take(pageSize)
                             .ToListAsync(cancellationToken);
+
             var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
 
             var results = new PageNumberPaginationResponse<CourseStudent>()
@@ -87,13 +91,13 @@ namespace UniCore.Infrastructure.Repository.V1
             CancellationToken cancellationToken)
         {
 
-            var items = await _dbSet.AsNoTracking()
+            var item = await _dbSet.AsNoTracking()
+                            .Where(sc => sc.UserId == studentId && sc.CourseId.Equals(courseId))
                             .Include(sc => sc.Course)
                                 .ThenInclude(c => c.Department)
                             .Include(sc => sc.Schedules)
-                            .Where(sc => sc.UserId == studentId && sc.Course.Id.Equals(courseId))
                             .FirstOrDefaultAsync(cancellationToken);
-            return items;
+            return item;
         }
 
         public async Task<List<string>> GetActiveStudentIdsByCourseIdAsync(string courseId, CancellationToken cancellationToken = default)

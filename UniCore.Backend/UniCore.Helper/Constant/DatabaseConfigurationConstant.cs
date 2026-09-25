@@ -2,6 +2,6 @@
 {
     public class DatabaseConfigurationConstant
     {
-        public const string SQL_SERVER_CONNECTION_STRING = @"Data Source=localhost\SQLEXPRESS;Database=LearningManagementSystemDatabase;Integrated Security=True;TrustServerCertificate=True;";
+        public const string SQL_SERVER_CONNECTION_STRING = @"Data Source=localhost\SQLEXPRESS;Database=UniCore;Integrated Security=True;TrustServerCertificate=True;";
     }
 }
