@@ -115,6 +115,14 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser
             var userId = Guid.NewGuid().ToString();
             var now = DateTime.UtcNow;
 
+            var whitelistedEmail = await _whitelistedEmailRepository.GetByEmailAsync(email, cancellationToken);
+            if (whitelistedEmail == null)
+            {
+                _logger.LogWarning("Email {Email} is not whitelisted", email);
+                throw new InvalidOperationException(
+                    "Email is not whitelisted");
+            }
+
             var userEntity = new UserEntity
             {
                 Id = userId,

@@ -123,6 +123,9 @@
     <None Include="dbo\SeedData\19_CreateFaceAuthLogs.sql" />
     <None Include="dbo\SeedData\20_AlterAnnouncementScopeValueLength.sql" />
     <None Include="dbo\SeedData\21_AddAnnouncementStudentIsSent.sql" />
+    <None Include="dbo\SeedData\22_AddUserProfileVerificationColumns.sql" />
+    <None Include="dbo\SeedData\23_AddUserProfileCidImageUrls.sql" />
+    <None Include="dbo\SeedData\24_SeedDepartmentCourses.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="dbo\Script.PostDeployment.sql" />

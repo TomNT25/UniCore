@@ -195,6 +195,19 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.CreateBulkStudentA
                     continue;
                 }
 
+                var whitelistedEmail = await _whitelistedEmailRepository.GetByEmailAsync(email, cancellationToken);
+                if (whitelistedEmail == null)
+                {
+                    errorAccounts.Add(new StudentAccountErrorItemDTO
+                    {
+                        Id = null,
+                        StudentCode = studentCode,
+                        Email = email,
+                        ErrorType = "MAIL_NOT_EXIST"
+                    });
+                    continue;
+                }
+
                 // Create user
                 var rawPassword = GenerateRandomPassword();
                 var passwordHash = _passwordHasherService.HashPassword(rawPassword);
@@ -246,7 +259,7 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.CreateBulkStudentA
                         Id = null,
                         StudentCode = studentCode,
                         Email = email,
-                        ErrorType = "EMAIL"
+                        ErrorType = "STUDENT_CODE"
                     });
                     continue;
                 }

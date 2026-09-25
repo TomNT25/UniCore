@@ -30,6 +30,7 @@ PRINT 'Executing Post-Deployment Seed Scripts...';
 :r .\SeedData\21_AddAnnouncementStudentIsSent.sql
 :r .\SeedData\22_AddUserProfileVerificationColumns.sql
 :r .\SeedData\23_AddUserProfileCidImageUrls.sql
+:r .\SeedData\24_SeedDepartmentCourses.sql
 
 PRINT 'Post-Deployment Seed Data complete.';
 GO
