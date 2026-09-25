@@ -48,7 +48,8 @@ namespace UniCore.Application.Feature.v1.Auth.Mfa.EnableMfa
             }
             var secretKey = Base32Encode(secretBytes);
 
-            var mfaSetting = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var mfaSettingList = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var mfaSetting = mfaSettingList.FirstOrDefault(s => s != null && s.IsActive && s.MfaMethod == "TOTP");
             if (mfaSetting == null || string.IsNullOrWhiteSpace(mfaSetting.SecretKey))
             {
                 mfaSetting = new UserMfaSetting

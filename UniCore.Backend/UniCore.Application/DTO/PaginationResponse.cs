@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace UniCore.Application.DTO
 {
@@ -6,5 +7,12 @@ namespace UniCore.Application.DTO
     {
         public IEnumerable<T> Items { get; set; } = [];
         public TMetadata Metadata { get; set; } = default!;
+
+        [JsonIgnore]
+        public TMetadata MetaData
+        {
+            get => Metadata;
+            set => Metadata = value;
+        }
     }
 }

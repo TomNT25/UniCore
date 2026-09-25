@@ -177,8 +177,9 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
             }
 
             // Verify user has enabled Face Recognition MFA
-            var mfaSetting = await _mfaSettingRepository.GetByUserIdAsync(userId, cancellationToken);
-            if (mfaSetting == null || !mfaSetting.IsMfaEnabled || (mfaSetting.MfaMethod != "FACE" && mfaSetting.MfaMethod != "FACE_RECOGNITION"))
+            var mfaSettingList = await _mfaSettingRepository.GetByUserIdAsync(userId, cancellationToken);
+            var mfaSetting = mfaSettingList.FirstOrDefault(s => s != null && s.IsActive && s.MfaMethod == "FACE");
+            if (mfaSetting == null || !mfaSetting.IsMfaEnabled)
             {
                 _logger.LogWarning("Face matched but Face Recognition MFA is not enabled for user: {UserId}", userId);
                 return new FaceLoginResponseDTO
@@ -219,7 +220,6 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
                 Email = user.Email,
                 Otp = otp,
                 FailedOtpAttempts = 0,
-                Similarity = recognizeResult.Similarity,
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = expiresAt
             };
@@ -231,8 +231,8 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
                 cancellationToken);
 
             _logger.LogInformation(
-                "Face login challenge issued for user {UserId}. Similarity: {Similarity}, ExpiresAt: {ExpiresAt}",
-                userId, recognizeResult.Similarity, expiresAt);
+                "Face login challenge issued for user {UserId}, ExpiresAt: {ExpiresAt}",
+                userId, expiresAt);
 
             // Dispatch OTP via Email (StimulationEmailProvider / Smtp)
             try
@@ -268,8 +268,6 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
                 UserId = userId,
                 Action = FaceAuthAction.Login,
                 Result = FaceAuthResult.Success,
-                ModelVersion = recognizeResult.ModelVersion,
-                Similarity = recognizeResult.Similarity,
                 LatencyMs = (int)stopwatch.ElapsedMilliseconds,
                 IpAddress = request.IpAddress,
                 UserAgent = request.UserAgent
@@ -280,7 +278,6 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Login
                 Success = true,
                 ChallengeToken = challengeToken,
                 ChallengeExpiresAt = expiresAt,
-                Similarity = recognizeResult.Similarity,
                 MaskedEmail = MaskEmail(user.Email),
                 Message = _localizer.GetString(MessageConstants.FaceAuth.LoginSuccess)
             };

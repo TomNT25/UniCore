@@ -52,12 +52,13 @@ namespace UniCore.Application.Feature.v1.Auth.Mfa.DisableMfa
                 throw new ValidationException(new[] { new ValidationFailure("Password", msg) });
             }
 
-            var mfaSetting = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
-            if (mfaSetting != null)
+            var mfaSettingList = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var mfaSettingToDisable = mfaSettingList.FirstOrDefault(s => s != null && s.IsActive && s.MfaMethod == "TOTP");
+            if (mfaSettingToDisable != null)
             {
-                mfaSetting.IsMfaEnabled = false;
-                mfaSetting.UpdatedAt = DateTime.UtcNow;
-                await _mfaSettingRepository.UpdateAsync(mfaSetting, cancellationToken);
+                mfaSettingToDisable.IsMfaEnabled = false;
+                mfaSettingToDisable.UpdatedAt = DateTime.UtcNow;
+                await _mfaSettingRepository.UpdateAsync(mfaSettingToDisable, cancellationToken);
             }
 
             var successMsg = _localizer.GetString(MessageConstants.Auth.MfaDisableSuccess);

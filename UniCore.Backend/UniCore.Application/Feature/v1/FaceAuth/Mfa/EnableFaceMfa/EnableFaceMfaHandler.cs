@@ -62,7 +62,6 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Mfa.EnableFaceMfa
             // Prerequisite: User must have enrolled face in AI Service
             var faceProfile = await _faceProfileRepository.GetByUserIdAsync(request.UserId, cancellationToken);
             if (faceProfile == null ||
-                string.IsNullOrWhiteSpace(faceProfile.EmbeddingId) ||
                 faceProfile.Status == FaceAuthConstants.Status.NotEnrolled)
             {
                 _logger.LogWarning("Face MFA enablement rejected: User {UserId} has not enrolled face biometrics", request.UserId);
@@ -77,7 +76,8 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Mfa.EnableFaceMfa
             var now = DateTime.UtcNow;
 
             // Upsert UserMfaSetting
-            var mfaSetting = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var mfaSettingList = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var mfaSetting = mfaSettingList.FirstOrDefault(s => s != null && s.IsActive && s.MfaMethod == "FACE");
             if (mfaSetting == null)
             {
                 mfaSetting = new UserMfaSetting

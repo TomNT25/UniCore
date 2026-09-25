@@ -29,14 +29,6 @@ namespace UniCore.Infrastructure.Database.ModelCreating
                     .HasMaxLength(30)
                     .HasDefaultValue("FACE_NOT_ENROLLED");
 
-                entity.Property(e => e.EmbeddingId)
-                    .HasColumnName("embedding_id")
-                    .HasMaxLength(100);
-
-                entity.Property(e => e.ModelVersion)
-                    .HasColumnName("model_version")
-                    .HasMaxLength(50);
-
                 entity.Property(e => e.PinHash)
                     .HasColumnName("pin_hash")
                     .HasMaxLength(100);

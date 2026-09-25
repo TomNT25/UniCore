@@ -6,6 +6,7 @@
         public string? Code { get; set; }
         public string? Name { get; set; }
         public string? Descriptions { get; set; }
+        public decimal Score { get; set; }
 
         public GetClassDepartmentDTO? Department { get; set; }
     }

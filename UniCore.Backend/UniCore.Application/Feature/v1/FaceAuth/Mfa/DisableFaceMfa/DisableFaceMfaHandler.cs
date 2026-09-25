@@ -40,13 +40,14 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Mfa.DisableFaceMfa
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var mfaSetting = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
-            if (mfaSetting != null)
+            var mfaSettingList = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var faceMfaSetting = mfaSettingList.FirstOrDefault(s => s != null && s.IsActive && s.MfaMethod == "FACE");
+            if (faceMfaSetting != null)
             {
-                mfaSetting.IsMfaEnabled = false;
-                mfaSetting.UpdatedAt = DateTime.UtcNow;
-                mfaSetting.UpdatedBy = request.UserId;
-                await _mfaSettingRepository.UpdateAsync(mfaSetting, cancellationToken);
+                faceMfaSetting.IsMfaEnabled = false;
+                faceMfaSetting.UpdatedAt = DateTime.UtcNow;
+                faceMfaSetting.UpdatedBy = request.UserId;
+                await _mfaSettingRepository.UpdateAsync(faceMfaSetting, cancellationToken);
             }
 
             await _auditService.LogAsync(new FaceAuthAuditEntry

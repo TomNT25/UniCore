@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace UniCore.Application.Contract.Service.v1
 {
     /// <summary>
@@ -42,37 +45,178 @@ namespace UniCore.Application.Contract.Service.v1
     }
 
     /// <summary>
-    /// Result from face enrollment API.
+    /// User details returned in Face AI response items.
+    /// </summary>
+    public class FaceAiUserItem
+    {
+        [JsonPropertyName("user_id")]
+        public string? UserId { get; set; }
+
+        [JsonPropertyName("username")]
+        public string? Username { get; set; }
+    }
+
+    /// <summary>
+    /// Data container for Face AI response payload.
+    /// </summary>
+    public class FaceAiDataResult
+    {
+        [JsonPropertyName("items")]
+        public FaceAiUserItem? Items { get; set; }
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement>? ExtensionData { get; set; }
+    }
+
+    /// <summary>
+    /// Result from face enrollment API matching the AI Service response contract.
     /// </summary>
     public class FaceEnrollResult
     {
-        public bool Success { get; set; }
-        public string? RequestId { get; set; }
-        public string? ModelVersion { get; set; }
-        public string? EmbeddingId { get; set; }
-        public string? UserId { get; set; }
-        public string? Username { get; set; }
-        public int NumImagesUsed { get; set; }
+        [JsonPropertyName("isSuccess")]
+        public bool IsSuccess { get; set; }
+
+        [JsonPropertyName("statusCode")]
+        public int StatusCode { get; set; }
+
+        [JsonPropertyName("message")]
+        public string? Message { get; set; }
+
+        [JsonPropertyName("data")]
+        public FaceAiDataResult? Data { get; set; }
+
+        [JsonPropertyName("errors")]
+        public List<string> Errors { get; set; } = new();
+
+        [JsonPropertyName("timestamp")]
+        public string? Timestamp { get; set; }
+
+        // Backward-compatible properties for existing handlers
+        [JsonIgnore]
+        public bool Success
+        {
+            get => IsSuccess;
+            set => IsSuccess = value;
+        }
+
+        private string? _userId;
+        [JsonIgnore]
+        public string? UserId
+        {
+            get => _userId ?? Data?.Items?.UserId;
+            set
+            {
+                _userId = value;
+                if (Data?.Items != null)
+                {
+                    Data.Items.UserId = value;
+                }
+            }
+        }
+
+        private string? _username;
+        [JsonIgnore]
+        public string? Username
+        {
+            get => _username ?? Data?.Items?.Username;
+            set
+            {
+                _username = value;
+                if (Data?.Items != null)
+                {
+                    Data.Items.Username = value;
+                }
+            }
+        }
+
+        [JsonIgnore]
         public string? ErrorCode { get; set; }
-        public string? ErrorMessage { get; set; }
+
+        private string? _errorMessage;
+        [JsonIgnore]
+        public string? ErrorMessage
+        {
+            get => _errorMessage ?? Message ?? (Errors.Count > 0 ? Errors[0] : null);
+            set => _errorMessage = value;
+        }
+
+        [JsonIgnore]
         public string? Stage { get; set; }
     }
 
     /// <summary>
-    /// Result from face recognition API.
+    /// Result from face recognition API matching the AI Service response contract.
     /// </summary>
     public class FaceRecognizeResult
     {
-        public bool Success { get; set; }
-        public string? RequestId { get; set; }
-        public string? ModelVersion { get; set; }
-        public string? UserId { get; set; }
-        public string? Username { get; set; }
-        public double Similarity { get; set; }
-        public double Threshold { get; set; }
-        public string? Status { get; set; }
+        [JsonPropertyName("isSuccess")]
+        public bool IsSuccess { get; set; }
+
+        [JsonPropertyName("statusCode")]
+        public int StatusCode { get; set; }
+
+        [JsonPropertyName("message")]
+        public string? Message { get; set; }
+
+        [JsonPropertyName("data")]
+        public FaceAiDataResult? Data { get; set; }
+
+        [JsonPropertyName("errors")]
+        public List<string> Errors { get; set; } = new();
+
+        [JsonPropertyName("timestamp")]
+        public string? Timestamp { get; set; }
+
+        // Backward-compatible properties for existing handlers
+        [JsonIgnore]
+        public bool Success
+        {
+            get => IsSuccess;
+            set => IsSuccess = value;
+        }
+
+        private string? _userId;
+        [JsonIgnore]
+        public string? UserId
+        {
+            get => _userId ?? Data?.Items?.UserId;
+            set
+            {
+                _userId = value;
+                if (Data?.Items != null)
+                {
+                    Data.Items.UserId = value;
+                }
+            }
+        }
+
+        private string? _username;
+        [JsonIgnore]
+        public string? Username
+        {
+            get => _username ?? Data?.Items?.Username;
+            set
+            {
+                _username = value;
+                if (Data?.Items != null)
+                {
+                    Data.Items.Username = value;
+                }
+            }
+        }
+
+        [JsonIgnore]
         public string? ErrorCode { get; set; }
-        public string? ErrorMessage { get; set; }
+
+        private string? _errorMessage;
+        [JsonIgnore]
+        public string? ErrorMessage
+        {
+            get => _errorMessage ?? Message ?? (Errors.Count > 0 ? Errors[0] : null);
+            set => _errorMessage = value;
+        }
+
+        [JsonIgnore]
         public string? Stage { get; set; }
     }
 }

@@ -22,16 +22,6 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Enroll
         public bool RequiresPin { get; set; }
 
         /// <summary>
-        /// Number of images successfully processed.
-        /// </summary>
-        public int NumImagesUsed { get; set; }
-
-        /// <summary>
-        /// Model version used for enrollment.
-        /// </summary>
-        public string? ModelVersion { get; set; }
-
-        /// <summary>
         /// Error code if enrollment failed.
         /// </summary>
         public string? ErrorCode { get; set; }

@@ -13,9 +13,9 @@ namespace UniCore.Infrastructure.Repository.V1
         {
         }
 
-        public async Task<UserMfaSetting?> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<UserMfaSetting>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
         {
-            return await _dbSet.FirstOrDefaultAsync(m => m.UserId == userId, cancellationToken);
+            return await _dbSet.Where(m => m.UserId == userId).ToListAsync(cancellationToken);
         }
     }
 }

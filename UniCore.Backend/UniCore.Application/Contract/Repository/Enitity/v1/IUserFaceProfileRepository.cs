@@ -15,9 +15,7 @@ namespace UniCore.Application.Contract.Repository.Enitity.v1
         /// </summary>
         Task<UserFaceProfile> UpsertEnrollmentAsync(
             string userId,
-            string embeddingId,
-            string modelVersion,
-            string? createdBy = null,
+            string username,
             CancellationToken cancellationToken = default);
 
         /// <summary>

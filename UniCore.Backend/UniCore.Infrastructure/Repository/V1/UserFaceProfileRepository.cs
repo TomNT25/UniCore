@@ -20,9 +20,7 @@ namespace UniCore.Infrastructure.Repository.V1
 
         public async Task<UserFaceProfile> UpsertEnrollmentAsync(
             string userId,
-            string embeddingId,
-            string modelVersion,
-            string? createdBy = null,
+            string username,
             CancellationToken cancellationToken = default)
         {
             var existing = await GetByUserIdAsync(userId, cancellationToken);
@@ -34,10 +32,7 @@ namespace UniCore.Infrastructure.Repository.V1
                 {
                     UserId = userId,
                     Status = FaceAuthConstants.Status.PendingPin,
-                    EmbeddingId = embeddingId,
-                    ModelVersion = modelVersion,
                     EnrolledAt = DateTime.UtcNow,
-                    CreatedBy = createdBy
                 };
 
                 await AddAsync(profile, cancellationToken);
@@ -46,14 +41,9 @@ namespace UniCore.Infrastructure.Repository.V1
             }
             else
             {
-                // Update existing profile (re-enrollment)
-                existing.EmbeddingId = embeddingId;
-                existing.ModelVersion = modelVersion;
                 existing.Status = FaceAuthConstants.Status.PendingPin;
                 existing.EnrolledAt = DateTime.UtcNow;
                 existing.UpdatedAt = DateTime.UtcNow;
-                existing.UpdatedBy = createdBy;
-                // Reset PIN on re-enrollment
                 existing.PinHash = null;
                 existing.PinSetAt = null;
                 existing.FailedPinAttempts = 0;

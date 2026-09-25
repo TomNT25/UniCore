@@ -96,22 +96,18 @@ namespace UniCore.Application.Feature.v1.FaceAuth.Enroll
             // Save to database
             var profile = await _faceProfileRepository.UpsertEnrollmentAsync(
                 request.UserId,
-                enrollResult.EmbeddingId!,
-                enrollResult.ModelVersion ?? "unknown",
-                request.UserId,
+                request.Username,
                 cancellationToken);
 
             _logger.LogInformation(
-                "Face enrollment successful for user {UserId}. Status: {Status}, EmbeddingId: {EmbeddingId}",
-                request.UserId, profile.Status, profile.EmbeddingId);
+                "Face enrollment successful for user {UserId}. Status: {Status}",
+                request.UserId, profile.Status);
 
             return new FaceEnrollResponseDTO
             {
                 Success = true,
                 Status = profile.Status,
                 RequiresPin = profile.Status == FaceAuthConstants.Status.PendingPin,
-                NumImagesUsed = enrollResult.NumImagesUsed,
-                ModelVersion = enrollResult.ModelVersion
             };
         }
     }

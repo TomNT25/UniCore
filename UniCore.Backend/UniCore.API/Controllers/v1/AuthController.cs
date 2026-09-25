@@ -48,10 +48,7 @@ namespace Project_Structure_UniCore.Controllers.v1
         public async Task<ActionResult<BaseAPIResponse<LoginResponseDTO>>> Login([FromBody] LoginRequestDTO request)
         {
             var result = await _authService.LoginAsync(request);
-            if (!result.RequiresMfa && !string.IsNullOrEmpty(result.RefreshToken))
-            {
-                setRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpire);
-            }
+            setRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpire);
             var message = result.RequiresMfa
                 ? "MFA OTP verification required. An OTP has been sent to your email."
                 : _localizer.GetString(MessageConstants.Auth.LoginSuccess);

@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.Results;
 using Mapster;
 using MapsterMapper;
@@ -41,28 +41,29 @@ namespace UniCore.Application.Feature.v1.Courses.GetMyCourses.ListDetails
                     throw new ValidationException(results.Errors);
                 }
 
-
                 Expression<Func<Entity.CourseStudent, bool>>? filter = string.IsNullOrWhiteSpace(request.SearchTerm)
                 ? null
-                : r => (r.Code != null && r.Code.Contains(request.SearchTerm));
+                    : r => ((r.Course.Name != null && r.Course.Name.Contains(request.SearchTerm)) ||
+                            (r.Course.Code != null && r.Course.Code.Contains(request.SearchTerm)) ||
+                            (r.Course.Type != null && r.Course.Type.Contains(request.SearchTerm)));
 
                 var pagedResult = await _courseStudentRepository.GetPaginatedByStuIdCourseIdsAsync(request.UserID,
                 request,cancellationToken, filter);
 
-            if(pagedResult.Items is null)
-            {
-                throw new NullReferenceException("There's no Courses for this Student");
-            }
+                if(pagedResult.Items is null)
+                {
+                    throw new NullReferenceException("There's no Courses for this Student");
+                }
 
-            return new GetMyCoursesResponseDTO
+                var score = pagedResult.Items.Sum(x => x.Course.CourseStudents.Select(cs => cs.FinalScore).FirstOrDefault() * 
+                                                    x.Course.CourseStudents.Select(cs => cs.Weight).FirstOrDefault()) / 
+                                                    pagedResult.Items.Sum(x => x.Course.CourseStudents.Select(cs => cs.Weight).FirstOrDefault());
+
+                return new GetMyCoursesResponseDTO
                 {
                     Items = _mapper.Map<IEnumerable<GetMyCoursesDTO>>(pagedResult.Items),
-                    PageNumber = pagedResult.PageNumber,
-                    PageSize = pagedResult.PageSize,
-                    TotalRecords = pagedResult.TotalRecords,
-                    TotalPages = pagedResult.TotalPages,
-                    HasNextPage = pagedResult.HasNextPage,
-                    HasPreviousPage = pagedResult.HasPreviousPage
+                    Metadata = pagedResult.Metadata,
+                    Score = score ?? 0m
                 };
             }
         }

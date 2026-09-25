@@ -46,7 +46,11 @@ namespace UniCore.Infrastructure.Service
             {
                 return new FaceEnrollResult
                 {
-                    Success = false,
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "At least one face image is required",
+                    Timestamp = DateTime.UtcNow.ToString("O"),
+                    Errors = new List<string> { "At least one face image is required" },
                     ErrorCode = FaceAuthConstants.ErrorCodes.MissingImages,
                     ErrorMessage = "At least one face image is required"
                 };
@@ -56,7 +60,11 @@ namespace UniCore.Infrastructure.Service
             {
                 return new FaceEnrollResult
                 {
-                    Success = false,
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "Maximum 5 face images allowed",
+                    Timestamp = DateTime.UtcNow.ToString("O"),
+                    Errors = new List<string> { "Maximum 5 face images allowed" },
                     ErrorCode = FaceAuthConstants.ErrorCodes.InvalidImageType,
                     ErrorMessage = "Maximum 5 face images allowed"
                 };
@@ -80,7 +88,11 @@ namespace UniCore.Infrastructure.Service
                     {
                         return new FaceEnrollResult
                         {
-                            Success = false,
+                            IsSuccess = false,
+                            StatusCode = 400,
+                            Message = $"Invalid content type for image {i + 1}: {image.ContentType}",
+                            Timestamp = DateTime.UtcNow.ToString("O"),
+                            Errors = new List<string> { $"Invalid content type for image {i + 1}: {image.ContentType}" },
                             ErrorCode = FaceAuthConstants.ErrorCodes.InvalidImageType,
                             ErrorMessage = $"Invalid content type for image {i + 1}: {image.ContentType}"
                         };
@@ -91,7 +103,11 @@ namespace UniCore.Infrastructure.Service
                     {
                         return new FaceEnrollResult
                         {
-                            Success = false,
+                            IsSuccess = false,
+                            StatusCode = 400,
+                            Message = $"Image {i + 1} exceeds maximum size",
+                            Timestamp = DateTime.UtcNow.ToString("O"),
+                            Errors = new List<string> { $"Image {i + 1} exceeds maximum size" },
                             ErrorCode = FaceAuthConstants.ErrorCodes.ImageTooLarge,
                             ErrorMessage = $"Image {i + 1} exceeds maximum size"
                         };
@@ -129,6 +145,16 @@ namespace UniCore.Infrastructure.Service
                     isSuccess = true;
                 }
 
+                int statusCode = (int)response.StatusCode;
+                if (root.TryGetProperty("statusCode", out var scProp) && scProp.TryGetInt32(out var parsedSc))
+                {
+                    statusCode = parsedSc;
+                }
+
+                var timestamp = GetPropString(root, "timestamp") ?? DateTime.UtcNow.ToString("O");
+                var message = GetPropString(root, "message");
+                var errors = ExtractErrors(root);
+
                 if (isSuccess && response.IsSuccessStatusCode)
                 {
                     JsonElement dataElem = root;
@@ -152,23 +178,36 @@ namespace UniCore.Infrastructure.Service
 
                     return new FaceEnrollResult
                     {
-                        Success = true,
-                        RequestId = requestId,
-                        ModelVersion = modelVersion,
-                        EmbeddingId = embeddingId,
-                        UserId = resUserId,
-                        Username = resUsername,
-                        NumImagesUsed = faceImages.Count
+                        IsSuccess = true,
+                        StatusCode = statusCode,
+                        Message = message ?? "Face recognition completed successfully.",
+                        Timestamp = timestamp,
+                        Errors = errors,
+                        Data = new FaceAiDataResult
+                        {
+                            Items = new FaceAiUserItem
+                            {
+                                UserId = resUserId,
+                                Username = resUsername,
+                            }
+                        }
                     };
                 }
                 else
                 {
                     var (errCode, errMsg) = ExtractError(root);
+                    if (errors.Count == 0 && !string.IsNullOrWhiteSpace(errMsg))
+                    {
+                        errors.Add(errMsg);
+                    }
+
                     return new FaceEnrollResult
                     {
-                        Success = false,
-                        RequestId = GetPropString(root, "request_id"),
-                        ModelVersion = GetPropString(root, "model_version"),
+                        IsSuccess = false,
+                        StatusCode = statusCode != 200 ? statusCode : 400,
+                        Message = message ?? errMsg ?? "Face enrollment failed",
+                        Timestamp = timestamp,
+                        Errors = errors,
                         ErrorCode = errCode ?? FaceAuthConstants.ErrorCodes.InternalError,
                         ErrorMessage = errMsg ?? "Face enrollment failed"
                     };
@@ -179,7 +218,11 @@ namespace UniCore.Infrastructure.Service
                 _logger.LogWarning("Face AI enroll request timed out for user {UserId}", userId);
                 return new FaceEnrollResult
                 {
-                    Success = false,
+                    IsSuccess = false,
+                    StatusCode = 504,
+                    Message = "Request timed out",
+                    Timestamp = DateTime.UtcNow.ToString("O"),
+                    Errors = new List<string> { "Request timed out" },
                     ErrorCode = FaceAuthConstants.ErrorCodes.InternalError,
                     ErrorMessage = "Request timed out"
                 };
@@ -189,7 +232,11 @@ namespace UniCore.Infrastructure.Service
                 _logger.LogError(ex, "Face AI enroll request failed for user {UserId}", userId);
                 return new FaceEnrollResult
                 {
-                    Success = false,
+                    IsSuccess = false,
+                    StatusCode = 502,
+                    Message = "Failed to connect to Face AI service",
+                    Timestamp = DateTime.UtcNow.ToString("O"),
+                    Errors = new List<string> { "Failed to connect to Face AI service" },
                     ErrorCode = FaceAuthConstants.ErrorCodes.InternalError,
                     ErrorMessage = "Failed to connect to Face AI service"
                 };
@@ -199,7 +246,11 @@ namespace UniCore.Infrastructure.Service
                 _logger.LogError(ex, "Unexpected error during face enrollment for user {UserId}", userId);
                 return new FaceEnrollResult
                 {
-                    Success = false,
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = ex.Message,
+                    Timestamp = DateTime.UtcNow.ToString("O"),
+                    Errors = new List<string> { ex.Message },
                     ErrorCode = FaceAuthConstants.ErrorCodes.InternalError,
                     ErrorMessage = ex.Message
                 };
@@ -214,7 +265,11 @@ namespace UniCore.Infrastructure.Service
             {
                 return new FaceRecognizeResult
                 {
-                    Success = false,
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "Face image is required",
+                    Timestamp = DateTime.UtcNow.ToString("O"),
+                    Errors = new List<string> { "Face image is required" },
                     ErrorCode = FaceAuthConstants.ErrorCodes.MissingImages,
                     ErrorMessage = "Face image is required"
                 };
@@ -225,7 +280,11 @@ namespace UniCore.Infrastructure.Service
             {
                 return new FaceRecognizeResult
                 {
-                    Success = false,
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = $"Invalid content type: {faceImage.ContentType}",
+                    Timestamp = DateTime.UtcNow.ToString("O"),
+                    Errors = new List<string> { $"Invalid content type: {faceImage.ContentType}" },
                     ErrorCode = FaceAuthConstants.ErrorCodes.InvalidImageType,
                     ErrorMessage = $"Invalid content type: {faceImage.ContentType}"
                 };
@@ -236,7 +295,11 @@ namespace UniCore.Infrastructure.Service
             {
                 return new FaceRecognizeResult
                 {
-                    Success = false,
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "Image exceeds maximum size",
+                    Timestamp = DateTime.UtcNow.ToString("O"),
+                    Errors = new List<string> { "Image exceeds maximum size" },
                     ErrorCode = FaceAuthConstants.ErrorCodes.ImageTooLarge,
                     ErrorMessage = "Image exceeds maximum size"
                 };
@@ -275,6 +338,16 @@ namespace UniCore.Infrastructure.Service
                     isSuccess = true;
                 }
 
+                int statusCode = (int)response.StatusCode;
+                if (root.TryGetProperty("statusCode", out var scProp) && scProp.TryGetInt32(out var parsedSc))
+                {
+                    statusCode = parsedSc;
+                }
+
+                var timestamp = GetPropString(root, "timestamp") ?? DateTime.UtcNow.ToString("O");
+                var message = GetPropString(root, "message");
+                var errors = ExtractErrors(root);
+
                 if (isSuccess && response.IsSuccessStatusCode)
                 {
                     JsonElement dataElem = root;
@@ -300,24 +373,36 @@ namespace UniCore.Infrastructure.Service
 
                     return new FaceRecognizeResult
                     {
-                        Success = true,
-                        RequestId = requestId,
-                        ModelVersion = modelVersion,
-                        UserId = resUserId,
-                        Username = resUsername,
-                        Similarity = similarity,
-                        Threshold = threshold,
-                        Status = status
+                        IsSuccess = true,
+                        StatusCode = statusCode,
+                        Message = message ?? "Face recognition completed successfully.",
+                        Timestamp = timestamp,
+                        Errors = errors,
+                        Data = new FaceAiDataResult
+                        {
+                            Items = new FaceAiUserItem
+                            {
+                                UserId = resUserId,
+                                Username = resUsername,
+                            }
+                        },
                     };
                 }
                 else
                 {
                     var (errCode, errMsg) = ExtractError(root);
+                    if (errors.Count == 0 && !string.IsNullOrWhiteSpace(errMsg))
+                    {
+                        errors.Add(errMsg);
+                    }
+
                     return new FaceRecognizeResult
                     {
-                        Success = false,
-                        RequestId = GetPropString(root, "request_id"),
-                        ModelVersion = GetPropString(root, "model_version"),
+                        IsSuccess = false,
+                        StatusCode = statusCode != 200 ? statusCode : 400,
+                        Message = message ?? errMsg ?? "Face recognition failed",
+                        Timestamp = timestamp,
+                        Errors = errors,
                         ErrorCode = errCode ?? FaceAuthConstants.ErrorCodes.InternalError,
                         ErrorMessage = errMsg ?? "Face recognition failed"
                     };
@@ -328,7 +413,11 @@ namespace UniCore.Infrastructure.Service
                 _logger.LogWarning("Face AI recognize request timed out");
                 return new FaceRecognizeResult
                 {
-                    Success = false,
+                    IsSuccess = false,
+                    StatusCode = 504,
+                    Message = "Request timed out",
+                    Timestamp = DateTime.UtcNow.ToString("O"),
+                    Errors = new List<string> { "Request timed out" },
                     ErrorCode = FaceAuthConstants.ErrorCodes.InternalError,
                     ErrorMessage = "Request timed out"
                 };
@@ -338,7 +427,11 @@ namespace UniCore.Infrastructure.Service
                 _logger.LogError(ex, "Face AI recognize request failed");
                 return new FaceRecognizeResult
                 {
-                    Success = false,
+                    IsSuccess = false,
+                    StatusCode = 502,
+                    Message = "Failed to connect to Face AI service",
+                    Timestamp = DateTime.UtcNow.ToString("O"),
+                    Errors = new List<string> { "Failed to connect to Face AI service" },
                     ErrorCode = FaceAuthConstants.ErrorCodes.InternalError,
                     ErrorMessage = "Failed to connect to Face AI service"
                 };
@@ -348,7 +441,11 @@ namespace UniCore.Infrastructure.Service
                 _logger.LogError(ex, "Unexpected error during face recognition");
                 return new FaceRecognizeResult
                 {
-                    Success = false,
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = ex.Message,
+                    Timestamp = DateTime.UtcNow.ToString("O"),
+                    Errors = new List<string> { ex.Message },
                     ErrorCode = FaceAuthConstants.ErrorCodes.InternalError,
                     ErrorMessage = ex.Message
                 };
@@ -374,6 +471,38 @@ namespace UniCore.Infrastructure.Service
                 }
             }
             return null;
+        }
+
+        private static List<string> ExtractErrors(JsonElement root)
+        {
+            var list = new List<string>();
+            if (root.TryGetProperty("errors", out var errorsProp) && errorsProp.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in errorsProp.EnumerateArray())
+                {
+                    if (item.ValueKind == JsonValueKind.String)
+                    {
+                        var s = item.GetString();
+                        if (!string.IsNullOrWhiteSpace(s)) list.Add(s);
+                    }
+                    else if (item.ValueKind == JsonValueKind.Object)
+                    {
+                        if (item.TryGetProperty("detail", out var d) && d.ValueKind == JsonValueKind.String)
+                        {
+                            list.Add(d.GetString()!);
+                        }
+                        else if (item.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String)
+                        {
+                            list.Add(m.GetString()!);
+                        }
+                        else
+                        {
+                            list.Add(item.ToString());
+                        }
+                    }
+                }
+            }
+            return list;
         }
 
         private static (string? ErrorCode, string? ErrorMessage) ExtractError(JsonElement root)

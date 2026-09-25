@@ -28,7 +28,8 @@ namespace UniCore.Application.Feature.v1.FaceAuth.GetStatus
             _logger.LogDebug("Getting face status for user {UserId}", request.UserId);
 
             var profile = await _faceProfileRepository.GetByUserIdAsync(request.UserId, cancellationToken);
-            var mfaSetting = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var mfaSettingList = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var mfaSetting = mfaSettingList.FirstOrDefault(s => s != null && s.IsActive && s.MfaMethod == "FACE");
             var isMfaEnabled = mfaSetting?.IsMfaEnabled ?? false;
             var mfaMethod = mfaSetting?.MfaMethod;
 
@@ -59,7 +60,6 @@ namespace UniCore.Application.Feature.v1.FaceAuth.GetStatus
                 EnrolledAt = profile.EnrolledAt,
                 PinSetAt = profile.PinSetAt,
                 LockoutEnd = isLocked ? profile.PinLockoutEnd : null,
-                ModelVersion = profile.ModelVersion,
                 IsMfaEnabled = isMfaEnabled,
                 MfaMethod = mfaMethod
             };

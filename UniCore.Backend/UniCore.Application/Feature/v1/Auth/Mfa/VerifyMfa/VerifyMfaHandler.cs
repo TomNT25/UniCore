@@ -38,7 +38,8 @@ namespace UniCore.Application.Feature.v1.Auth.Mfa.VerifyMfa
                 throw new ValidationException(results.Errors);
             }
 
-            var mfaSetting = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var mfaSettingList = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var mfaSetting = mfaSettingList.FirstOrDefault(s => s != null && s.IsActive && s.MfaMethod == "TOTP");
             if (mfaSetting == null || !mfaSetting.IsMfaEnabled)
             {
                 var msg = _localizer.GetString(MessageConstants.Auth.InvalidMfaCode);

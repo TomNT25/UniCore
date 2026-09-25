@@ -15,17 +15,6 @@ namespace UniCore.Application.Entity
         public string Status { get; set; } = "FACE_NOT_ENROLLED";
 
         /// <summary>
-        /// Opaque ID returned by Face AI /enroll endpoint.
-        /// Stored for audit/reference only; BE does not perform vector search.
-        /// </summary>
-        public string? EmbeddingId { get; set; }
-
-        /// <summary>
-        /// Face AI model version used for enrollment (e.g., "buffalo_l_v1").
-        /// </summary>
-        public string? ModelVersion { get; set; }
-
-        /// <summary>
         /// BCrypt hash of 6-digit PIN (salted). Never store plaintext.
         /// </summary>
         public string? PinHash { get; set; }

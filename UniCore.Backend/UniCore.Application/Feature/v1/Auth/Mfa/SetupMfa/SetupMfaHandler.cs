@@ -58,10 +58,11 @@ namespace UniCore.Application.Feature.v1.Auth.Mfa.SetupMfa
             var secretKey = Base32Encode(secretBytes);
 
             // Save or update MFA Setting
-            var mfaSetting = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
-            if (mfaSetting == null)
+            var mfaSettingList = await _mfaSettingRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var existingMfaSetting = mfaSettingList.FirstOrDefault(s => s != null && s.IsActive && s.MfaMethod == "TOTP");
+            if (existingMfaSetting == null)
             {
-                mfaSetting = new UserMfaSetting
+                var newMfaSetting = new UserMfaSetting
                 {
                     Id = Guid.NewGuid().ToString(),
                     UserId = request.UserId,
@@ -71,13 +72,13 @@ namespace UniCore.Application.Feature.v1.Auth.Mfa.SetupMfa
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 };
-                await _mfaSettingRepository.AddAsync(mfaSetting, cancellationToken);
+                await _mfaSettingRepository.AddAsync(newMfaSetting, cancellationToken);
             }
             else
             {
-                mfaSetting.SecretKey = secretKey;
-                mfaSetting.UpdatedAt = DateTime.UtcNow;
-                await _mfaSettingRepository.UpdateAsync(mfaSetting, cancellationToken);
+                existingMfaSetting.SecretKey = secretKey;
+                existingMfaSetting.UpdatedAt = DateTime.UtcNow;
+                await _mfaSettingRepository.UpdateAsync(existingMfaSetting, cancellationToken);
             }
 
             // Generate 10 Backup Codes
