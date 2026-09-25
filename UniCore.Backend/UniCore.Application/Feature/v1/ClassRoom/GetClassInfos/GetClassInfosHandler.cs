@@ -9,14 +9,18 @@ namespace UniCore.Application.Feature.v1.ClassRoom.GetClassInfos
     public class GetClassInfoHandler : IRequestHandler<GetClassInfoRequestDTO, GetClassInfoResponseDTO>
     {
         private readonly ISchoolClassRepository _schoolClassRepo;
+
+        private readonly IUserRepository _userRepository;
         private readonly IValidator<GetClassInfoRequestDTO> _validator;
 
         public GetClassInfoHandler(
             ISchoolClassRepository schoolClassRepo,
+            IUserRepository userRepository,
             IValidator<GetClassInfoRequestDTO> validator
             )
         {
             _validator = validator;
+            _userRepository = userRepository;
             _schoolClassRepo = schoolClassRepo;
         }
 
@@ -29,8 +33,16 @@ namespace UniCore.Application.Feature.v1.ClassRoom.GetClassInfos
                 throw new ValidationException(results.Errors);
             }
 
+            var user = await _userRepository.GetByIdAsync(request.UserID, ct);
 
-            var classInfos = await _schoolClassRepo.GetInfoByIdAsync(request.ClassID, ct);
+            if(user?.ClassId is null)
+            {
+                throw new NullReferenceException(nameof(user));
+            }
+
+            var classID = user.ClassId;
+
+            var classInfos = await _schoolClassRepo.GetInfoByIdAsync(classID, ct);
 
             if (classInfos is null)
             {

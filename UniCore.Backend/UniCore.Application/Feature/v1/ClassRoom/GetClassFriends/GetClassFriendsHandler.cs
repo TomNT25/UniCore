@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using Mapster;
+using MapsterMapper;
 using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Contract.RequestHandlerHub;
 
@@ -8,19 +9,23 @@ namespace UniCore.Application.Feature.v1.ClassRoom.GetClassFriends
 {
     public class GetClassFriendsHandler : IRequestHandler<GetClassFriendsRequestDTO, GetClassFriendsResponseDTO>
     {
-        private readonly IStudentClassRepository _studentClassRepo;
-        private readonly IUserProfileRepository _profileRepository;
         private readonly IValidator<GetClassFriendsRequestDTO> _validator;
+        private readonly ISchoolClassRepository _schoolClassRepository;
+        private readonly IUserRepository _userRepository;
+
+        private readonly IMapper _mapper;
 
         public GetClassFriendsHandler(
-            IStudentClassRepository studentClassRepo,
-            IUserProfileRepository profileRepository,
+            ISchoolClassRepository schoolClassRepository,
+            IUserRepository userRepository,
+            IMapper mapper,
             IValidator<GetClassFriendsRequestDTO> validator
             )
         {
-            _studentClassRepo = studentClassRepo;
+            _schoolClassRepository = schoolClassRepository;
+            _userRepository = userRepository;
             _validator = validator;
-            _profileRepository = profileRepository;
+            _mapper = mapper;
         }
 
         public async Task<GetClassFriendsResponseDTO> HandleAsync(GetClassFriendsRequestDTO request, CancellationToken ct)
@@ -32,22 +37,28 @@ namespace UniCore.Application.Feature.v1.ClassRoom.GetClassFriends
                 throw new ValidationException(results.Errors);
             }
 
-            var classmateId = await _studentClassRepo.GetUserIdsByStudentClassIdAsync(request.ClassID, request.UserID, ct);
+            var user = await _userRepository.GetByIdAsync(request.UserID, ct);
 
-            if (classmateId == null)
+            if (user?.ClassId is null)
             {
-                throw new NullReferenceException(nameof(classmateId));
+                throw new NullReferenceException(nameof(user));
             }
 
-            var userInfos = await _profileRepository.GetInfoByIdAsync(classmateId, ct);
+            var classID = user.ClassId;
 
-            if (userInfos is null)
+            var classmates = await _schoolClassRepository.GetClassmatesByClassIdAsync(classID, request.UserID, ct);
+
+            if (classmates == null)
             {
-                throw new NullReferenceException(nameof(userInfos));
+                throw new NullReferenceException(nameof(classmates));
             }
 
-            var classmateLists = userInfos.Adapt<IEnumerable<GetClassFriendsDTO>>();
-            return new GetClassFriendsResponseDTO() { ClassmatesList = classmateLists };
+            var response = new GetClassFriendsResponseDTO
+            {
+                ClassmatesList = _mapper.Map<IEnumerable<GetClassFriendsDTO>>(classmates.User)
+            };
+
+            return response;
         }
 
     }

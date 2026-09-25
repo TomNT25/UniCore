@@ -7,6 +7,9 @@ namespace UniCore.Application.Contract.Repository.Enitity.v1
     {
         Task<SchoolClass?> GetInfoByIdAsync(string classId, CancellationToken ct = default);
         Task<SchoolClass?> GetByIdAsync(string id, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<SchoolClass>?> GetClassmatesByClassIdAsync(string classId, string userId, CancellationToken cancellationToken = default);
+
         Task<(List<SchoolClass> Items, int TotalCount)> SearchActiveAsync(
             string? search,
             int limit,

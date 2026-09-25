@@ -25,7 +25,7 @@ namespace UniCore.Infrastructure.Repository.V1
             return result;
         }
 
-        public async Task<IEnumerable<string>?> GetUserIdsByStudentClassIdAsync(
+        public async Task<IEnumerable<string>?> GetClassmatesByUserIdAsync(
             string classId, 
             string studentId,
             CancellationToken ct)

@@ -152,15 +152,8 @@ namespace UniCore.API.Controllers.v1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<BaseAPIResponse<GetClassInfoResponseDTO>>> GetClassInfo(
-            [FromQuery] string? classId,
             CancellationToken ct = default)
         {
-            if (string.IsNullOrEmpty(classId))
-            {
-                var errMessage = _localizer.GetString(MessageConstants.System.BadRequest);
-                return BadRequestResponse<GetClassInfoResponseDTO>(errMessage);
-            }
-
             var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
              ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
              ?? User.FindFirst(ClaimTypes.Email)?.Value
@@ -172,7 +165,7 @@ namespace UniCore.API.Controllers.v1
                 return UnauthorizedResponse<GetClassInfoResponseDTO>(errMessage);
             }
 
-            var input = new GetClassInfoRequestDTO { ClassID = classId };
+            var input = new GetClassInfoRequestDTO { UserID = userId };
 
             var result = await _studentService.GetClassInfoAsync(input, ct);
 

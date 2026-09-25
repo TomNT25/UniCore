@@ -2,8 +2,11 @@
 {
     public class GetClassInfoResponseDTO
     {
-        public string ClassName { get; set; } = "";
-        public string ClassDescriptions { get; set; } = "";
-        public string ClassLecturers { get; set; } = "";
+        public string? Id { get; set; }
+        public string? Code { get; set; }
+        public string? Name { get; set; }
+        public string? Descriptions { get; set; }
+
+        public GetClassDepartmentDTO? Department { get; set; }
     }
 }

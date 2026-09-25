@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Text;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -17,20 +18,33 @@ namespace UniCore.Infrastructure.Repository.V1
         }
 
         public async Task<SchoolClass?> GetInfoByIdAsync(
-           string classIds,
+           string classId,
            CancellationToken ct = default
            )
         {
             var results = await _dbSet
-                .Where(s => s.Id.Equals(classIds))
+                .Where(s => s.Id.Equals(classId))
+                .Include(s => s.Department)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(ct);
             return results;
         }
 
+        public async Task<IEnumerable<SchoolClass>?> GetClassmatesByClassIdAsync(string classId, string userId, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Include(c => c.Students)
+                .Where(c => c.Id.Equals(classId))
+                .Take(30)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<SchoolClass?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
         {
-            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+            return await _dbSet
+                .AsNoTracking().
+                FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
 
         public async Task<(List<SchoolClass> Items, int TotalCount)> SearchActiveAsync(
