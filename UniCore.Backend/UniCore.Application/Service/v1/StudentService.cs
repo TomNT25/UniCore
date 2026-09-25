@@ -11,6 +11,7 @@ using UniCore.Application.Feature.v1.Courses.GetAllCourses;
 using UniCore.Application.Feature.v1.Courses.GetMyCourses.ListDetails;
 using UniCore.Application.Feature.v1.Courses.GetMyCourses.PersonalDetails;
 using UniCore.Application.Feature.v1.User.GetUserInfo;
+using UniCore.Application.Feature.v1.User.PostUserInfo;
 using UniCore.Application.Feature.v1.User.PutUserInfo;
 // using UniCore.Application.Feature.v1.User.PutUserInfo;
 
@@ -29,6 +30,7 @@ namespace UniCore.Application.Service.v1
         private readonly GetMyCoursesHandler _getMyCoursesHandler;
         private readonly GetCourseDetailsHandler _getCourseDetailsHandler;
         private readonly PutUserInfoHandler _putUserInfoHandler;
+        private readonly PostUserInfoHandler _postUserInfoHandler;
 
         public StudentService(
             GetUserInfoHandler getUserInfoHandler,
@@ -40,7 +42,8 @@ namespace UniCore.Application.Service.v1
             GetClassesByNamesHandler getAllClassesByNamesHandler,
             GetMyCoursesHandler getMyCoursesHandler,
             GetCourseDetailsHandler getCourseDetailsHandler,
-            PutUserInfoHandler putUserInfoHandler
+            PutUserInfoHandler putUserInfoHandler,
+            PostUserInfoHandler postUserInfoHandler
             )
         {
             _getUserInfoHandler = getUserInfoHandler;
@@ -53,6 +56,7 @@ namespace UniCore.Application.Service.v1
             _getMyCoursesHandler = getMyCoursesHandler;
             _getCourseDetailsHandler = getCourseDetailsHandler;
             _putUserInfoHandler = putUserInfoHandler;
+            _postUserInfoHandler = postUserInfoHandler;
         }
 
         public async Task<GetUserInfoResponseDTO> GetUserInfoAsync(GetUserInfoRequestDTO request, CancellationToken cancellationToken = default)
@@ -91,6 +95,8 @@ namespace UniCore.Application.Service.v1
             CancellationToken cancellationToken = default)
             => await _putUserInfoHandler.HandleAsync(request, cancellationToken);
 
+        public async Task<PostUserInfoResponseDTO> PostUserInfoAsync(PostUserInfoRequestDTO request, CancellationToken cancellationToken = default)
+            => await _postUserInfoHandler.HandleAsync(request, cancellationToken);
     }
 
 }

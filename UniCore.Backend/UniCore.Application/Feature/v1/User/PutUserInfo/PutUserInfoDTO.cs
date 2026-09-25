@@ -6,6 +6,6 @@ namespace UniCore.Application.Feature.v1.User.PutUserInfo
 {
     public class PutUserInfoDTO
     {
-        public string Bio { get; set; }
+        public string? Bio { get; set; }
     }
 }

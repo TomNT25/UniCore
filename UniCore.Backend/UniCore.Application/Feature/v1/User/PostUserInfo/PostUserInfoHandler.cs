@@ -6,18 +6,18 @@ using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Contract.RequestHandlerHub;
 
 
-namespace UniCore.Application.Feature.v1.User.PutUserInfo
+namespace UniCore.Application.Feature.v1.User.PostUserInfo
 {
-    public class PutUserInfoHandler : IRequestHandler<PutUserInfoRequestDTO, PutUserInfoResponseDTO>
+    public class PostUserInfoHandler : IRequestHandler<PostUserInfoRequestDTO, PostUserInfoResponseDTO>
     {
         private readonly IUserProfileRepository _profileRepository;
-        private readonly IValidator<PutUserInfoRequestDTO> _validator;
+        private readonly IValidator<PostUserInfoRequestDTO> _validator;
         private readonly IMapper _mapper;
 
-        public PutUserInfoHandler(
+        public PostUserInfoHandler(
             IUserProfileRepository profileRepository,
             IMapper mapper,
-            IValidator<PutUserInfoRequestDTO> validator
+            IValidator<PostUserInfoRequestDTO> validator
             )
         {
             _profileRepository = profileRepository;
@@ -25,7 +25,7 @@ namespace UniCore.Application.Feature.v1.User.PutUserInfo
             _mapper = mapper;
         }
 
-        public async Task<PutUserInfoResponseDTO> HandleAsync(PutUserInfoRequestDTO request, CancellationToken cancellationToken) 
+        public async Task<PostUserInfoResponseDTO> HandleAsync(PostUserInfoRequestDTO request, CancellationToken cancellationToken) 
         {
             ValidationResult results = await _validator.ValidateAsync(request, cancellationToken);
 
@@ -42,11 +42,12 @@ namespace UniCore.Application.Feature.v1.User.PutUserInfo
                 throw new NullReferenceException();
             }
 
-            request.PutUserBio.Adapt(userProfile);
+
+            request.PostUserBio.Adapt(userProfile);
 
             await _profileRepository.UpdateAsync(userProfile, cancellationToken);
 
-            return userProfile.Adapt<PutUserInfoResponseDTO>();
+            return _mapper.Map<PostUserInfoResponseDTO>(userProfile);
 
         }
 

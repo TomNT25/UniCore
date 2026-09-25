@@ -17,6 +17,7 @@ using UniCore.Application.Feature.v1.Courses.GetMyCourses.ListDetails;
 using UniCore.Application.Feature.v1.Courses.GetMyCourses.PersonalDetails;
 using UniCore.Application.Feature.v1.Role.GetAllRole;
 using UniCore.Application.Feature.v1.User.GetUserInfo;
+using UniCore.Application.Feature.v1.User.PostUserInfo;
 using UniCore.Application.Feature.v1.User.PutUserInfo;
 using UniCore.Application.Service.v1;
 using UniCore.Helper.Constant;
@@ -72,6 +73,41 @@ namespace UniCore.API.Controllers.v1
             return OkResponse<PutUserInfoResponseDTO>(result, successMessage);
         }
 
+        /// <summary>
+        /// Post Student's Profile, using UserId
+        /// </summary>
+        [Authorize]
+        [HttpPost("profile")]
+        [ProducesResponseType(typeof(BaseAPIResponse<PostUserInfoResponseDTO>), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<BaseAPIResponse<PostUserInfoResponseDTO>>> PostUserProfile
+            ([FromBody] PostUserInfoDTO bio, CancellationToken ct)
+        {
+            var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                         ?? User.FindFirst(ClaimTypes.Email)?.Value
+                         ?? string.Empty;
+
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
+                return UnauthorizedResponse<PostUserInfoResponseDTO>(errMessage);
+            }
+
+            PostUserInfoRequestDTO input = new PostUserInfoRequestDTO { UserID = userId, PostUserBio = bio };
+
+            var result = await _studentService.PostUserInfoAsync(input, ct);
+            if (result == null)
+            {
+                var notFoundMessage = _localizer.GetString(MessageConstants.Auth.UserNotFound);
+                return NotFoundResponse<PostUserInfoResponseDTO>(notFoundMessage);
+            }
+
+            var successMessage = _localizer.GetString(MessageConstants.Auth.GetMeSuccess);
+            return CreatedResponse<PostUserInfoResponseDTO>(result, successMessage);
+        }
 
         /// <summary>
         /// Get Student's Profile, using UserId
@@ -263,7 +299,7 @@ namespace UniCore.API.Controllers.v1
         /// Get Student's Course Details Info, using UserId
         /// </summary>
         [Authorize]
-        [HttpGet("course/{courseId}/me")]
+        [HttpGet("courses/{courseId}/me")]
         [ProducesResponseType(typeof(BaseAPIResponse<GetCourseDetailsResponseDTO>), StatusCodes.Status200OK)]
         public async Task<ActionResult<BaseAPIResponse<GetCourseDetailsResponseDTO>>> GetCourseDetails(
             string courseId)
