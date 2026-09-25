@@ -18,7 +18,7 @@ namespace UniCore.Application.Feature.v1.Announcement.Workflow
                 Title = announcement.Title,
                 Description = announcement.Description,
                 Type = announcement.Type?.ToUpperInvariant() ?? AnnouncementConstants.Type.Normal,
-                St = AnnouncementLifecycle.ComputeStatus(announcement.PublishDate, announcement.ExpiredDate, utcNow),
+                Status = AnnouncementLifecycle.ComputeStatus(announcement.PublishDate, announcement.ExpiredDate, utcNow),
                 ScopeType = announcement.ScopeType?.ToUpperInvariant() ?? AnnouncementConstants.Scope.Public,
                 ScopeValue = announcement.ScopeValue,
                 PublishDate = AdminAnnouncementMapping.AsUtc(announcement.PublishDate),

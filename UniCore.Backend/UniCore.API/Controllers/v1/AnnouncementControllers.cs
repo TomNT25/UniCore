@@ -34,6 +34,7 @@ namespace UniCore.API.Controllers.v1
     /// </summary>
     [ApiVersion("1.0")]
     [Authorize(Roles = "Admin")]
+    [Produces("application/json")]
     [Route("api/v{version:apiVersion}/admin/announcements")]
     public class AdminAnnouncementController : BaseController
     {
@@ -147,6 +148,7 @@ namespace UniCore.API.Controllers.v1
     [ApiController]
     [ApiVersion("1.0")]
     [Authorize(Roles = "Admin")]
+    [Produces("application/json")]
     [Route("api/v{version:apiVersion}/admin/announcements/targets")]
     public class AdminAnnouncementTargetsController : BaseController
     {
@@ -159,7 +161,8 @@ namespace UniCore.API.Controllers.v1
         }
 
         [HttpGet("courses")]
-        [ProducesResponseType(typeof(SearchCourseTargetsResponseDTO), StatusCodes.Status200OK)]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BaseAPIResponse<SearchCourseTargetsResponseDTO>), StatusCodes.Status200OK)]
         public async Task<ActionResult<BaseAPIResponse<SearchCourseTargetsResponseDTO>>> SearchCourses(
             [FromQuery] SearchCourseTargetsRequestDTO request,
             CancellationToken cancellationToken)
@@ -169,7 +172,8 @@ namespace UniCore.API.Controllers.v1
         }
 
         [HttpGet("classes")]
-        [ProducesResponseType(typeof(SearchClassTargetsResponseDTO), StatusCodes.Status200OK)]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BaseAPIResponse<SearchClassTargetsResponseDTO>), StatusCodes.Status200OK)]
         public async Task<ActionResult<BaseAPIResponse<SearchClassTargetsResponseDTO>>> SearchClasses(
             [FromQuery] SearchClassTargetsRequestDTO request,
             CancellationToken cancellationToken)
@@ -179,7 +183,8 @@ namespace UniCore.API.Controllers.v1
         }
 
         [HttpGet("departments")]
-        [ProducesResponseType(typeof(SearchDepartmentTargetsResponseDTO), StatusCodes.Status200OK)]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BaseAPIResponse<SearchDepartmentTargetsResponseDTO>), StatusCodes.Status200OK)]
         public async Task<ActionResult<BaseAPIResponse<SearchDepartmentTargetsResponseDTO>>> SearchDepartments(
             [FromQuery] SearchDepartmentTargetsRequestDTO request,
             CancellationToken cancellationToken)
@@ -189,7 +194,8 @@ namespace UniCore.API.Controllers.v1
         }
 
         [HttpGet("students")]
-        [ProducesResponseType(typeof(SearchStudentTargetsResponseDTO), StatusCodes.Status200OK)]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BaseAPIResponse<SearchStudentTargetsResponseDTO>), StatusCodes.Status200OK)]
         public async Task<ActionResult<BaseAPIResponse<SearchStudentTargetsResponseDTO>>> SearchStudents(
             [FromQuery] SearchStudentTargetsRequestDTO request,
             CancellationToken cancellationToken)
@@ -208,6 +214,7 @@ namespace UniCore.API.Controllers.v1
     /// </summary>
     [ApiVersion("1.0")]
     [Authorize(Roles = "Student")]
+    [Produces("application/json")]
     [Route("api/v{version:apiVersion}/student/announcements")]
     public class StudentAnnouncementController : BaseController
     {
@@ -238,7 +245,10 @@ namespace UniCore.API.Controllers.v1
 
         /// <summary>Workflow list (active/expired), no pagination — equivalent to GET .../me?status=</summary>
         [HttpGet("me")]
-        [ProducesResponseType(typeof(StudentAnnouncementWorkflowListResponse), StatusCodes.Status200OK)]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BaseAPIResponse<StudentAnnouncementWorkflowListResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<BaseAPIResponse<StudentAnnouncementWorkflowListResponse>>> GetMyWorkflowList(
             [FromQuery] string status = "active",
             CancellationToken cancellationToken = default)
@@ -251,7 +261,10 @@ namespace UniCore.API.Controllers.v1
         }
 
         [HttpGet("get-new")]
-        [ProducesResponseType(typeof(StudentAnnouncementWorkflowListResponse), StatusCodes.Status200OK)]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BaseAPIResponse<StudentAnnouncementWorkflowListResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<BaseAPIResponse<StudentAnnouncementWorkflowListResponse>>> GetNewAnnouncements(CancellationToken cancellationToken = default)
         {
             var studentId = GetCurrentUserId();
@@ -262,7 +275,10 @@ namespace UniCore.API.Controllers.v1
         }
 
         [HttpGet("me/{announcementId}")]
-        [ProducesResponseType(typeof(StudentAnnouncementWorkflowItemDto), StatusCodes.Status200OK)]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BaseAPIResponse<StudentAnnouncementWorkflowItemDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<BaseAPIResponse<StudentAnnouncementWorkflowItemDto>>> GetMyAnnouncementDetail(
             string announcementId,
@@ -278,12 +294,17 @@ namespace UniCore.API.Controllers.v1
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFoundResponse<StudentAnnouncementWorkflowItemDto>(ex.Message);
             }
         }
 
         [HttpPost("confirm-acknowledged")]
-        [ProducesResponseType(typeof(MarkAnnouncementAcknowledgedResponseDTO), StatusCodes.Status200OK)]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BaseAPIResponse<MarkAnnouncementAcknowledgedResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<BaseAPIResponse<MarkAnnouncementAcknowledgedResponseDTO>>> ConfirmAcknowledged(
             [FromBody] ConfirmAcknowledgedRequestDto body,
             CancellationToken cancellationToken = default)
@@ -302,36 +323,39 @@ namespace UniCore.API.Controllers.v1
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFoundResponse<MarkAnnouncementAcknowledgedResponseDTO>(ex.Message);
             }
         }
 
-        [HttpGet]
-        [ProducesResponseType(typeof(GetStudentAnnouncementsResponseDTO), StatusCodes.Status200OK)]
-        public async Task<ActionResult<BaseAPIResponse<GetStudentAnnouncementsResponseDTO>>> GetMyAnnouncements(
-            [FromQuery] bool? isRead = null,
-            [FromQuery] string? type = null,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20,
-            CancellationToken cancellationToken = default)
-        {
-            var studentId = GetCurrentUserId();
+        // [HttpGet]
+        // [ProducesResponseType(typeof(GetStudentAnnouncementsResponseDTO), StatusCodes.Status200OK)]
+        // public async Task<ActionResult<BaseAPIResponse<GetStudentAnnouncementsResponseDTO>>> GetMyAnnouncements(
+        //     [FromQuery] bool? isRead = null,
+        //     [FromQuery] string? type = null,
+        //     [FromQuery] int page = 1,
+        //     [FromQuery] int pageSize = 20,
+        //     CancellationToken cancellationToken = default)
+        // {
+        //     var studentId = GetCurrentUserId();
 
-            var request = new GetStudentAnnouncementsRequestDTO
-            {
-                StudentId = studentId,
-                IsRead = isRead,
-                Type = type,
-                PageNumber = page,
-                PageSize = Math.Min(pageSize, 100)
-            };
+        //     var request = new GetStudentAnnouncementsRequestDTO
+        //     {
+        //         StudentId = studentId,
+        //         IsRead = isRead,
+        //         Type = type,
+        //         PageNumber = page,
+        //         PageSize = Math.Min(pageSize, 100)
+        //     };
 
-            var result = await _getStudentAnnouncementsHandler.HandleAsync(request, cancellationToken);
-            return OkResponse<GetStudentAnnouncementsResponseDTO>(result, _localizer.GetString(MessageConstants.Announcement.GetMyAnnouncementsSuccess));
-        }
+        //     var result = await _getStudentAnnouncementsHandler.HandleAsync(request, cancellationToken);
+        //     return OkResponse<GetStudentAnnouncementsResponseDTO>(result, _localizer.GetString(MessageConstants.Announcement.GetMyAnnouncementsSuccess));
+        // }
 
         [HttpPost("{announcementId}/view")]
-        [ProducesResponseType(typeof(MarkAnnouncementViewedResponseDTO), StatusCodes.Status200OK)]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BaseAPIResponse<MarkAnnouncementViewedResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<BaseAPIResponse<MarkAnnouncementViewedResponseDTO>>> MarkAsViewed(
             string announcementId,
@@ -352,12 +376,15 @@ namespace UniCore.API.Controllers.v1
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFoundResponse<MarkAnnouncementViewedResponseDTO>(ex.Message);
             }
         }
 
         [HttpPost("{announcementId}/acknowledge")]
-        [ProducesResponseType(typeof(MarkAnnouncementAcknowledgedResponseDTO), StatusCodes.Status200OK)]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(BaseAPIResponse<MarkAnnouncementAcknowledgedResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<BaseAPIResponse<MarkAnnouncementAcknowledgedResponseDTO>>> MarkAsAcknowledged(
             string announcementId,
@@ -378,7 +405,7 @@ namespace UniCore.API.Controllers.v1
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFoundResponse<MarkAnnouncementAcknowledgedResponseDTO>(ex.Message);
             }
         }
 
@@ -400,6 +427,7 @@ namespace UniCore.API.Controllers.v1
     /// </summary>
     [ApiVersion("1.0")]
     [AllowAnonymous]
+    [Produces("application/json")]
     [Route("api/v{version:apiVersion}/public/announcements")]
     public class PublicAnnouncementController : BaseController
     {

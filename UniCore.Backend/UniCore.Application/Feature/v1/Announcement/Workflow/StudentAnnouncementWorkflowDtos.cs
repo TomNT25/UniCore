@@ -17,8 +17,8 @@ namespace UniCore.Application.Feature.v1.Announcement.Workflow
         public string Type { get; set; } = "NORMAL";
 
         /// <summary>Computed lifecycle status (UPCOMING/ACTIVE/EXPIRED).</summary>
-        [JsonPropertyName("st")]
-        public string St { get; set; } = "UPCOMING";
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = "UPCOMING";
 
         [JsonPropertyName("scope_type")]
         public string ScopeType { get; set; } = "PUBLIC";
