@@ -48,19 +48,20 @@ namespace Project_Structure_UniCore.Controllers.v1
         public async Task<ActionResult<BaseAPIResponse<LoginResponseDTO>>> Login([FromBody] LoginRequestDTO request)
         {
             var result = await _authService.LoginAsync(request);
-            Response.Cookies.Append(
-                "UniCore_RefreshToken",
-                result.RefreshToken,
-                new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = false,
-                    SameSite = SameSiteMode.Lax,
-                    Expires = DateTimeOffset.UtcNow.AddDays(result.RefreshTokenExpire),
-                    Path = "/api/v1/auth",
-                    IsEssential = true
-                }
-            );
+            // Response.Cookies.Append(
+            //     "UniCore_RefreshToken",
+            //     result.RefreshToken,
+            //     new CookieOptions
+            //     {
+            //         HttpOnly = true,
+            //         Secure = false,
+            //         SameSite = SameSiteMode.Lax,
+            //         Expires = DateTimeOffset.UtcNow.AddDays(result.RefreshTokenExpire),
+            //         Path = "/api/v1/auth",
+            //         IsEssential = true
+            //     }
+            // );
+            setRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpire);
             var message = _localizer.GetString(MessageConstants.Auth.LoginSuccess);
             return OkResponse<LoginResponseDTO>(result, message);
         }
@@ -326,6 +327,7 @@ namespace Project_Structure_UniCore.Controllers.v1
         public async Task<ActionResult<BaseAPIResponse<LoginResponseDTO>>> GoogleLogin([FromBody] GoogleLoginRequestDTO request)
         {
             var result = await _authService.GoogleLoginAsync(request);
+            setRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpire);
             var message = _localizer.GetString(MessageConstants.Auth.GoogleLoginSuccess);
             return OkResponse<LoginResponseDTO>(result, message);
         }
@@ -336,6 +338,23 @@ namespace Project_Structure_UniCore.Controllers.v1
                    ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                    ?? User.FindFirst(ClaimTypes.Email)?.Value
                    ?? string.Empty;
+        }
+
+        private void setRefreshTokenCookie(string refreshToken, int refreshTokenExpireDays)
+        {
+            Response.Cookies.Append(
+                "UniCore_RefreshToken",
+                refreshToken,
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTimeOffset.UtcNow.AddDays(refreshTokenExpireDays),
+                    Path = "/api/v1/auth",
+                    IsEssential = true
+                }
+            );
         }
     }
 }

@@ -28,17 +28,31 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.GetAllUsers
                 throw new ValidationException(results.Errors);
             }
 
-            Expression<Func<UserEntity, bool>>? filter = u =>
-                (string.IsNullOrWhiteSpace(request.SearchTerm) ||
-                    u.Username.Contains(request.SearchTerm) ||
-                    u.Email.Contains(request.SearchTerm) ||
-                    (u.Code != null && u.Code.Contains(request.SearchTerm)) ||
-                    (u.UserProfile != null && u.UserProfile.FullName != null && u.UserProfile.FullName.Contains(request.SearchTerm))) &&
-                (string.IsNullOrWhiteSpace(request.RoleId) || u.UserRoles.Any(ur => ur.RoleId == request.RoleId)) &&
-                (!request.IsActive.HasValue || u.IsActive == request.IsActive.Value) &&
-                (!request.IsEmailVerified.HasValue || u.IsEmailVerified == request.IsEmailVerified.Value);
+            // NITO Code
+            request.SortColumn = request.SortColumn?.Trim().ToLowerInvariant() switch
+            {
+                "lastloginat" => nameof(UserEntity.LastLoginAt),
+                _ => nameof(UserEntity.CreatedAt)
+            };
 
-            var pagedResult = await _userRepository.GetPageNumberPaginationAsync<UserListItemDTO>(
+            // Expression<Func<UserEntity, bool>>? filter = u =>
+            //     (string.IsNullOrWhiteSpace(request.SearchTerm) ||
+            //         u.Username.Contains(request.SearchTerm) ||
+            //         u.Email.Contains(request.SearchTerm) ||
+            //         (u.Code != null && u.Code.Contains(request.SearchTerm)) ||
+            //         (u.UserProfile != null && u.UserProfile.FullName != null && u.UserProfile.FullName.Contains(request.SearchTerm))) &&
+            //     (string.IsNullOrWhiteSpace(request.RoleId) || u.UserRoles.Any(ur => ur.RoleId == request.RoleId)) &&
+            //     (!request.IsActive.HasValue || u.IsActive == request.IsActive.Value) &&
+            //     (!request.IsEmailVerified.HasValue || u.IsEmailVerified == request.IsEmailVerified.Value);
+
+                        Expression<Func<UserEntity, bool>>? filter = u =>
+                (string.IsNullOrWhiteSpace(request.SearchTerm) ||
+                    (u.StudentCode != null && u.StudentCode.Contains(request.SearchTerm)) &&
+                    (!request.IsActive.HasValue || u.IsActive == request.IsActive.Value) &&
+                    (!request.IsEmailVerified.HasValue || u.IsEmailVerified == request.IsEmailVerified.Value));
+
+
+            var pagedResult = await _userRepository.GetPageNumberPaginationAsync<GetAllUsersItemDTO>(
                 request,
                 filter,
                 cancellationToken);
@@ -46,7 +60,15 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.GetAllUsers
             return new GetAllUsersResponseDTO
             {
                 Items = pagedResult.Items,
-                Metadata = pagedResult.Metadata
+                Metadata = new GetAllUserMetadataDTO
+                {
+                    PageNumber = pagedResult.PageNumber,
+                    PageSize = pagedResult.PageSize,
+                    TotalRecords = pagedResult.TotalRecords,
+                    TotalPages = pagedResult.TotalPages,
+                    HasNextPage = pagedResult.HasNextPage,
+                    HasPreviousPage = pagedResult.HasPreviousPage
+                }
             };
         }
     }

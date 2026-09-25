@@ -18,11 +18,18 @@ namespace UniCore.Application.Feature.v1.Admin.UserManagement.GetAllUsers
                     .MaximumLength(100).WithMessage("SearchTerm cannot exceed 100 characters.");
             });
 
-            When(x => !string.IsNullOrWhiteSpace(x.RoleId), () =>
-            {
-                RuleFor(x => x.RoleId)
-                    .MaximumLength(50).WithMessage("RoleId cannot exceed 50 characters.");
-            });
+            // When(x => !string.IsNullOrWhiteSpace(x.RoleId), () =>
+            // {
+            //     RuleFor(x => x.RoleId)
+            //         .MaximumLength(50).WithMessage("RoleId cannot exceed 50 characters.");
+            // });
+            RuleFor(x => x.SortColumn)
+                .Must(sortColumn =>
+                    string.IsNullOrWhiteSpace(sortColumn) ||
+                   sortColumn.Equals("createdAt", StringComparison.OrdinalIgnoreCase) ||
+                   sortColumn.Equals("lastLoginAt", StringComparison.OrdinalIgnoreCase)
+                )
+                .WithMessage("SortColumn must be either 'createdAt' or 'lastLoginAt'.");
         }
     }
 }
