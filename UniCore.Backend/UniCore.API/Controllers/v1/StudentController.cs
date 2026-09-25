@@ -13,11 +13,11 @@ using UniCore.Application.Feature.v1.ClassRoom.GetClassFriends;
 using UniCore.Application.Feature.v1.ClassRoom.GetClassInfos;
 using UniCore.Application.Feature.v1.ClassRoom.GetCoursesStudents;
 using UniCore.Application.Feature.v1.Courses.GetAllCourses;
-using UniCore.Application.Feature.v1.Courses.GetMyCourses;
+using UniCore.Application.Feature.v1.Courses.GetMyCourses.ListDetails;
 using UniCore.Application.Feature.v1.Courses.GetMyCourses.PersonalDetails;
 using UniCore.Application.Feature.v1.Role.GetAllRole;
 using UniCore.Application.Feature.v1.User.GetUserInfo;
-// using UniCore.Application.Feature.v1.User.PutUserInfo;
+using UniCore.Application.Feature.v1.User.PutUserInfo;
 using UniCore.Application.Service.v1;
 using UniCore.Helper.Constant;
 using UniCore.Helper.Localization;
@@ -39,38 +39,38 @@ namespace UniCore.API.Controllers.v1
         /// <summary>
         /// Put Student's Profile, using UserId
         /// </summary>
-        // [Authorize]
-        // [HttpPut("profile")]
-        // [ProducesResponseType(typeof(BaseAPIResponse<PutUserInfoResponseDTO>), StatusCodes.Status200OK)]
-        // [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        // [ProducesResponseType(StatusCodes.Status404NotFound)]
-        // public async Task<ActionResult<BaseAPIResponse<PutUserInfoResponseDTO>>> PutMe
-        //     ([FromBody] PutUserInfoDTO bio,CancellationToken ct)
-        // {
-        //     var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
-        //                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-        //                  ?? User.FindFirst(ClaimTypes.Email)?.Value
-        //                  ?? string.Empty;
+        [Authorize]
+        [HttpPut("profile")]
+        [ProducesResponseType(typeof(BaseAPIResponse<PutUserInfoResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<BaseAPIResponse<PutUserInfoResponseDTO>>> PutUserProfile
+            ([FromBody] PutUserInfoDTO bio,CancellationToken ct)
+        {
+            var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
+                         ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                         ?? User.FindFirst(ClaimTypes.Email)?.Value
+                         ?? string.Empty;
 
 
-        //     if (string.IsNullOrEmpty(userId))
-        //     {
-        //         var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
-        //         return UnauthorizedResponse<PutUserInfoResponseDTO>(errMessage);
-        //     }
+            if (string.IsNullOrEmpty(userId))
+            {
+                var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
+                return UnauthorizedResponse<PutUserInfoResponseDTO>(errMessage);
+            }
 
-        //     PutUserInfoRequestDTO input = new PutUserInfoRequestDTO{ UserID = userId, PutUserBio = bio };
+            PutUserInfoRequestDTO input = new PutUserInfoRequestDTO{ UserID = userId, PutUserBio = bio };
 
-        //     var result = await _studentService.PutUserInfoAsync(input, ct);
-        //     if (result == null)
-        //     {
-        //         var notFoundMessage = _localizer.GetString(MessageConstants.Auth.UserNotFound);
-        //         return NotFoundResponse<PutUserInfoResponseDTO>(notFoundMessage);
-        //     }
+            var result = await _studentService.PutUserInfoAsync(input, ct);
+            if (result == null)
+            {
+                var notFoundMessage = _localizer.GetString(MessageConstants.Auth.UserNotFound);
+                return NotFoundResponse<PutUserInfoResponseDTO>(notFoundMessage);
+            }
 
-        //     var successMessage = _localizer.GetString(MessageConstants.Auth.GetMeSuccess);
-        //     return OkResponse<PutUserInfoResponseDTO>(result, successMessage);
-        // }
+            var successMessage = _localizer.GetString(MessageConstants.Auth.GetMeSuccess);
+            return OkResponse<PutUserInfoResponseDTO>(result, successMessage);
+        }
 
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace UniCore.API.Controllers.v1
         [ProducesResponseType(typeof(BaseAPIResponse<GetUserInfoResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BaseAPIResponse<GetUserInfoResponseDTO>>> GetMe(CancellationToken ct)
+        public async Task<ActionResult<BaseAPIResponse<GetUserInfoResponseDTO>>> GetStudentProfile(CancellationToken ct)
         {
             var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
                          ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
@@ -122,7 +122,7 @@ namespace UniCore.API.Controllers.v1
         {
             if (string.IsNullOrEmpty(classId))
             {
-                var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
+                var errMessage = _localizer.GetString(MessageConstants.System.BadRequest);
                 return BadRequestResponse<GetClassInfoResponseDTO>(errMessage);
             }
 
@@ -143,11 +143,11 @@ namespace UniCore.API.Controllers.v1
 
             if (result == null)
             {
-                var notFoundMessage = _localizer.GetString(MessageConstants.Auth.UserNotFound);
+                var notFoundMessage = _localizer.GetString(MessageConstants.Student.GetInfoFailed);
                 return NotFoundResponse<GetClassInfoResponseDTO>(notFoundMessage);
             }
 
-            var successMessage = _localizer.GetString(MessageConstants.Auth.GetMeSuccess);
+            var successMessage = _localizer.GetString(MessageConstants.Student.GetInfoSuccess);
             return OkResponse<GetClassInfoResponseDTO>(result, successMessage);
 
 
@@ -187,96 +187,16 @@ namespace UniCore.API.Controllers.v1
             var result = await _studentService.GetClassmateListAsync(input, ct);
             if (result == null)
             {
-                var notFoundMessage = _localizer.GetString(MessageConstants.Auth.UserNotFound);
+                var notFoundMessage = _localizer.GetString(MessageConstants.Student.GetInfoFailed);
                 return NotFoundResponse<GetClassFriendsResponseDTO>(notFoundMessage);
             }
 
-            var successMessage = _localizer.GetString(MessageConstants.Auth.GetMeSuccess);
+            var successMessage = _localizer.GetString(MessageConstants.Student.GetInfoSuccess);
             return OkResponse<GetClassFriendsResponseDTO>(result, successMessage);
 
         }
 
 
-        /// <summary>
-        /// Get Student course's personal info, using UserId
-        /// </summary>
-        [HttpGet("my-courses")]
-        [ProducesResponseType(typeof(BaseAPIResponse<GetCoursesStudentsResponseDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BaseAPIResponse<GetCoursesStudentsResponseDTO>>> GetStudentCourses(
-            CancellationToken ct = default)
-        {
-
-            var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
-             ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-             ?? User.FindFirst(ClaimTypes.Email)?.Value
-             ?? string.Empty;
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
-                return UnauthorizedResponse<GetCoursesStudentsResponseDTO>(errMessage);
-            }
-
-            var input = new GetCoursesStudentsRequestDTO { UserID = userId };
-
-            var results = await _studentService.GetStudentCoursesAsync(input, ct);
-            if (results is null)
-            {
-                var notFoundMessage = _localizer.GetString(MessageConstants.Auth.UserNotFound);
-                return NotFoundResponse<GetCoursesStudentsResponseDTO>(notFoundMessage);
-            }
-
-            var successMessage = _localizer.GetString("Success");
-            return OkResponse<GetCoursesStudentsResponseDTO>(results, successMessage);
-
-        }
-
-
-        /// <summary>
-        /// Get Student course's public info, using UserId
-        /// </summary>
-        [Authorize]
-        [HttpGet("my-class/courses")]
-        [ProducesResponseType(typeof(BaseAPIResponse<GetClassCourseInfosResponseDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BaseAPIResponse<GetClassCourseInfosResponseDTO>>> GetCoursesInfo(
-            [FromQuery] string? classId,
-            CancellationToken ct = default)
-        {
-            if (string.IsNullOrEmpty(classId))
-            {
-                var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
-                return BadRequestResponse<GetClassCourseInfosResponseDTO>(errMessage);
-            }
-
-            var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
-             ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-             ?? User.FindFirst(ClaimTypes.Email)?.Value
-             ?? string.Empty;
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                var errMessage = _localizer.GetString(MessageConstants.Auth.IdentityNotFound);
-                return UnauthorizedResponse<GetClassCourseInfosResponseDTO>(errMessage);
-            }
-
-            var input = new GetClassCourseInfosRequestDTO { UserID = userId };
-
-            var results = await _studentService.GetCourseInfosAsync(input, ct);
-            if (results == null)
-            {
-                var notFoundMessage = _localizer.GetString(MessageConstants.Auth.UserNotFound);
-                return NotFoundResponse<GetClassCourseInfosResponseDTO>(notFoundMessage);
-            }
-
-            var successMessage = _localizer.GetString(MessageConstants.Auth.GetMeSuccess);
-            return OkResponse<GetClassCourseInfosResponseDTO>(results, successMessage);
-
-
-        }
 
         /// <summary>
         /// Get all Public Courses
@@ -328,7 +248,13 @@ namespace UniCore.API.Controllers.v1
 
 
             var result = await _studentService.GetMyCoursesAsync(input);
-            var message = _localizer.GetString(MessageConstants.Role.GetAllSuccess);
+            if (result is null)
+            {
+                var notFoundMessage = _localizer.GetString(MessageConstants.Student.GetMyCoursesEmpty);
+                return NotFoundResponse<GetMyCoursesResponseDTO>(notFoundMessage);
+            }
+
+            var message = _localizer.GetString(MessageConstants.Student.GetMyCoursesSuccess);
             return OkResponse<GetMyCoursesResponseDTO>(result, message);
         }
 
@@ -357,7 +283,14 @@ namespace UniCore.API.Controllers.v1
 
 
             var result = await _studentService.GetCourseDetailsAsync(input);
-            var message = _localizer.GetString(MessageConstants.Role.GetAllSuccess);
+
+            if (result.Courses is null)
+            {
+                var notFoundMessage = _localizer.GetString(MessageConstants.Student.GetCourseDetailsNotFound);
+                return NotFoundResponse<GetCourseDetailsResponseDTO>(notFoundMessage);
+            }
+
+            var message = _localizer.GetString(MessageConstants.Student.GetCourseDetailsSuccess);
             return OkResponse<GetCourseDetailsResponseDTO>(result, message);
         }
     }

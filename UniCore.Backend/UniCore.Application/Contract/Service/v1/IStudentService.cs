@@ -8,6 +8,7 @@ using UniCore.Application.Feature.v1.Courses.GetAllCourses;
 using UniCore.Application.Feature.v1.Courses.GetMyCourses.ListDetails;
 using UniCore.Application.Feature.v1.Courses.GetMyCourses.PersonalDetails;
 using UniCore.Application.Feature.v1.User.GetUserInfo;
+using UniCore.Application.Feature.v1.User.PutUserInfo;
 // using UniCore.Application.Feature.v1.User.PutUserInfo;
 
 namespace UniCore.Application.Contract.Service.v1
@@ -33,6 +34,6 @@ namespace UniCore.Application.Contract.Service.v1
 
         Task<GetCourseDetailsResponseDTO> GetCourseDetailsAsync(GetCourseDetailsRequestDTO request, CancellationToken cancellationToken = default);
 
-        // Task<PutUserInfoResponseDTO> PutUserInfoAsync(PutUserInfoRequestDTO request, CancellationToken cancellationToken = default);
+        Task<PutUserInfoResponseDTO> PutUserInfoAsync(PutUserInfoRequestDTO request, CancellationToken cancellationToken = default);
     }
 }

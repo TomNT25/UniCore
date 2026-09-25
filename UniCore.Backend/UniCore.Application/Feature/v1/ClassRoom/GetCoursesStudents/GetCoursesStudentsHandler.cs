@@ -30,7 +30,7 @@ namespace UniCore.Application.Feature.v1.ClassRoom.GetCoursesStudents
                 throw new ValidationException(results.Errors);
             }
 
-            var courseStudentInfo = await _courseStudent.GetByStuIdCourseIdsAsync(request.UserID, request.CourseIDs,ct);
+            var courseStudentInfo = await _courseStudent.GetByStuIdCourseIdsAsync(request.UserID,ct);
 
             if (courseStudentInfo is null)
             {
