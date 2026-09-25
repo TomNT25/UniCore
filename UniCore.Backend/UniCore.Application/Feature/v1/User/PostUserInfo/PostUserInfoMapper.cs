@@ -9,15 +9,16 @@ namespace UniCore.Application.Feature.v1.User.PostUserInfo
     {
         public void Register(TypeAdapterConfig config)
         {
-            config.NewConfig<PostUserInfoDTO, UserProfile>()
-                .Map(dest => dest.FirstName, src => src.firstName)
-                .Map(dest => dest.LastName, src => src.lastName)
-                .Map(dest => dest.FullName, src => src.fullName)
-                .Map(dest => dest.PhoneNumber, src => src.phoneNumber)
-                .Map(dest => dest.Gender, src => src.gender)
-                .Map(dest => dest.BirthDate, src => DateTime.Parse(src.birthDate, CultureInfo.InvariantCulture))
-                .Map(dest => dest.Address, src => src.address)
-                .Map(dest => dest.Bio, src => src.bio);
+            config.NewConfig<PostUserInfoRequestDTO, UserProfile>()
+                .Map(dest => dest.UserId, src => src.UserId)
+                .Map(dest => dest.FirstName, src => src.FirstName)
+                .Map(dest => dest.LastName, src => src.LastName)
+                .Map(dest => dest.FullName, src => src.FullName)
+                .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
+                .Map(dest => dest.Gender, src => src.Gender)
+                .Map(dest => dest.BirthDate, src => DateTime.Parse(src.BirthDate, CultureInfo.InvariantCulture))
+                .Map(dest => dest.Address, src => src.Address)
+                .Map(dest => dest.Bio, src => src.Bio);
         }
     }
 }

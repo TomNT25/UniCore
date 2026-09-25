@@ -6,7 +6,7 @@ namespace UniCore.Application.Entity
         public string? Code { get; set; }
         public string Email { get; set; } = string.Empty;
         public bool IsConfirmed { get; set; } = false;
-        public string StudentId { get; set; } = string.Empty;
+        public string? StudentId { get; set; }
         public bool IsActive { get; set; } = true;
         public bool IsDeleted { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -14,6 +14,6 @@ namespace UniCore.Application.Entity
         public string? CreatedBy { get; set; }
         public string? UpdatedBy { get; set; }
 
-        public virtual User Student { get; set; } = null!;
+        public virtual User? Student { get; set; }
     }
 }

@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Create Student Account(s) – API Contract</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#d9e2ec;--primary:#2563eb;--soft:#eff6ff;--ok:#15803d;--okbg:#f0fdf4;--warn:#b45309;--warnbg:#fffbeb;--danger:#b91c1c;--dangerbg:#fef2f2;--dark:#111827;--purple:#7c3aed;--purplebg:#f5f3ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.65}.wrap{width:min(1220px,calc(100% - 40px));margin:auto;padding:36px 0 70px}
+header{background:linear-gradient(135deg,#0f172a,#1e40af);color:#fff;padding:38px 42px;border-radius:22px;margin-bottom:22px}header .eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:800;opacity:.7}header h1{font-size:32px;line-height:1.2;margin:8px 0 10px}header p{margin:0;color:#dbeafe;max-width:980px;font-size:15px}.base{display:inline-block;margin-top:16px;padding:8px 11px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);font-family:ui-monospace,monospace;font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:18px;box-shadow:0 8px 24px rgba(15,23,42,.05)}h2{margin:0 0 8px;font-size:22px}h3{margin:20px 0 8px;font-size:17px}h4{margin:16px 0 6px;font-size:15px;color:#344054}.lead{color:var(--muted);margin-top:0}.note,.ok,.warn,.danger,.purple{padding:13px 15px;border-radius:10px;margin:14px 0}.note{background:var(--soft);border:1px solid #bfdbfe}.ok{background:var(--okbg);border:1px solid #bbf7d0}.warn{background:var(--warnbg);border:1px solid #fde68a}.danger{background:var(--dangerbg);border:1px solid #fecaca}.purple{background:var(--purplebg);border:1px solid #ddd6fe}
+.toc{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.toc a{text-decoration:none;color:#1d4ed8;background:var(--soft);border:1px solid #bfdbfe;padding:10px 12px;border-radius:9px;font-size:13px;font-weight:750}
+.endpoint{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:12px 0 15px}.method{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:7px;padding:4px 8px;font-size:12px;font-weight:850}.path{background:var(--soft);color:#1d4ed8;border:1px solid #bfdbfe;border-radius:7px;padding:6px 9px;font-family:ui-monospace,monospace;font-size:13px}
+code{font-family:ui-monospace,monospace;background:#eef2f6;padding:2px 5px;border-radius:5px;color:#25324b;font-size:.92em}pre{background:var(--dark);color:#e5e7eb;border-radius:10px;padding:16px;overflow:auto;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13.5px}th,td{border:1px solid var(--line);padding:11px 12px;text-align:left;vertical-align:top}th{background:#f8fafc;color:#344054;font-weight:800}
+.badge{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 7px;font-size:11px;font-weight:800}.enum{background:#ede9fe;color:#6d28d9;border-color:#ddd6fe}.imp{background:#fee2e2;color:#b91c1c;border-color:#fecaca}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-top:15px}.step{background:#f8fafc;border:1px solid var(--line);border-radius:11px;padding:13px;min-height:118px}.num{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:var(--primary);color:#fff;font-size:12px;font-weight:850;margin-bottom:8px}.step strong{display:block;font-size:14px;margin-bottom:4px}.step span{font-size:12px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.mini{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:14px}.mini strong{display:block;margin-bottom:4px}.footer{text-align:center;color:var(--muted);font-size:12px;padding-top:4px}
+@media(max-width:900px){.toc{grid-template-columns:1fr 1fr}.flow{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}@media(max-width:620px){.wrap{width:calc(100% - 22px)}header{padding:28px 22px}header h1{font-size:25px}.toc,.flow{grid-template-columns:1fr}}
+</style>
+</head>
+<body><div class="wrap">
+
+<header>
+  <div class="eyebrow">Frontend ↔ Backend API Contract · Role = Admin</div>
+  <h1>Create Student Account(s)</h1>
+  <p>Đặc tả hai API dành cho <strong>admin</strong> để tạo tài khoản student: tạo <strong>đơn lẻ (single)</strong> và tạo <strong>hàng loạt từ file CSV (bulk)</strong>. Hệ thống không cho student tự đăng ký; thông tin đăng nhập (username + password tạm) sẽ được BE gửi tới email đã đăng ký của nhà trường. Contract bao gồm request, success response, error response và toàn bộ enum quan trọng.</p>
+  <div class="base">Base URL: /api/v1/admin</div>
+</header>
+
+<section class="card">
+  <h2>1. Mục tiêu và phạm vi</h2>
+  <p class="lead">Module cho phép admin tạo tài khoản student theo 2 chế độ: nhập tay một tài khoản, hoặc upload file CSV để tạo hàng loạt. Với mỗi tài khoản, BE sẽ kiểm tra trùng lặp, sinh mật khẩu ngẫu nhiên, insert vào <code>users</code>, gửi email chứa username + password, và cập nhật <code>whitelisted_emails</code> nếu gửi mail thành công.</p>
+  <div class="toc">
+    <a href="#db">2. Database Mapping</a>
+    <a href="#enum">3. Enum Registry</a>
+    <a href="#envelope">4. Response Envelope</a>
+    <a href="#overview">5. API Overview</a>
+    <a href="#single">6. Single Account</a>
+    <a href="#bulk">7. Bulk CSV</a>
+    <a href="#csv">8. CSV Format</a>
+    <a href="#workflow">9. Business Workflow</a>
+    <a href="#errors">10. Error Registry</a>
+    <a href="#rules">11. FE/BE Rules</a>
+    <a href="#acceptance">12. Acceptance</a>
+    <a href="#open">13. Open Points</a>
+  </div>
+</section>
+
+<section class="card" id="db">
+  <h2>2. Database Mapping</h2>
+  <p class="lead">Các bảng và field mà workflow này tác động. Đây là source of truth cho contract.</p>
+
+  <h3>2.1. <code>users</code> (bảng chính)</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Kiểu</th><th>Giá trị khi tạo student account</th><th>Ghi chú</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td>uuid</td><td>auto-generate</td><td>PK.</td></tr>
+      <tr><td><code>code</code></td><td>string</td><td><code>null</code></td><td>Chỉ dùng cho lecturer/admin.</td></tr>
+      <tr><td><code>student_code</code></td><td>string</td><td>từ request</td><td>Unique với student.</td></tr>
+      <tr><td><code>class_id</code></td><td>uuid</td><td><code>null</code></td><td>Gán sau.</td></tr>
+      <tr><td><code>username</code></td><td>string</td><td>= <code>student_code</code></td><td>Unique.</td></tr>
+      <tr><td><code>email</code></td><td>string</td><td>từ request</td><td>Unique.</td></tr>
+      <tr><td><code>password_hash</code></td><td>string</td><td><code>Hash(random_password)</code></td><td>Password gốc chỉ tồn tại trong RAM để gửi mail.</td></tr>
+      <tr><td><code>provider</code></td><td>string</td><td><code>"SYSTEM"</code></td><td>Xem Enum Registry.</td></tr>
+      <tr><td><code>failed_login_attempts</code></td><td>int</td><td><code>0</code></td><td></td></tr>
+      <tr><td><code>lockout_end</code></td><td>string</td><td><code>null</code></td><td></td></tr>
+      <tr><td><code>is_active</code></td><td>boolean</td><td><code>false</code></td><td><span class="badge imp">IMPORTANT</span> Active luôn được set là TRUE khi tạo user's account.</td></tr>
+      <tr><td><code>is_email_verified</code></td><td>boolean</td><td><code>false</code></td><td></td></tr>
+      <tr><td><code>last_login_at</code></td><td>string</td><td><code>null</code></td><td><span class="badge imp">IMPORTANT</span> Chưa từng đăng nhập.</td></tr>
+      <tr><td><code>created_at</code></td><td>string</td><td><code>now()</code></td><td></td></tr>
+      <tr><td><code>updated_at</code></td><td>string</td><td><code>null</code></td><td></td></tr>
+      <tr><td><code>created_by</code></td><td>uuid</td><td><code>admin.id</code></td><td>Lấy từ token.</td></tr>
+      <tr><td><code>updated_by</code></td><td>uuid</td><td><code>null</code></td><td></td></tr>
+    </tbody>
+  </table>
+
+  <h3>2.2. <code>whitelisted_emails</code></h3>
+  <p>Được cập nhật <strong>chỉ khi gửi mail thành công</strong>: set <code>student_id</code> = <code>users.id</code> tại row có <code>email</code> trùng với email vừa tạo.</p>
+  <table>
+    <thead><tr><th>Field</th><th>Hành động</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code>, <code>code</code>, <code>is_confirmed</code>, <code>is_active</code>, <code>is_deleted</code>, <code>created_at</code>, <code>updated_at</code>, <code>created_by</code>, <code>updated_by</code></td><td>Không thay đổi trong flow này.</td></tr>
+      <tr><td><code>student_id</code></td><td>Set = <code>users.id</code> khi gửi mail thành công.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2.3. <code>user_profiles</code></h3>
+  <div class="warn">
+    <strong>Không tạo trong flow này.</strong> <code>user_profiles</code> chỉ được tạo khi student upload thông tin cá nhân qua OCR flow.
+  </div>
+
+  <h3>2.4. <code>user_mfa_settings</code></h3>
+  <div class="warn">
+    <strong>Không tạo trong flow này.</strong> MFA setting sẽ được thiết lập ở flow riêng (khi user bật MFA lần đầu).
+  </div>
+</section>
+
+<section class="card" id="enum">
+  <h2>3. Enum Registry</h2>
+  <div class="purple">
+    <strong>Đây là các enum quan trọng của module.</strong> FE và BE phải dùng đúng literal string, không tự ý đổi casing hoặc thêm giá trị mới mà không cập nhật contract.
+  </div>
+
+  <h3>3.1. <code>error_accounts[].error_type</code></h3>
+  <table>
+    <thead><tr><th>Value</th><th>Ý nghĩa</th><th>Khi nào</th></tr></thead>
+    <tbody>
+      <tr><td><code>EMAIL</code></td><td>Email đã tồn tại trong hệ thống.</td><td>Check duplicate <code>users.email</code> thất bại.</td></tr>
+      <tr><td><code>STUDENT_CODE</code></td><td>Student code đã tồn tại.</td><td>Check duplicate <code>users.student_code</code> thất bại.</td></tr>
+      <tr><td><code>SENT_EMAIL_FAILED</code></td><td>Đã insert user thành công nhưng gửi mail credentials thất bại.</td><td>Mail provider trả lỗi/timeout.</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <strong>Lưu ý:</strong> <code>error_type</code> là single value — mỗi item trong <code>error_accounts</code> chỉ mang 1 error_type. Nếu vừa trùng email vừa trùng student_code, BE ưu tiên theo thứ tự <code>STUDENT_CODE</code> → <code>EMAIL</code> (xem Open Points để chốt lại).
+  </div>
+
+  <h3>3.2. <code>users.provider</code></h3>
+  <table>
+    <thead><tr><th>Value</th><th>Ý nghĩa</th></tr></thead>
+    <tbody>
+      <tr><td><code>SYSTEM</code></td><td>Tài khoản tạo bởi admin, đăng nhập bằng username/password.</td></tr>
+      <tr><td><code>GOOGLE</code></td><td>Tài khoản liên kết Google OAuth.</td></tr>
+    </tbody>
+  </table>
+  <div class="ok">
+    Trong flow này, <code>provider</code> <strong>luôn</strong> là <code>"SYSTEM"</code>.
+  </div>
+
+  <h3>3.3. <code>user_mfa_settings.mfa_method</code></h3>
+  <table>
+    <thead><tr><th>Value</th><th>Ý nghĩa</th></tr></thead>
+    <tbody>
+      <tr><td><code>TOTP</code></td><td>DEFAULT. Mock Google Authenticator.</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    Không liên quan trực tiếp tới flow tạo account, nhưng được note để FE/BE không nhầm khi mở rộng module.
+  </div>
+
+  <h3>3.4. Trạng thái tài khoản khi vừa tạo</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Giá trị</th><th>Ý nghĩa</th></tr></thead>
+    <tbody>
+      <tr><td><code>is_active</code></td><td><code>false</code></td><td>Tài khoản chưa được kích hoạt.</td></tr>
+      <tr><td><code>is_email_verified</code></td><td><code>false</code></td><td>Email chưa xác thực.</td></tr>
+      <tr><td><code>last_login_at</code></td><td><code>null</code></td><td>Chưa từng đăng nhập.</td></tr>
+      <tr><td><code>failed_login_attempts</code></td><td><code>0</code></td><td>Reset counter.</td></tr>
+      <tr><td><code>lockout_end</code></td><td><code>null</code></td><td>Không bị khoá.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="card" id="envelope">
+  <h2>4. Response Envelope</h2>
+  <p class="lead">Mọi response (thành công và lỗi) đều tuân theo cùng một envelope. FE chỉ cần một mapper duy nhất cho toàn module.</p>
+
+  <h3>4.1. Cấu trúc envelope</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Kiểu</th><th>Mô tả</th></tr></thead>
+    <tbody>
+      <tr><td><code>isSuccess</code></td><td>boolean</td><td><code>true</code> khi thành công, <code>false</code> khi có lỗi.</td></tr>
+      <tr><td><code>statusCode</code></td><td>int</td><td><code>0</code> khi thành công. Khi lỗi, bằng HTTP status code (400/401/403/404/409/500…).</td></tr>
+      <tr><td><code>message</code></td><td>string</td><td>Message ngắn gọn hiển thị được cho user. Không leak chi tiết nội bộ.</td></tr>
+      <tr><td><code>data</code></td><td>object \| null</td><td>Payload thành công. Là <code>null</code> khi lỗi.</td></tr>
+      <tr><td><code>errors</code></td><td>string[]</td><td>Mảng rỗng khi thành công. Chứa message chi tiết khi lỗi.</td></tr>
+      <tr><td><code>timestamp</code></td><td>string (ISO 8601)</td><td>UTC timestamp sinh response, ví dụ <code>2026-09-24T02:48:56.920Z</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.2. Success envelope (dùng cho cả single &amp; bulk)</h3>
+<pre>{
+  "isSuccess": true,
+  "statusCode": 0,
+  "message": "string",
+  "data": {
+    "items": {
+      "success_accounts": [
+        {
+          "id": "uuid",
+          "student_code": "ST2024001",
+          "email": "student1@example.com"
+        }
+      ],
+      "error_accounts": [
+        {
+          "id": "uuid | null",
+          "student_code": "ST2024002",
+          "email": "student2@example.com",
+          "error_type": "EMAIL"
+        }
+      ]
+    }
+  },
+  "errors": [],
+  "timestamp": "2026-09-24T02:48:56.920Z"
+}</pre>
+
+  <h3>4.3. Error envelope</h3>
+<pre>{
+  "isSuccess": false,
+  "statusCode": 409,
+  "message": "Duplicate student code",
+  "data": null,
+  "errors": [
+    "Student code 'ST2024001' already exists"
+  ],
+  "timestamp": "2026-09-24T02:48:56.920Z"
+}</pre>
+
+  <div class="note">
+    <strong>Nguyên tắc:</strong> FE rẽ nhánh theo <code>isSuccess</code>; không dùng HTTP status code cho logic nghiệp vụ. HTTP status code vẫn phải đúng để tương thích hạ tầng.
+  </div>
+  <div class="warn">
+    <strong>Trường <code>errors</code>:</strong> luôn là mảng. Khi thành công là <code>[]</code>, khi lỗi chứa message chi tiết. Không trả <code>null</code>.
+  </div>
+</section>
+
+<section class="card" id="overview">
+  <h2>5. API Overview</h2>
+  <table>
+    <thead><tr><th>Use case</th><th>Method</th><th>Endpoint</th><th>Auth</th><th>Content-Type</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Tạo 1 tài khoản student</td>
+        <td><span class="method">POST</span></td>
+        <td><code>POST /api/v1/admin/student-account</code></td>
+        <td>Bearer + admin</td>
+        <td><code>application/json</code></td>
+      </tr>
+      <tr>
+        <td>Tạo hàng loạt từ CSV</td>
+        <td><span class="method">POST</span></td>
+        <td><code>POST /api/v1/admin/student-accounts</code></td>
+        <td>Bearer + admin</td>
+        <td><code>multipart/form-data</code></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <strong>Identity rule:</strong> FE không gửi <code>admin_id</code>. BE resolve từ token để ghi <code>created_by</code>.
+  </div>
+  <div class="note">
+    <strong>Idempotency:</strong> không hỗ trợ trong flow này. Gọi lại endpoint với cùng <code>student_code</code>/<code>email</code> sẽ nhận lỗi duplicate ở lần 2.
+  </div>
+</section>
+
+<section class="card" id="single">
+  <h2>6. API 1 – Single Account Creation</h2>
+  <div class="endpoint">
+    <span class="method">POST</span>
+    <span class="path">/api/v1/admin/student-account</span>
+  </div>
+  <p>Tạo <strong>một</strong> tài khoản student. Request body JSON chứa <code>student_code</code> và <code>email</code>. BE thực hiện toàn bộ flow: check duplicate → generate password → insert user → gửi mail → update <code>whitelisted_emails</code>.</p>
+
+  <h3>6.1. Request</h3>
+  <h4>Headers</h4>
+  <table>
+    <thead><tr><th>Header</th><th>Giá trị</th><th>Bắt buộc</th></tr></thead>
+    <tbody>
+      <tr><td><code>Authorization</code></td><td><code>Bearer &lt;token&gt;</code></td><td>Có</td></tr>
+      <tr><td><code>Content-Type</code></td><td><code>application/json</code></td><td>Có</td></tr>
+      <tr><td><code>Accept</code></td><td><code>application/json</code></td><td>Khuyến nghị</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Body</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Kiểu</th><th>Bắt buộc</th><th>Ràng buộc</th></tr></thead>
+    <tbody>
+      <tr><td><code>student_code</code></td><td>string</td><td>Có</td><td>Unique, không rỗng. Xem Open Points để chốt regex.</td></tr>
+      <tr><td><code>email</code></td><td>string</td><td>Có</td><td>Unique, đúng định dạng email.</td></tr>
+    </tbody>
+  </table>
+
+<pre>{
+  "student_code": "ST2024001",
+  "email": "student1@example.com"
+}</pre>
+
+  <h3>6.2. Success response — <code>200 OK</code></h3>
+<pre>{
+  "isSuccess": true,
+  "statusCode": 0,
+  "message": "Student account created successfully",
+  "data": {
+    "items": {
+      "success_accounts": [
+        {
+          "id": "9c1b2e44-7a11-4c0d-9c3a-2f8b1e5d7a01",
+          "student_code": "ST2024001",
+          "email": "student1@example.com"
+        }
+      ],
+      "error_accounts": []
+    }
+  },
+  "errors": [],
+  "timestamp": "2026-09-24T02:48:56.920Z"
+}</pre>
+  <div class="note">
+    <strong>Shape nhất quán với bulk:</strong> single trả về cùng cấu trúc <code>items.success_accounts</code> + <code>items.error_accounts</code> để FE dùng chung một mapper. Trong trường hợp thành công hoàn toàn, <code>error_accounts</code> là <code>[]</code>.
+  </div>
+
+  <h3>6.3. Error responses</h3>
+  <table>
+    <thead><tr><th>HTTP</th><th><code>statusCode</code></th><th><code>message</code></th><th><code>errors[]</code> ví dụ</th><th>Khi nào</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>400</code></td><td><code>400</code></td>
+        <td><code>Invalid request</code></td>
+        <td><code>["student_code must not be empty"]</code></td>
+        <td>Body thiếu field / sai định dạng.</td>
+      </tr>
+      <tr>
+        <td><code>401</code></td><td><code>401</code></td>
+        <td><code>Unauthenticated</code></td>
+        <td><code>["Access token is missing or expired"]</code></td>
+        <td>Token thiếu/hết hạn.</td>
+      </tr>
+      <tr>
+        <td><code>403</code></td><td><code>403</code></td>
+        <td><code>Forbidden</code></td>
+        <td><code>["You do not have permission to create student accounts"]</code></td>
+        <td>Không phải admin.</td>
+      </tr>
+      <tr>
+        <td><code>409</code></td><td><code>409</code></td>
+        <td><code>Duplicate student code</code></td>
+        <td><code>["Student code 'ST2024001' already exists"]</code></td>
+        <td><code>student_code</code> đã tồn tại.</td>
+      </tr>
+      <tr>
+        <td><code>409</code></td><td><code>409</code></td>
+        <td><code>Duplicate email</code></td>
+        <td><code>["Email 'student1@example.com' already exists"]</code></td>
+        <td><code>email</code> đã tồn tại.</td>
+      </tr>
+      <tr>
+        <td><code>502</code></td><td><code>502</code></td>
+        <td><code>Failed to send credentials email</code></td>
+        <td><code>["Email provider rejected the request"]</code></td>
+        <td>Insert user thành công nhưng gửi mail thất bại. Xem Open Points về cách rollback.</td>
+      </tr>
+      <tr>
+        <td><code>500</code></td><td><code>500</code></td>
+        <td><code>Internal server error</code></td>
+        <td><code>["Unexpected error occurred"]</code></td>
+        <td>Lỗi hệ thống/DB.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4>Ví dụ error body — 409 duplicate</h4>
+<pre>{
+  "isSuccess": false,
+  "statusCode": 409,
+  "message": "Duplicate student code",
+  "data": null,
+  "errors": [
+    "Student code 'ST2024001' already exists"
+  ],
+  "timestamp": "2026-09-24T02:48:56.920Z"
+}</pre>
+</section>
+
+<section class="card" id="bulk">
+  <h2>7. API 2 – Bulk CSV Account Creation</h2>
+  <div class="endpoint">
+    <span class="method">POST</span>
+    <span class="path">/api/v1/admin/student-accounts</span>
+  </div>
+  <p>Tạo hàng loạt tài khoản student từ file <code>.csv</code>. BE xử lý tuần tự từng row, tổng hợp <code>success_accounts</code> và <code>error_accounts</code>, trả về cả hai mảng trong một response.</p>
+
+  <h3>7.1. Request</h3>
+  <h4>Headers</h4>
+  <table>
+    <thead><tr><th>Header</th><th>Giá trị</th><th>Bắt buộc</th></tr></thead>
+    <tbody>
+      <tr><td><code>Authorization</code></td><td><code>Bearer &lt;token&gt;</code></td><td>Có</td></tr>
+      <tr><td><code>Content-Type</code></td><td><code>multipart/form-data; boundary=...</code></td><td>Có</td></tr>
+      <tr><td><code>Accept</code></td><td><code>application/json</code></td><td>Khuyến nghị</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Form fields</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Kiểu</th><th>Bắt buộc</th><th>Mô tả</th></tr></thead>
+    <tbody>
+      <tr><td><code>file</code></td><td>file (<code>.csv</code>)</td><td>Có</td><td>File CSV tuân theo format ở mục 8.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>7.2. Success response — <code>200 OK</code></h3>
+  <p>Luôn trả về <code>200 OK</code> khi request hợp lệ, kể cả khi một số row thất bại (partial success). Kết quả từng row nằm trong <code>data.items</code>.</p>
+<pre>{
+  "isSuccess": true,
+  "statusCode": 0,
+  "message": "Bulk account creation completed",
+  "data": {
+    "items": {
+      "success_accounts": [
+        {
+          "id": "9c1b2e44-7a11-4c0d-9c3a-2f8b1e5d7a01",
+          "student_code": "ST2024001",
+          "email": "student1@example.com"
+        }
+      ],
+      "error_accounts": [
+        {
+          "id": null,
+          "student_code": "ST2024002",
+          "email": "student2@example.com",
+          "error_type": "EMAIL"
+        },
+        {
+          "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+          "student_code": "ST2024003",
+          "email": "student3@example.com",
+          "error_type": "SENT_EMAIL_FAILED"
+        }
+      ]
+    }
+  },
+  "errors": [],
+  "timestamp": "2026-09-24T02:48:56.920Z"
+}</pre>
+
+  <div class="note">
+    <strong>Quy ước <code>id</code> trong <code>error_accounts</code>:</strong>
+    <ul>
+      <li><code>null</code> — row bị reject trước khi insert (duplicate <code>STUDENT_CODE</code> hoặc <code>EMAIL</code>).</li>
+      <li>uuid — row đã insert thành công nhưng gửi mail thất bại (<code>SENT_EMAIL_FAILED</code>). FE có thể hiển thị lại id để admin retry.</li>
+    </ul>
+  </div>
+
+  <h3>7.3. Error responses (request-level)</h3>
+  <p>Đây là các lỗi khiến cả request thất bại (không xử lý row nào), khác với partial success ở trên.</p>
+  <table>
+    <thead><tr><th>HTTP</th><th><code>statusCode</code></th><th><code>message</code></th><th><code>errors[]</code> ví dụ</th><th>Khi nào</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>400</code></td><td><code>400</code></td>
+        <td><code>Invalid file</code></td>
+        <td><code>["File must be .csv"]</code></td>
+        <td>File sai extension / không có file.</td>
+      </tr>
+      <tr>
+        <td><code>400</code></td><td><code>400</code></td>
+        <td><code>Invalid CSV format</code></td>
+        <td><code>["Missing required headers: student_code, email"]</code></td>
+        <td>Header thiếu/sai.</td>
+      </tr>
+      <tr>
+        <td><code>400</code></td><td><code>400</code></td>
+        <td><code>Empty file</code></td>
+        <td><code>["CSV contains no data rows"]</code></td>
+        <td>File chỉ có header.</td>
+      </tr>
+      <tr>
+        <td><code>401</code></td><td><code>401</code></td>
+        <td><code>Unauthenticated</code></td>
+        <td><code>["Access token is missing or expired"]</code></td>
+        <td>Token thiếu/hết hạn.</td>
+      </tr>
+      <tr>
+        <td><code>403</code></td><td><code>403</code></td>
+        <td><code>Forbidden</code></td>
+        <td><code>["You do not have permission to create student accounts"]</code></td>
+        <td>Không phải admin.</td>
+      </tr>
+      <tr>
+        <td><code>413</code></td><td><code>413</code></td>
+        <td><code>File too large</code></td>
+        <td><code>["Max file size is 5MB"]</code></td>
+        <td>File vượt ngưỡng.</td>
+      </tr>
+      <tr>
+        <td><code>500</code></td><td><code>500</code></td>
+        <td><code>Internal server error</code></td>
+        <td><code>["Unexpected error occurred"]</code></td>
+        <td>Lỗi hệ thống/DB.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4>Ví dụ error body — 400 invalid CSV</h4>
+<pre>{
+  "isSuccess": false,
+  "statusCode": 400,
+  "message": "Invalid CSV format",
+  "data": null,
+  "errors": [
+    "Missing required headers: student_code, email"
+  ],
+  "timestamp": "2026-09-24T02:48:56.920Z"
+}</pre>
+</section>
+
+<section class="card" id="csv">
+  <h2>8. CSV Format Specification</h2>
+  <p class="lead">File CSV phải tuân theo format dưới đây. BE validate header trước khi xử lý; nếu header sai → reject cả request với <code>400</code>.</p>
+
+  <h3>8.1. Header</h3>
+  <table>
+    <thead><tr><th>Cột</th><th>Bắt buộc</th><th>Mô tả</th></tr></thead>
+    <tbody>
+      <tr><td><code>student_code</code></td><td>Có</td><td>Mã student, unique toàn hệ thống.</td></tr>
+      <tr><td><code>email</code></td><td>Có</td><td>Email đã đăng ký với nhà trường, unique toàn hệ thống.</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <strong>Thứ tự cột:</strong> BE không bắt buộc đúng thứ tự, chỉ cần header đúng tên. Tuy nhiên để tránh nhầm lẫn, document khuyến nghị giữ đúng thứ tự như trong mục 8.2.
+  </div>
+
+  <h3>8.2. Ví dụ file hợp lệ</h3>
+<pre>student_code,email
+ST2024001,student1@example.com
+ST2024002,student2@example.com
+ST2024003,student3@example.com</pre>
+
+  <h3>8.3. Ví dụ file có row lỗi</h3>
+  <p>Row lỗi không làm hỏng cả file; BE xử lý các row còn lại và tổng hợp vào <code>error_accounts</code>.</p>
+<pre>student_code,email
+ST2024001,student1@example.com
+ST2024001,duplicate-code@example.com
+ST2024003,student1@example.com
+ST2024004,student4@example.com</pre>
+  <ul>
+    <li>Row 2: trùng <code>student_code</code> với row 1 → <code>error_type: STUDENT_CODE</code>.</li>
+    <li>Row 3: trùng <code>email</code> với row 1 → <code>error_type: EMAIL</code>.</li>
+  </ul>
+
+  <h3>8.4. Validation rules</h3>
+  <table>
+    <thead><tr><th>Rule</th><th>Xử lý</th></tr></thead>
+    <tbody>
+      <tr><td>Thiếu header</td><td>Reject 400.</td></tr>
+      <tr><td>Header sai tên</td><td>Reject 400.</td></tr>
+      <tr><td>Row trống hoàn toàn</td><td>Bỏ qua (skip).</td></tr>
+      <tr><td>Ô <code>student_code</code> hoặc <code>email</code> trống</td><td>Row đó vào <code>error_accounts</code> với error_type tương ứng.</td></tr>
+      <tr><td>Duplicate trong cùng file</td><td>Row sau vào <code>error_accounts</code>.</td></tr>
+      <tr><td>Duplicate với DB</td><td>Row đó vào <code>error_accounts</code>.</td></tr>
+      <tr><td>Encoding</td><td>UTF-8, không BOM (khuyến nghị).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="card" id="workflow">
+  <h2>9. Business Workflow</h2>
+
+  <h3>9.1. Per-account workflow</h3>
+  <p>Đây là flow áp dụng cho <strong>từng row</strong>, dùng chung cho cả single và csv.</p>
+  <div class="flow">
+    <div class="step"><div class="num">1</div><strong>Validate input</strong><span>Kiểm tra <code>student_code</code> và <code>email</code> không rỗng, đúng định dạng.</span></div>
+    <div class="step"><div class="num">2</div><strong>Check duplicate</strong><span>Query <code>users</code> theo <code>student_code</code> và <code>email</code>.</span></div>
+    <div class="step"><div class="num">3</div><strong>Generate password</strong><span>Sinh <code>random_password</code> (chỉ giữ trong RAM).</span></div>
+    <div class="step"><div class="num">4</div><strong>INSERT user</strong><span>Ghi <code>users</code> với <code>is_active=false</code>, <code>provider="SYSTEM"</code>, <code>created_by=admin.id</code>.</span></div>
+    <div class="step"><div class="num">5</div><strong>Send email + update whitelist</strong><span>Gửi mail credentials. Thành công → set <code>whitelisted_emails.student_id</code>.</span></div>
+  </div>
+
+  <h3>9.2. Xử lý kết quả từng row</h3>
+  <table>
+    <thead><tr><th>Kết quả</th><th>Điều kiện</th><th>Ghi vào</th></tr></thead>
+    <tbody>
+      <tr><td>Success</td><td>Duplicate check pass + INSERT thành công + gửi mail thành công + update whitelist thành công.</td><td><code>success_accounts</code></td></tr>
+      <tr><td>Duplicate student_code</td><td>Query thấy <code>users.student_code</code> đã tồn tại.</td><td><code>error_accounts</code> với <code>error_type: "STUDENT_CODE"</code></td></tr>
+      <tr><td>Duplicate email</td><td>Query thấy <code>users.email</code> đã tồn tại.</td><td><code>error_accounts</code> với <code>error_type: "EMAIL"</code></td></tr>
+      <tr><td>Send email failed</td><td>INSERT thành công nhưng mail provider báo lỗi/timeout.</td><td><code>error_accounts</code> với <code>error_type: "SENT_EMAIL_FAILED"</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>9.3. Transaction boundary</h3>
+  <div class="warn">
+    <strong>Cần chốt ở Open Points:</strong> mỗi row được xử lý trong transaction riêng hay toàn bộ file trong một transaction?
+    <ul>
+      <li><strong>Per-row transaction (khuyến nghị):</strong> row lỗi không rollback row khác; partial success tự nhiên.</li>
+      <li><strong>Single transaction:</strong> nếu 1 row lỗi thì rollback tất cả — nhưng khi đó <code>error_accounts</code> không còn ý nghĩa, phải trả về lỗi cấp request.</li>
+    </ul>
+  </div>
+
+  <h3>9.4. Sequence — student accounts</h3>
+<pre>Admin UI
+  │
+  ├─ POST /api/v1/admin/student-accounts (multipart)
+  │        │
+  │        ▼
+  │   BE parse CSV → validate header
+  │        │
+  │        ├─ for each row:
+  │        │     ├─ check duplicate
+  │        │     ├─ generate password
+  │        │     ├─ INSERT users
+  │        │     ├─ send email
+  │        │     ├─ (success) update whitelisted_emails.student_id
+  │        │     └─ append to success_accounts or error_accounts
+  │        │
+  │        └─ return envelope with items {success_accounts, error_accounts}</pre>
+</section>
+
+<section class="card" id="errors">
+  <h2>10. Error Registry</h2>
+  <p class="lead">Danh sách <code>message</code> chính thức dùng cho i18n/analytics phía FE.</p>
+  <table>
+    <thead><tr><th>HTTP</th><th><code>message</code></th><th>Ý nghĩa</th><th>FE action</th></tr></thead>
+    <tbody>
+      <tr><td><code>400</code></td><td><code>Invalid request</code></td><td>Body/query sai định dạng.</td><td>Hiển thị message, không retry.</td></tr>
+      <tr><td><code>400</code></td><td><code>Invalid CSV format</code></td><td>File CSV sai header/cấu trúc.</td><td>Hiển thị message + link template CSV.</td></tr>
+      <tr><td><code>401</code></td><td><code>Unauthenticated</code></td><td>Token thiếu/hết hạn.</td><td>Refresh token hoặc login lại.</td></tr>
+      <tr><td><code>403</code></td><td><code>Forbidden</code></td><td>Không đủ quyền.</td><td>Ẩn action, không retry.</td></tr>
+      <tr><td><code>409</code></td><td><code>Duplicate student code</code></td><td><code>student_code</code> đã tồn tại (single only).</td><td>Highlight field, yêu cầu nhập lại.</td></tr>
+      <tr><td><code>409</code></td><td><code>Duplicate email</code></td><td><code>email</code> đã tồn tại (single only).</td><td>Highlight field, yêu cầu nhập lại.</td></tr>
+      <tr><td><code>413</code></td><td><code>File too large</code></td><td>File CSV vượt ngưỡng.</td><td>Hiển thị message, yêu cầu chia nhỏ file.</td></tr>
+      <tr><td><code>502</code></td><td><code>Failed to send credentials email</code></td><td>Mail provider lỗi (single only).</td><td>Cho phép admin retry gửi mail.</td></tr>
+      <tr><td><code>500</code></td><td><code>Internal server error</code></td><td>Lỗi hệ thống.</td><td>Generic error, có thể retry.</td></tr>
+    </tbody>
+  </table>
+  <div class="danger">
+    <strong>Security rule:</strong> không leak chi tiết nội bộ (tên bảng/cột, SQL, stack trace). Với các message duplicate, tránh tiết lộ chính xác row nào tồn tại nếu không cần thiết — trong flow này admin có quyền thấy vì cần xử lý nghiệp vụ, nhưng không được lộ dữ liệu user khác.
+  </div>
+</section>
+
+<section class="card" id="rules">
+  <h2>11. FE / BE Responsibilities</h2>
+  <table>
+    <thead><tr><th>Area</th><th>FE</th><th>BE</th></tr></thead>
+    <tbody>
+      <tr><td>Authentication</td><td>Attach Bearer token.</td><td>Validate token, extract <code>admin_id</code>.</td></tr>
+      <tr><td>Authorization</td><td>Ẩn trang nếu user không phải admin.</td><td>Enforce role admin ở mọi request.</td></tr>
+      <tr><td>Input validation</td><td>Validate format cơ bản để UX tốt (email, không rỗng).</td><td>Validate authoritative, check duplicate.</td></tr>
+      <tr><td>CSV parsing</td><td>Chỉ cung cấp template CSV cho admin; không parse file.</td><td>Parse + validate header/row.</td></tr>
+      <tr><td>Response parsing</td><td>Rẽ nhánh theo <code>isSuccess</code>, đọc <code>data.items</code>.</td><td>Trả envelope thống nhất.</td></tr>
+      <tr><td>Partial success (bulk)</td><td>Hiển thị cả <code>success_accounts</code> và <code>error_accounts</code>.</td><td>Không rollback row thành công khi row khác lỗi (per-row transaction).</td></tr>
+      <tr><td>Password</td><td>Không bao giờ nhận password từ FE, chỉ hiển thị credentials nếu cần.</td><td>Sinh password ở BE, hash trước khi lưu, không log password.</td></tr>
+      <tr><td>Email</td><td>Không gửi mail trực tiếp.</td><td>Gửi mail credentials, update <code>whitelisted_emails</code>.</td></tr>
+      <tr><td>Error display</td><td>Hiển thị <code>message</code>; log <code>errors[]</code> cho debug.</td><td>Message generic, không leak nội bộ.</td></tr>
+    </tbody>
+  </table>
+  <div class="danger">
+    <strong>Security rule:</strong> password sinh ra chỉ tồn tại trong RAM để gửi mail. Không log, không trả về response, không ghi DB dạng plaintext.
+  </div>
+</section>
+
+<section class="card" id="acceptance">
+  <h2>12. Acceptance Criteria</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Requirement</th></tr></thead>
+    <tbody>
+      <tr><td>STU-01</td><td>POST single tạo user trong <code>users</code> với <code>username = student_code</code>, <code>provider = "SYSTEM"</code>, <code>is_active = false</code>, <code>is_email_verified = false</code>, <code>last_login_at = null</code>, <code>failed_login_attempts = 0</code>, <code>lockout_end = null</code>, <code>created_by = admin.id</code>.</td></tr>
+      <tr><td>STU-02</td><td><code>password_hash</code> là hash của password ngẫu nhiên sinh tại BE; password gốc không bao giờ xuất hiện trong response hay log.</td></tr>
+      <tr><td>STU-03</td><td>BE gửi email credentials tới <code>email</code> trong request. Thành công → set <code>whitelisted_emails.student_id</code>.</td></tr>
+      <tr><td>STU-04</td><td>Single duplicate <code>student_code</code> → <code>409</code> với <code>message = "Duplicate student code"</code>.</td></tr>
+      <tr><td>STU-05</td><td>Single duplicate <code>email</code> → <code>409</code> với <code>message = "Duplicate email"</code>.</td></tr>
+      <tr><td>STU-06</td><td>Bulk CSV validate header <code>student_code</code>, <code>email</code> trước khi xử lý; header sai → <code>400 Invalid CSV format</code>.</td></tr>
+      <tr><td>STU-07</td><td>Bulk xử lý theo per-row; row lỗi không làm hỏng row khác; kết quả tổng hợp trong <code>data.items</code>.</td></tr>
+      <tr><td>STU-08</td><td><code>error_type</code> chỉ nhận một trong <code>"EMAIL"</code> | <code>"STUDENT_CODE"</code> | <code>"SENT_EMAIL_FAILED"</code>.</td></tr>
+      <tr><td>STU-09</td><td><code>error_accounts[].id</code> là <code>null</code> khi row bị reject trước insert (duplicate), là uuid khi insert thành công nhưng gửi mail thất bại.</td></tr>
+      <tr><td>STU-10</td><td>Response tuân theo envelope: <code>isSuccess</code>, <code>statusCode</code>, <code>message</code>, <code>data</code>, <code>errors</code>, <code>timestamp</code>.</td></tr>
+      <tr><td>STU-11</td><td>Success trả <code>statusCode = 0</code>; error trả <code>statusCode</code> bằng HTTP status code.</td></tr>
+      <tr><td>STU-12</td><td><code>errors</code> luôn là mảng; <code>data</code> là <code>null</code> khi lỗi.</td></tr>
+      <tr><td>STU-13</td><td>Không tạo <code>user_profiles</code> hay <code>user_mfa_settings</code> trong flow này.</td></tr>
+      <tr><td>STU-14</td><td>Cả hai endpoint yêu cầu role admin.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="card" id="open">
+  <h2>13. Các điểm cần chốt trước implementation</h2>
+  <table>
+    <thead><tr><th>Item</th><th>Cần chốt</th></tr></thead>
+    <tbody>
+      <tr><td>Duplicate priority</td><td>Nếu vừa trùng <code>student_code</code> vừa trùng <code>email</code>, <code>error_type</code> nào được ưu tiên? Document đề xuất <code>STUDENT_CODE</code> trước.</td></tr>
+      <tr><td>Regex <code>student_code</code></td><td>Định dạng chính thức (độ dài, ký tự cho phép).</td></tr>
+      <tr><td>Password policy</td><td>Độ dài và thành phần của <code>random_password</code>.</td></tr>
+      <tr><td>Email template</td><td>Nội dung mail, branding, link kích hoạt (nếu có).</td></tr>
+      <tr><td>Mail failure handling (single)</td><td>Nếu insert user thành công nhưng gửi mail fail: rollback user hay giữ user và trả 502 để admin retry? Document hiện đề xuất <code>502</code> và giữ user.</td></tr>
+      <tr><td>Mail failure handling (bulk)</td><td>Row <code>SENT_EMAIL_FAILED</code> có được retry tự động không, hay admin phải retry thủ công?</td></tr>
+      <tr><td>Transaction boundary</td><td>Per-row transaction (khuyến nghị) hay single transaction cho cả file?</td></tr>
+      <tr><td>File size limit</td><td>Ngưỡng tối đa (document đề xuất 5MB).</td></tr>
+      <tr><td>Max rows per file</td><td>Giới hạn số row để tránh quá tải (ví dụ 1000 row).</td></tr>
+      <tr><td>CSV encoding</td><td>UTF-8 có BOM hay không BOM?</td></tr>
+      <tr><td>whitelisted_emails khi email chưa tồn tại</td><td>Nếu email không có trong <code>whitelisted_emails</code>, có được phép tạo user không? Hiện spec chưa nói rõ.</td></tr>
+      <tr><td><code>id</code> trong error_accounts</td><td>Xác nhận convention <code>null</code> vs uuid như mục 7.2.</td></tr>
+      <tr><td>Concurrency</td><td>Bulk có dùng queue/background job không nếu file lớn? Nếu có, cần endpoint kiểm tra tiến độ.</td></tr>
+      <tr><td>Rate limit</td><td>Có giới hạn số request bulk/ngày cho admin không?</td></tr>
+      <tr><td>Audit</td><td>Có ghi audit log riêng cho hành động tạo account không?</td></tr>
+      <tr><td>HTTP status success</td><td>Xác nhận <code>200 OK</code> cho cả single và bulk (khuyến nghị), hay <code>201 Created</code> cho single?</td></tr>
+    </tbody>
+  </table>
+  <div class="warn">
+    <strong>Ưu tiên chốt sớm:</strong> duplicate priority, mail failure handling, transaction boundary, và <code>id</code> convention trong <code>error_accounts</code> vì chúng ảnh hưởng trực tiếp tới logic BE và UX của FE.
+  </div>
+</section>
+</div></body>
+</html>

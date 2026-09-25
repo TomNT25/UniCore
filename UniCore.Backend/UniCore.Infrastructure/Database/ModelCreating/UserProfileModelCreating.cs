@@ -26,6 +26,8 @@ namespace UniCore.Infrastructure.Database.ModelCreating
                 entity.Property(e => e.PhoneNumber).HasColumnName("phone_number").HasMaxLength(20);
                 entity.Property(e => e.AvatarUrl).HasColumnName("avatar_url");
                 entity.Property(e => e.AvatarMediaFileId).HasColumnName("avatar_media_file_id");
+                entity.Property(e => e.CidFrontImageUrl).HasColumnName("cid_front_image_url");
+                entity.Property(e => e.CidBackImageUrl).HasColumnName("cid_back_image_url");
                 entity.Property(e => e.Gender).HasColumnName("gender").HasMaxLength(20);
                 entity.Property(e => e.BirthDate).HasColumnName("birth_date");
                 entity.Property(e => e.Address).HasColumnName("address");

@@ -10,6 +10,7 @@ using UniCore.Application.Feature.v1.Admin.CoursesManagement.GetCourseById;
 using UniCore.Application.Feature.v1.Admin.CoursesManagement.UpdateCourse;
 using UniCore.Application.Feature.v1.Admin.CoursesManagement.UpdateCourseStatus;
 using UniCore.Application.Feature.v1.Admin.StudentsManagement.GetAllStudents;
+using UniCore.Application.Feature.v1.Admin.UserManagement.CreateBulkStudentAccounts;
 using UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser;
 using UniCore.Application.Feature.v1.Admin.UserManagement.DeleteUser;
 using UniCore.Application.Feature.v1.Admin.UserManagement.GetAllUsers;
@@ -30,6 +31,7 @@ namespace UniCore.Application.Contract.Service.v1
         Task<GetAllUsersResponseDTO> GetAllUsersAsync(GetAllUsersRequestDTO request, CancellationToken cancellationToken = default);
         Task<GetUserByIdResponseDTO> GetUserByIdAsync(string id, CancellationToken cancellationToken = default);
         Task<CreateUserResponseDTO> CreateUserAsync(CreateUserRequestDTO request, CancellationToken cancellationToken = default);
+        Task<CreateBulkStudentAccountsResponseDTO> CreateBulkStudentAccountsAsync(CreateBulkStudentAccountsRequestDTO request, CancellationToken cancellationToken = default);
         Task<UpdateUserResponseDTO> UpdateUserAsync(UpdateUserRequestDTO request, CancellationToken cancellationToken = default);
         Task<DeleteUserResponseDTO> DeleteUserAsync(string id, CancellationToken cancellationToken = default);
         Task<UpdateUserStatusResponseDTO> UpdateUserStatusAsync(UpdateUserStatusRequestDTO request, CancellationToken cancellationToken = default);

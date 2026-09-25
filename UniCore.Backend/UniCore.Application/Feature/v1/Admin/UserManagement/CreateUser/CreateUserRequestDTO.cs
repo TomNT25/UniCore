@@ -1,17 +1,23 @@
+using System.Text.Json.Serialization;
 using UniCore.Application.Contract.RequestHandlerHub;
 
 namespace UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser
 {
     public class CreateUserRequestDTO : IRequest<CreateUserResponseDTO>
     {
-        public string Username { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string? Password { get; set; } = "123456";
+        [JsonPropertyName("student_code")]
         public string? StudentCode { get; set; }
-        public string RoleId { get; set; } = string.Empty;
+
+        [JsonPropertyName("email")]
+        public string Email { get; set; } = string.Empty;
+
+        public string? Username { get; set; }
+        public string? Password { get; set; }
+        public string? RoleId { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? PhoneNumber { get; set; }
-        public bool IsActive { get; set; } = true;
+        public bool? IsActive { get; set; }
+        public string? AdminUserId { get; set; }
     }
 }

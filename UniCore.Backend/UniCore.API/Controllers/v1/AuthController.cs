@@ -48,21 +48,13 @@ namespace Project_Structure_UniCore.Controllers.v1
         public async Task<ActionResult<BaseAPIResponse<LoginResponseDTO>>> Login([FromBody] LoginRequestDTO request)
         {
             var result = await _authService.LoginAsync(request);
-            // Response.Cookies.Append(
-            //     "UniCore_RefreshToken",
-            //     result.RefreshToken,
-            //     new CookieOptions
-            //     {
-            //         HttpOnly = true,
-            //         Secure = false,
-            //         SameSite = SameSiteMode.Lax,
-            //         Expires = DateTimeOffset.UtcNow.AddDays(result.RefreshTokenExpire),
-            //         Path = "/api/v1/auth",
-            //         IsEssential = true
-            //     }
-            // );
-            setRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpire);
-            var message = _localizer.GetString(MessageConstants.Auth.LoginSuccess);
+            if (!result.RequiresMfa && !string.IsNullOrEmpty(result.RefreshToken))
+            {
+                setRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpire);
+            }
+            var message = result.RequiresMfa
+                ? "MFA OTP verification required. An OTP has been sent to your email."
+                : _localizer.GetString(MessageConstants.Auth.LoginSuccess);
             return OkResponse<LoginResponseDTO>(result, message);
         }
 
@@ -152,6 +144,11 @@ namespace Project_Structure_UniCore.Controllers.v1
         public async Task<ActionResult<BaseAPIResponse<VerifyOtpResponseDTO>>> VerifyOtp([FromBody] VerifyOtpRequestDTO request)
         {
             var result = await _authService.VerifyOtpAsync(request);
+            if (!string.IsNullOrEmpty(result.RefreshToken))
+            {
+                var expireDays = result.RefreshTokenExpire > 0 ? result.RefreshTokenExpire : 7;
+                setRefreshTokenCookie(result.RefreshToken, expireDays);
+            }
             var message = _localizer.GetString(MessageConstants.Auth.VerifyOtpSuccess);
             return OkResponse<VerifyOtpResponseDTO>(result, message);
         }
@@ -264,14 +261,14 @@ namespace Project_Structure_UniCore.Controllers.v1
         [ProducesResponseType(typeof(BaseAPIResponse<EnableMfaResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<BaseAPIResponse<EnableMfaResponseDTO>>> EnableMfa([FromBody] EnableMfaRequestDTO request)
+        public async Task<ActionResult<BaseAPIResponse<EnableMfaResponseDTO>>> EnableMfa()
         {
             var userId = GetCurrentUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 return UnauthorizedResponse<EnableMfaResponseDTO>(_localizer.GetString(MessageConstants.Auth.IdentityNotFound));
             }
-            request.UserId = userId;
+            var request = new EnableMfaRequestDTO() { UserId = userId };
 
             var result = await _authService.EnableMfaAsync(request);
             var message = _localizer.GetString(MessageConstants.Auth.MfaEnableSuccess);

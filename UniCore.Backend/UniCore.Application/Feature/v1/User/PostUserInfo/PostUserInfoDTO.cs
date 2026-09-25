@@ -6,13 +6,14 @@ namespace UniCore.Application.Feature.v1.User.PostUserInfo
 {
     public class PostUserInfoDTO
     {
-        public string? firstName { get; set; }
-        public string? lastName { get; set; }
-        public string? fullName { get; set; }
-        public string? phoneNumber { get; set; }
-        public string? gender { get; set; }
-        public string? birthDate { get; set; }
-        public string? address { get; set; }
-        public string? bio { get; set; }
+        public string? UserId { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? FullName { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Gender { get; set; }
+        public string? BirthDate { get; set; }
+        public string? Address { get; set; }
+        public string? Bio { get; set; }
     }
 }

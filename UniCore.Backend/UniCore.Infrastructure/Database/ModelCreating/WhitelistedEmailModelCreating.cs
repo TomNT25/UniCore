@@ -21,7 +21,7 @@ namespace UniCore.Infrastructure.Database.ModelCreating
                 entity.Property(e => e.Code).HasColumnName("code").HasMaxLength(50);
                 entity.Property(e => e.Email).HasColumnName("email").IsRequired().HasMaxLength(100);
                 entity.Property(e => e.IsConfirmed).HasColumnName("is_confirmed").HasDefaultValue(false);
-                entity.Property(e => e.StudentId).HasColumnName("student_id").IsRequired().HasMaxLength(50);
+                entity.Property(e => e.StudentId).HasColumnName("student_id").IsRequired(false).HasMaxLength(50);
 
                 entity.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
                 entity.Property(e => e.IsDeleted).HasColumnName("is_deleted").HasDefaultValue(false);
@@ -52,7 +52,8 @@ namespace UniCore.Infrastructure.Database.ModelCreating
                 entity.HasOne(e => e.Student)
                     .WithMany(s => s.WhitelistedEmails)
                     .HasForeignKey(e => e.StudentId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
         }
     }

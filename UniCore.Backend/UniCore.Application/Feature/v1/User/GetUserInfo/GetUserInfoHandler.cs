@@ -36,9 +36,9 @@ namespace UniCore.Application.Feature.v1.User.GetUserInfo
 
             var userProfile = await _profileRepository.GetByUserIdAsync(request.UserID, ct);
 
-            if (userProfile is null) 
+            if (userProfile is null)
             {
-                throw new NullReferenceException();
+                return new GetUserInfoResponseDTO();
             }
 
             return _mapper.Map<GetUserInfoResponseDTO>(userProfile);

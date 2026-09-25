@@ -12,6 +12,7 @@ using UniCore.Application.Feature.v1.Admin.CoursesManagement.UpdateCourse;
 using UniCore.Application.Feature.v1.Admin.CoursesManagement.UpdateCourseStatus;
 using UniCore.Application.Feature.v1.Admin.Dashboard.GetDashboardOverview;
 using UniCore.Application.Feature.v1.Admin.StudentsManagement.GetAllStudents;
+using UniCore.Application.Feature.v1.Admin.UserManagement.CreateBulkStudentAccounts;
 using UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser;
 using UniCore.Application.Feature.v1.Admin.UserManagement.DeleteUser;
 using UniCore.Application.Feature.v1.Admin.UserManagement.GetAllUsers;
@@ -30,6 +31,7 @@ namespace UniCore.Application.Service.v1
         private readonly GetAllUsersHandler _getAllUsersHandler;
         private readonly GetUserByIdHandler _getUserByIdHandler;
         private readonly CreateUserHandler _createUserHandler;
+        private readonly CreateBulkStudentAccountsHandler _createBulkStudentAccountsHandler;
         private readonly UpdateUserHandler _updateUserHandler;
         private readonly DeleteUserHandler _deleteUserHandler;
         private readonly UpdateUserStatusHandler _updateUserStatusHandler;
@@ -55,6 +57,7 @@ namespace UniCore.Application.Service.v1
             GetAllUsersHandler getAllUsersHandler,
             GetUserByIdHandler getUserByIdHandler,
             CreateUserHandler createUserHandler,
+            CreateBulkStudentAccountsHandler createBulkStudentAccountsHandler,
             UpdateUserHandler updateUserHandler,
             DeleteUserHandler deleteUserHandler,
             UpdateUserStatusHandler updateUserStatusHandler,
@@ -78,6 +81,7 @@ namespace UniCore.Application.Service.v1
             _getAllUsersHandler = getAllUsersHandler;
             _getUserByIdHandler = getUserByIdHandler;
             _createUserHandler = createUserHandler;
+            _createBulkStudentAccountsHandler = createBulkStudentAccountsHandler;
             _updateUserHandler = updateUserHandler;
             _deleteUserHandler = deleteUserHandler;
             _updateUserStatusHandler = updateUserStatusHandler;
@@ -109,6 +113,9 @@ namespace UniCore.Application.Service.v1
 
         public Task<CreateUserResponseDTO> CreateUserAsync(CreateUserRequestDTO request, CancellationToken cancellationToken = default)
             => _createUserHandler.HandleAsync(request, cancellationToken);
+
+        public Task<CreateBulkStudentAccountsResponseDTO> CreateBulkStudentAccountsAsync(CreateBulkStudentAccountsRequestDTO request, CancellationToken cancellationToken = default)
+            => _createBulkStudentAccountsHandler.HandleAsync(request, cancellationToken);
 
         public Task<UpdateUserResponseDTO> UpdateUserAsync(UpdateUserRequestDTO request, CancellationToken cancellationToken = default)
             => _updateUserHandler.HandleAsync(request, cancellationToken);

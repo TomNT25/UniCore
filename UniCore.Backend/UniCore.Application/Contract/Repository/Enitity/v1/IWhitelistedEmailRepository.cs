@@ -5,5 +5,6 @@ namespace UniCore.Application.Contract.Repository.Enitity.v1
     public interface IWhitelistedEmailRepository : IRepository<WhitelistedEmail>
     {
         Task<List<WhitelistedEmail>> GetActiveEntriesAsync(CancellationToken cancellationToken = default);
+        Task<WhitelistedEmail?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
     }
 }

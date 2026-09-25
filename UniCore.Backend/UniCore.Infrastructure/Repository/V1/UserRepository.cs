@@ -30,6 +30,7 @@ namespace UniCore.Infrastructure.Repository.V1
         public async Task<User?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             return await _dbSet
+                .Include(e => e.Class)
                 .Include(e => e.UserProfile)
                 .Include(e => e.UserRoles)
                 .ThenInclude(e => e.Role)

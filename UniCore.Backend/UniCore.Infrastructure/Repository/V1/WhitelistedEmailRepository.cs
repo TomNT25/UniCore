@@ -20,5 +20,17 @@ namespace UniCore.Infrastructure.Repository.V1
                 .Where(w => w.IsActive == true)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<WhitelistedEmail?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return null;
+            }
+
+            var normalizedEmail = email.Trim().ToLower();
+            return await _dbSet
+                .FirstOrDefaultAsync(w => w.Email.ToLower() == normalizedEmail && !w.IsDeleted, cancellationToken);
+        }
     }
 }

@@ -4,6 +4,7 @@ using Mapster;
 using MapsterMapper;
 using UniCore.Application.Contract.Repository.Enitity.v1;
 using UniCore.Application.Contract.RequestHandlerHub;
+using UniCore.Application.Entity;
 
 
 namespace UniCore.Application.Feature.v1.User.PostUserInfo
@@ -34,18 +35,20 @@ namespace UniCore.Application.Feature.v1.User.PostUserInfo
                 throw new ValidationException(results.Errors);
             }
 
-            var userProfile = await _profileRepository.GetByUserIdAsync(request.UserID, cancellationToken);
+            // var userProfile = await _profileRepository.GetByUserIdAsync(request.UserID, cancellationToken);
 
 
-            if (userProfile is null) 
-            {
-                throw new NullReferenceException();
-            }
+            // if (userProfile is null) 
+            // {
+            //     throw new NullReferenceException();
+            // }
 
 
-            request.PostUserBio.Adapt(userProfile);
+            // request.PostUserBio.Adapt(userProfile);
 
-            await _profileRepository.UpdateAsync(userProfile, cancellationToken);
+            var userProfile = request.Adapt<UserProfile>();
+
+            await _profileRepository.AddAsync(userProfile, cancellationToken);
 
             return _mapper.Map<PostUserInfoResponseDTO>(userProfile);
 

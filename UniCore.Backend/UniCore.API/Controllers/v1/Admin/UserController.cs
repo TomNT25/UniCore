@@ -5,6 +5,7 @@ using UniCore.API.Controllers;
 using UniCore.Application.Contract.Service.v1;
 using UniCore.Application.DTO;
 using UniCore.Application.Feature.v1.Admin.StudentsManagement.GetAllStudents;
+using UniCore.Application.Feature.v1.Admin.UserManagement.CreateBulkStudentAccounts;
 using UniCore.Application.Feature.v1.Admin.UserManagement.CreateUser;
 using UniCore.Application.Feature.v1.Admin.UserManagement.DeleteUser;
 using UniCore.Application.Feature.v1.Admin.UserManagement.GetAllUsers;
@@ -68,16 +69,64 @@ namespace UniCore.API.Controllers.v1.Admin
         }
 
         /// <summary>
-        /// Create new user
+        /// Create new student account (Single)
         /// </summary>
         [HttpPost]
-        [ProducesResponseType(typeof(BaseAPIResponse<CreateUserResponseDTO>), StatusCodes.Status201Created)]
+        [HttpPost("~/api/v{version:apiVersion}/admin/student-account")]
+        [ProducesResponseType(typeof(BaseAPIResponse<CreateUserResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status502BadGateway)]
         public async Task<ActionResult<BaseAPIResponse<CreateUserResponseDTO>>> CreateUser([FromBody] CreateUserRequestDTO request, CancellationToken cancellationToken = default)
         {
+            request.AdminUserId = GetActorUserId();
             var result = await _adminService.CreateUserAsync(request, cancellationToken);
-            var message = _localizer.GetString(MessageConstants.Admin.CreateUserSuccess);
-            return CreatedResponse<CreateUserResponseDTO>(result, message);
+            var message = "Student account created successfully";
+            return OkResponse<CreateUserResponseDTO>(result, message);
+        }
+
+        /// <summary>
+        /// Create bulk student accounts from CSV file
+        /// </summary>
+        [HttpPost("~/api/v{version:apiVersion}/admin/student-accounts")]
+        [Consumes("multipart/form-data")]
+        [RequestSizeLimit(5 * 1024 * 1024)] // 5 MB
+        [ProducesResponseType(typeof(BaseAPIResponse<CreateBulkStudentAccountsResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status413PayloadTooLarge)]
+        public async Task<ActionResult<BaseAPIResponse<CreateBulkStudentAccountsResponseDTO>>> CreateBulkStudentAccounts(
+            IFormFile file,
+            CancellationToken cancellationToken = default)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequestResponse<CreateBulkStudentAccountsResponseDTO>(
+                    "Invalid file", new List<string> { "File must be .csv" });
+            }
+
+            if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequestResponse<CreateBulkStudentAccountsResponseDTO>(
+                    "Invalid file", new List<string> { "File must be .csv" });
+            }
+
+            if (file.Length > 5 * 1024 * 1024)
+            {
+                return StatusCode(StatusCodes.Status413PayloadTooLarge,
+                    BaseAPIResponse<CreateBulkStudentAccountsResponseDTO>.Failure("File too large", StatusCodes.Status413PayloadTooLarge, new List<string> { "Max file size is 5MB" }));
+            }
+
+            await using var stream = file.OpenReadStream();
+
+            var request = new CreateBulkStudentAccountsRequestDTO
+            {
+                FileStream = stream,
+                FileName = file.FileName,
+                AdminUserId = GetActorUserId()
+            };
+
+            var result = await _adminService.CreateBulkStudentAccountsAsync(request, cancellationToken);
+            return OkResponse(result, "Bulk account creation completed");
         }
 
         /// <summary>

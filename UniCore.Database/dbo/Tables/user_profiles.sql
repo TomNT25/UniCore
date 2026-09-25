@@ -8,6 +8,8 @@ CREATE TABLE [dbo].[user_profiles] (
     [phone_number]         VARCHAR (20)  NULL,
     [avatar_url]           VARCHAR (MAX) NULL,
     [avatar_media_file_id] INT           NULL,
+    [cid_front_image_url]  VARCHAR (MAX) NULL,
+    [cid_back_image_url]   VARCHAR (MAX) NULL,
     [gender]               VARCHAR (20)  NULL,
     [birth_date]           DATE          NULL,
     [address]              NVARCHAR (MAX) NULL,

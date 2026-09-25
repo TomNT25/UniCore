@@ -26,7 +26,7 @@ using UniCore.Helper.Localization;
 namespace UniCore.API.Controllers.v1
 {
     [ApiVersion("1.0")]
-    [Authorize]
+    [Authorize(Roles = AuthConstants.Roles.Student)]
     [Route("api/v{version:apiVersion}/student")]
     public class StudentController : BaseController
     {
@@ -82,13 +82,12 @@ namespace UniCore.API.Controllers.v1
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<BaseAPIResponse<PostUserInfoResponseDTO>>> PostUserProfile
-            ([FromBody] PostUserInfoDTO bio, CancellationToken ct)
+            ([FromBody] PostUserInfoRequestDTO request, CancellationToken ct)
         {
             var userId = User.FindFirst(AuthConstants.Claims.UserId)?.Value
                          ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                          ?? User.FindFirst(ClaimTypes.Email)?.Value
                          ?? string.Empty;
-
 
             if (string.IsNullOrEmpty(userId))
             {
@@ -96,9 +95,9 @@ namespace UniCore.API.Controllers.v1
                 return UnauthorizedResponse<PostUserInfoResponseDTO>(errMessage);
             }
 
-            PostUserInfoRequestDTO input = new PostUserInfoRequestDTO { UserID = userId, PostUserBio = bio };
+            request.UserId = userId;
 
-            var result = await _studentService.PostUserInfoAsync(input, ct);
+            var result = await _studentService.PostUserInfoAsync(request, ct);
             if (result == null)
             {
                 var notFoundMessage = _localizer.GetString(MessageConstants.Auth.UserNotFound);

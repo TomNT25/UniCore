@@ -6,9 +6,15 @@ namespace UniCore.Application.Feature.v1.Auth.VerifyOtp
     {
         public VerifyOtpValidator()
         {
-            RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Email is required")
-                .EmailAddress().WithMessage("Invalid email format");
+            RuleFor(x => x)
+                .Must(x => !string.IsNullOrWhiteSpace(x.Email) || !string.IsNullOrWhiteSpace(x.Username))
+                .WithMessage("Email or Username is required");
+
+            When(x => !string.IsNullOrWhiteSpace(x.Email), () =>
+            {
+                RuleFor(x => x.Email!)
+                    .EmailAddress().WithMessage("Invalid email format");
+            });
 
             RuleFor(x => x.OtpCode)
                 .NotEmpty().WithMessage("OTP code is required")

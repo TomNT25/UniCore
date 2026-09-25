@@ -11,6 +11,8 @@ namespace UniCore.Application.DTO.Entity
         public string? PhoneNumber { get; set; }
         public string? AvatarUrl { get; set; }
         public int? AvatarMediaFileId { get; set; }
+        public string? CidFrontImageUrl { get; set; }
+        public string? CidBackImageUrl { get; set; }
         public string? Gender { get; set; }
         public DateTime? BirthDate { get; set; }
         public string? Address { get; set; }

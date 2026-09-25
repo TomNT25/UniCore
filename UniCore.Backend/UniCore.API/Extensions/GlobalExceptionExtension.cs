@@ -4,6 +4,7 @@ using System.Net.Mime;
 using System.Text.Json;
 using UniCore.Application.DTO;
 using UniCore.Helper.Constant;
+using UniCore.Helper.ExceptionHandler;
 using UniCore.Helper.Localization;
 
 namespace UniCore.API.Extensions
@@ -69,6 +70,18 @@ namespace UniCore.API.Extensions
                     MessageConstants.System.ValidationFailed,
                     (string?)_localizer.GetString(exception.Message),
                     (List<string>?)null
+                ),
+                ConflictException conflictEx => (
+                    StatusCodes.Status409Conflict,
+                    conflictEx.Message,
+                    conflictEx.Message,
+                    conflictEx.Errors
+                ),
+                BadGatewayException bgEx => (
+                    StatusCodes.Status502BadGateway,
+                    bgEx.Message,
+                    bgEx.Message,
+                    bgEx.Errors
                 ),
                 _ => (
                     StatusCodes.Status500InternalServerError,

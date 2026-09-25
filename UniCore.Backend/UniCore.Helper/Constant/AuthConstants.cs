@@ -40,5 +40,12 @@ namespace UniCore.Helper.Constant
         {
             public const string System = "system";
         }
+
+        public static class Roles
+        {
+            public const string Admin = "Admin";
+            public const string Student = "Student";
+            public const string Teacher = "Teacher";
+        }
     }
 }

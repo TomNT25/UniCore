@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using UniCore.Application.DTO.Entity;
 
 namespace UniCore.Application.Feature.v1.Auth.Login
@@ -12,7 +12,12 @@ namespace UniCore.Application.Feature.v1.Auth.Login
 
         [JsonIgnore]
         public int RefreshTokenExpire { get; set; }
-        public UserLoginResponseDTO User { get; set; } = default!;
+        public UserLoginResponseDTO? User { get; set; }
+
+        public bool RequiresMfa { get; set; } = false;
+        public string? Email { get; set; }
+        public string? MaskedEmail { get; set; }
+        public string? Message { get; set; }
     }
 
     public class UserLoginResponseDTO

@@ -3,7 +3,7 @@ CREATE TABLE [dbo].[whitelisted_emails] (
     [code]         VARCHAR (50)  NULL,
     [email]        VARCHAR (100) NOT NULL,
     [is_confirmed] BIT           DEFAULT ((0)) NOT NULL,
-    [student_id]   VARCHAR (50)  NOT NULL,
+    [student_id]   VARCHAR (50)  NULL,
     [is_active]    BIT           DEFAULT ((1)) NOT NULL,
     [is_deleted]   BIT           DEFAULT ((0)) NOT NULL,
     [created_at]   DATETIME2 (7) DEFAULT (getdate()) NOT NULL,
